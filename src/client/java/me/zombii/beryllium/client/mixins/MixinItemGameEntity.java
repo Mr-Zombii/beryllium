@@ -26,6 +26,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.awt.*;
+
 @Mixin(ItemGameEntity.class)
 public abstract class MixinItemGameEntity extends GameEntity {
 
@@ -38,7 +40,6 @@ public abstract class MixinItemGameEntity extends GameEntity {
     private float randomHoverOffsetTime;
     private BerylliumMesh mesh;
     private RenderLayer renderLayer;
-    private Tessallator tessallator;
     private BakedBerylliumModel model;
 
     public MixinItemGameEntity(String entityTypeId) {
@@ -51,22 +52,17 @@ public abstract class MixinItemGameEntity extends GameEntity {
     private void render(Camera worldCamera, CallbackInfo ci) {
         if (model == null) {
             renderLayer = RenderLayers.LAYER_REGISTRY.get(Identifier.of(BerylliumCommon.NAMESPACE, "opaque-block-render-layer"));
-            tessallator = new Tessallator(6);
-            mesh = new BerylliumMesh(6, true);
-            BerylliumModel mmodel = BerylliumModelLoader.getModel(Identifier.of("base:models/blocks/model_c4.json"));
-            model = ModelBaker.get(mmodel);
-            model.addVertices(tessallator, (short)0, BakedFace.ALL_FACES_SHOWING);
-//            for (BakedQuad face : BakedQuad.FACES) {
-//                tessallator.addQuad(
-//                        face,
-//                        (short)0, (short)0, (short)0,
-//                        (short)0, (short)0, (byte)0,
-//                        new byte[4]
-//                );
-//            }
+            Tessallator tessallator = new Tessallator(64);
+            mesh = new BerylliumMesh(64, true);
+//            model = ModelBaker.get(BerylliumModelLoader.getModel(Identifier.of("base:models/blocks/machines/pistons/model_piston_head.json")));
+//            model = ModelBaker.get(BerylliumModelLoader.getModel(Identifier.of("base:models/blocks/industrial_decor/aluminium_handrail.json")));
+            model = ModelBaker.get(BerylliumModelLoader.getModel(Identifier.of("base:models/blocks/storage/cardboard_box.json")));
+            model.addVertices(tessallator, (short)0, BakedFace.ALL_FACES_SHOWING, Color.WHITE.getRGB());
+            model.addVertices(tessallator, (short)0, -1, Color.WHITE.getRGB());
             mesh.dump(tessallator);
             tessallator.dispose();
             mesh.initGL();
+            if (mesh == null) throw new IllegalStateException("Failed to initialize BerylliumMesh");
         }
 
         if (GameSingletons.isHost()) this.age += Gdx.graphics.getDeltaTime();

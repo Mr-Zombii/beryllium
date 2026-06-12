@@ -1,21 +1,12 @@
 package me.zombii.beryllium.client.rendering.model.loading.baking;
 
-import com.badlogic.gdx.math.Vector3;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
 import me.zombii.beryllium.client.BerylliumAtlases;
 import me.zombii.beryllium.client.rendering.model.BerylliumModel;
-import me.zombii.beryllium.client.rendering.model.TextureEntry;
 import me.zombii.beryllium.common.BerylliumConfig;
 import org.lwjgl.system.MemoryUtil;
 
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
-import java.util.Map;
 
 public class Tessallator {
 
@@ -56,7 +47,8 @@ public class Tessallator {
     public void addQuad(
             BakedFace face,
             short lightLevel,
-            byte[] aoLevels
+            byte[] aoLevels,
+            int tintColor
     ) {
         BerylliumModel model = face.model().getModel();
 
@@ -77,27 +69,29 @@ public class Tessallator {
                 emissiveIdx,
                 normalIdx,
                 materialIdx,
-                (byte) face.bakedQuad().defaultRotation(),
-                face.bakedQuad().flipU(),
-                face.bakedQuad().flipV(),
+                face.faceID(),
                 aoLevels,
-                face.bakedQuad().flipIndices()
+                face.flipIndices(),
+                tintColor
         );
     }
 
     public void addQuad(
-            BakedQuad bakedQuad,
+            BaseQuad bakedQuad,
             short lightLevel,
             short albedoIdx,
             short emissiveIdx,
             short normalIdx,
             short materialIdx,
-            byte uvRotation,
-            byte[] aoLevels
+            byte[] aoLevels,
+            int tintColor
     ) {
         float[] verts = bakedQuad.verts();
 
-//        uvRotation += 0;
+        int faceID = (bakedQuad.defaultRotation() / 90) & 3;
+        faceID |= (bakedQuad.flipU() ? 1 : 0) << 3;
+        faceID |= (bakedQuad.flipV() ? 1 : 0) << 2;
+        faceID |= (bakedQuad.direction() & 7) << 4;
 
         addQuad(
                 verts[0], verts[1], verts[2],
@@ -109,11 +103,10 @@ public class Tessallator {
                 emissiveIdx,
                 normalIdx,
                 materialIdx,
-                (byte) bakedQuad.defaultRotation(),
-                bakedQuad.flipU(),
-                bakedQuad.flipV(),
+                faceID,
                 aoLevels,
-                bakedQuad.flipIndices()
+                bakedQuad.flipIndices(),
+                tintColor
         );
     }
 
@@ -127,16 +120,11 @@ public class Tessallator {
             short emissiveIdx,
             short normalIdx,
             short materialIdx,
-            byte uvRotation,
-            boolean flipU,
-            boolean flipV,
+            int faceID,
             byte[] aoLevels,
-            boolean flipIndices
+            boolean flipIndices,
+            int tintColor
     ) {
-        byte newRotation = (byte) ((uvRotation / 90) & 0b11);
-        if (flipU) newRotation |= 1 << 3;
-        if (flipV) newRotation |= 1 << 2;
-
         float xA = c01x - c00x;
         float yA = c01y - c00y;
         float zA = c01z - c00z;
@@ -154,12 +142,12 @@ public class Tessallator {
         nY /= len;
         nZ /= len;
 
-        addVertex(c00x, c00y, c00z, nX, nY, nZ, albedoIdx, emissiveIdx, normalIdx, materialIdx, newRotation, (byte) 0, lightLevel, aoLevels[0]);
-        addVertex(c01x, c01y, c01z, nX, nY, nZ, albedoIdx, emissiveIdx, normalIdx, materialIdx, newRotation, (byte) 1, lightLevel, aoLevels[1]);
-        addVertex(c10x, c10y, c10z, nX, nY, nZ, albedoIdx, emissiveIdx, normalIdx, materialIdx, newRotation, (byte) 2, lightLevel, aoLevels[2]);
-        addVertex(c11x, c11y, c11z, nX, nY, nZ, albedoIdx, emissiveIdx, normalIdx, materialIdx, newRotation, (byte) 3, lightLevel, aoLevels[3]);
+        addVertex(c00x, c00y, c00z, nX, nY, nZ, albedoIdx, emissiveIdx, normalIdx, materialIdx, faceID, (byte) 0, lightLevel, aoLevels[0], tintColor);
+        addVertex(c01x, c01y, c01z, nX, nY, nZ, albedoIdx, emissiveIdx, normalIdx, materialIdx, faceID, (byte) 1, lightLevel, aoLevels[1], tintColor);
+        addVertex(c10x, c10y, c10z, nX, nY, nZ, albedoIdx, emissiveIdx, normalIdx, materialIdx, faceID, (byte) 2, lightLevel, aoLevels[2], tintColor);
+        addVertex(c11x, c11y, c11z, nX, nY, nZ, albedoIdx, emissiveIdx, normalIdx, materialIdx, faceID, (byte) 3, lightLevel, aoLevels[3], tintColor);
 
-        int[] indices = flipIndices ? BakedQuad.indices_flipped : BakedQuad.indices;
+        int[] indices = flipIndices ? BaseQuad.indices_flipped : BaseQuad.indices;
         for (int index : indices) {
             this.indices.putInt(index + indexCount);
         }
@@ -174,10 +162,11 @@ public class Tessallator {
             short emissiveIdx,
             short normalIdx,
             short materialIdx,
-            byte uvRotation,
+            int faceID,
             byte cornerID,
             short lightLevel,
-            byte aoLevel
+            byte aoLevel,
+            int tintColor
     ) {
         int Xi = Float.floatToRawIntBits(x);
         int Yi = Float.floatToRawIntBits(y);
@@ -198,7 +187,8 @@ public class Tessallator {
         vertices.putInt(nZi);
 
         vertices.putShort(light);
-        vertices.putShort((short) (((short)cornerID) << 8 | (short)uvRotation));
+        vertices.putShort((short) ((((short)cornerID) << 8) | (faceID & 0xFF)));
+        vertices.putInt(tintColor);
 
         BerylliumConfig config = BerylliumConfig.getOrLoad();
         vertices.putShort(albedoIdx);
@@ -208,7 +198,7 @@ public class Tessallator {
         if (config.enableMaterialAtlas) vertices.putShort(materialIdx);
     }
 
-    public static int VERTEX_SIZE = 30;
+    public static int VERTEX_SIZE = 34;
 
     static {
         BerylliumConfig config = BerylliumConfig.getOrLoad();

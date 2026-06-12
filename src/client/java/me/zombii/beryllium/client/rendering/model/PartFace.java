@@ -2,6 +2,8 @@ package me.zombii.beryllium.client.rendering.model;
 
 import finalforeach.cosmicreach.util.constants.Direction;
 
+import java.util.Objects;
+
 public class PartFace {
     private final float[] uv = new float[]{0, 0, 16, 16};
     private boolean useAO = true;
@@ -10,6 +12,20 @@ public class PartFace {
     private int uvRotation;
     private int tintIndex = -1;
     private String textureID;
+
+    public PartFace(PartFace face) {
+        this(face.getDirection());
+        this.textureID = face.textureID;
+        this.isCulled = face.isCulled;
+        this.uvRotation = face.uvRotation;
+        this.tintIndex = face.tintIndex;
+        this.useAO = face.useAO;
+        System.arraycopy(face.uv, 0, this.uv, 0, face.uv.length);
+    }
+
+    public int uvHashCode() {
+        return Objects.hashCode(uv);
+    }
 
     public PartFace(Direction direction) {
         this.direction = direction.ordinal();

@@ -135,7 +135,8 @@ public class VertexGroup {
             Tessallator tessallator,
             int faceMask,
             short lightLevel,
-            byte[] faceAO
+            byte[] faceAO,
+            int modelTint
     ) {
         for (int i = 0; i < BakedFace.MASKS.length; i++) {
             if ((faceMask & BakedFace.MASKS[i]) != 0) {
@@ -143,7 +144,8 @@ public class VertexGroup {
                         tessallator,
                         lightLevel,
                         faceAO,
-                        i
+                        i,
+                        modelTint
                 );
             }
         }
@@ -153,14 +155,16 @@ public class VertexGroup {
             Tessallator tessallator,
             short lightLevel,
             byte[] faceAO,
-            int direction
+            int direction,
+            int modelTint
     ) {
-        ObjectList<BakedFace> faces = getFacesByDirection(direction);
+        ObjectList<BakedFace> faces = getFacesByDirection(direction == 6 ? -1 : direction);
         for (BakedFace face : faces) {
             tessallator.addQuad(
                     face,
                     lightLevel,
-                    faceAO
+                    faceAO,
+                    modelTint
             );
         }
     }

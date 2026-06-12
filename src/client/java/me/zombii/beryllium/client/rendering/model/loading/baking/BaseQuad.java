@@ -1,12 +1,8 @@
 package me.zombii.beryllium.client.rendering.model.loading.baking;
 
-import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Vector3;
 import finalforeach.cosmicreach.util.constants.Direction;
-import it.unimi.dsi.fastutil.floats.FloatList;
-import it.unimi.dsi.fastutil.ints.IntList;
 
-public record BakedQuad(
+public record BaseQuad(
         int direction,
         boolean flipIndices,
         boolean flipVerts,
@@ -24,14 +20,12 @@ public record BakedQuad(
             0, 2, 3, 3, 1, 0
     };
 
-    private static final float sixteenth = 1/16f;
-
-    public static final BakedQuad POS_X = new BakedQuad(
+    public static final BaseQuad POS_X = new BaseQuad(
             Direction.POS_X.ordinal(),
+            false,
+            false,
             true,
-            false,
-            false,
-            false,
+            true,
             90,
             new float[]{
                     .5f, -.5f, -.5f, // c00
@@ -41,11 +35,11 @@ public record BakedQuad(
             }
     );
 
-    public static final BakedQuad NEG_X = new BakedQuad(
+    public static final BaseQuad NEG_X = new BaseQuad(
             Direction.NEG_X.ordinal(),
+            true,
             false,
-            false,
-            false,
+            true,
             false,
             90,
             new float[]{
@@ -56,11 +50,11 @@ public record BakedQuad(
             }
     );
 
-    public static final BakedQuad POS_Y = new BakedQuad(
+    public static final BaseQuad POS_Y = new BaseQuad(
             Direction.POS_Y.ordinal(),
+            true,
             false,
-            false,
-            false,
+            true,
             false,
             0,
             new float[]{
@@ -71,11 +65,11 @@ public record BakedQuad(
             }
     );
 
-    public static final BakedQuad NEG_Y = new BakedQuad(
+    public static final BaseQuad NEG_Y = new BaseQuad(
             Direction.NEG_Y.ordinal(),
+            false,
+            false,
             true,
-            false,
-            false,
             true,
             0,
             new float[]{
@@ -86,12 +80,12 @@ public record BakedQuad(
             }
     );
 
-    public static final BakedQuad POS_Z = new BakedQuad(
+    public static final BaseQuad POS_Z = new BaseQuad(
             Direction.POS_Z.ordinal(),
-            true,
             false,
             false,
-            true,
+            false,
+            false,
             0,
             new float[]{
                     -.5f, -.5f, .5f, // c00
@@ -101,12 +95,12 @@ public record BakedQuad(
             }
     );
 
-    public static final BakedQuad NEG_Z = new BakedQuad(
+    public static final BaseQuad NEG_Z = new BaseQuad(
             Direction.NEG_Z.ordinal(),
-            false,
+            true,
             false,
             true,
-            true,
+            false,
             0,
             new float[]{
                     -.5f, -.5f, -.5f, // c00
@@ -116,7 +110,7 @@ public record BakedQuad(
             }
     );
 
-    public static final BakedQuad[] FACES = {
+    public static final BaseQuad[] FACES = {
             NEG_X, POS_X, NEG_Y, POS_Y, NEG_Z, POS_Z
     };
 

@@ -6,7 +6,9 @@ import com.badlogic.gdx.math.Vector3;
 import dev.puzzleshq.puzzleloader.cosmic.game.GameRegistries;
 import dev.puzzleshq.puzzleloader.cosmic.game.util.IndependentAssetLoader;
 import finalforeach.cosmicreach.util.Identifier;
-import finalforeach.cosmicreach.util.constants.Direction;
+import it.unimi.dsi.fastutil.Stack;
+import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.objects.*;
 import me.zombii.beryllium.client.BerylliumAtlases;
 import me.zombii.beryllium.client.events.EventCollectModels;
@@ -30,6 +32,7 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ModelBaker {
@@ -262,6 +265,8 @@ public class ModelBaker {
         }
     }
 
+    private static final float sixteenth = 1/16f;
+
     public static void bakePart(
             Part part,
             VertexGroup group
@@ -283,23 +288,32 @@ public class ModelBaker {
 //            matRot.rotate(Vector3.X, rotation.x);
 //            matRot.translate(-pivot.x, -pivot.y, -pivot.z);
 
+            Vector3 pos = part.getPos();
+
             matTrns.idt();
-            matTrns.translate(part.getPos());
-            matTrns.translate(size.x / 2f, size.y / 2f, size.z / 2f);
+            matTrns.translate(
+                    pos.x * sixteenth,
+                    pos.y * sixteenth,
+                    pos.z * sixteenth
+            );
+            matTrns.translate(
+                    (size.x * sixteenth) / 2f,
+                    (size.y * sixteenth) / 2f,
+                    (size.z * sixteenth) / 2f
+            );
             matTrns.scl(size.x + scale, size.y + scale, size.z + scale);
+            matTrns.scl(sixteenth);
 
 //            matTrns.mul(matRot);
 
-            BakedQuad quad = BakedQuad.FACES[direction];
+            BaseQuad quad = BaseQuad.FACES[direction];
 
-            group.getFacesByDirection(face.isCulled() ? direction : -1).add(new BakedFace(
-                    group.getModel(),
-                    face.getTextureID(),
-                    matTrns,
-                    quad,
-                    face.usesAO()
-//                    , (byte)face.getUVRotation()
-            ));
+            group.getFacesByDirection(face.isCulled() ? direction : -1)
+                    .add(BakedFace.bake(
+                            group.getModel(),
+                            quad, face,
+                            matTrns
+                    ));
         }
     }
 
@@ -357,5 +371,21 @@ public class ModelBaker {
 
     public static Map<BerylliumModel, BakedBerylliumModel> getModelMap() {
         return Object2ObjectMaps.unmodifiable(modelMap);
+    }
+
+    private static final Stack<float[]> UV_STACK = new ObjectArrayList<>();
+    private static final Int2IntMap UV_TABLE = new Int2IntArrayMap();
+    private static final AtomicInteger NEXT_INDEX = new AtomicInteger(0);
+
+    public static int getOrMakePerFaceIdx(float[] uvs) {
+        int hash = Objects.hash(uvs[0], uvs[1], uvs[2], uvs[3]);
+        if (UV_TABLE.containsKey(hash)) {
+            return UV_TABLE.get(hash);
+        }
+        int idx = NEXT_INDEX.getAndIncrement();
+        UV_STACK.push(uvs);
+        UV_TABLE.put(hash, idx);
+
+        return idx;
     }
 }

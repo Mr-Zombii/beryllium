@@ -17,6 +17,8 @@ public class BerylliumAtlases {
     public static TBO NormalUVBuffer;
     public static TBO MaterialUVBuffer;
 
+    public static TBO PerFaceUVBuffer;
+
     public static void initAtlases() {
         BerylliumConfig config = BerylliumConfig.getOrLoad();
 

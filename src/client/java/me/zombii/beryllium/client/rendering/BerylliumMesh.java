@@ -7,6 +7,7 @@ import me.zombii.beryllium.client.rendering.layers.RenderLayer;
 import me.zombii.beryllium.client.rendering.model.loading.baking.Tessallator;
 import me.zombii.beryllium.client.rendering.opengl.shader.BerylliumShaderProgram;
 import org.lwjgl.opengl.*;
+import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -27,8 +28,8 @@ public class BerylliumMesh {
             int quadBudget,
             boolean isStatic
     ) {
-        vertexBuffer = ByteBuffer.allocateDirect((quadBudget * 4) * Tessallator.VERTEX_SIZE).order(ByteOrder.LITTLE_ENDIAN);
-        indexBuffer = ByteBuffer.allocateDirect(quadBudget * 6 * 4).order(ByteOrder.LITTLE_ENDIAN);
+        vertexBuffer = MemoryUtil.memAlloc((quadBudget * 4) * Tessallator.VERTEX_SIZE).order(ByteOrder.LITTLE_ENDIAN);
+        indexBuffer = MemoryUtil.memAlloc(quadBudget * 4 * 6).order(ByteOrder.LITTLE_ENDIAN);
         this.usage = isStatic ? GL15.GL_STATIC_DRAW : GL15.GL_DYNAMIC_DRAW;
     }
 
@@ -79,8 +80,10 @@ public class BerylliumMesh {
         GL20.glEnableVertexAttribArray(2);
         GL30.glVertexAttribIPointer(3, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, 26);
         GL20.glEnableVertexAttribArray(3);
-        GL30.glVertexAttribIPointer(4, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, 28);
+        GL30.glVertexAttribPointer(4, 4, GL15.GL_UNSIGNED_BYTE, true, Tessallator.VERTEX_SIZE, 28);
         GL20.glEnableVertexAttribArray(4);
+        GL30.glVertexAttribIPointer(5, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, 32);
+        GL20.glEnableVertexAttribArray(5);
     }
 
     public void unbind() {
@@ -127,6 +130,15 @@ public class BerylliumMesh {
 
         if (depthWasEnabled) GL11.glEnable(GL11.GL_DEPTH_TEST);
         else GL11.glDisable(GL11.GL_DEPTH_TEST);
+    }
+
+    public void dispose() {
+        GL30.glDeleteVertexArrays(this.vao);
+        GL15.glDeleteBuffers(this.vbo);
+        GL15.glDeleteBuffers(this.ebo);
+
+        MemoryUtil.memFree(this.vertexBuffer);
+        MemoryUtil.memFree(this.indexBuffer);
     }
 
 }
