@@ -1,0 +1,57 @@
+package me.zombii.beryllium.common;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
+public class BerylliumConfig {
+
+    public static final File CONFIG_LOCATION = new File(".beryllium/config.json");
+    private static BerylliumConfig instance;
+
+    public boolean debugMode = true;
+    public boolean enableEmissiveAtlas = false;
+    public boolean enableNormalAtlas = false;
+    public boolean enableMaterialAtlas = false;
+
+    public BerylliumConfig() {}
+
+    public static BerylliumConfig getOrLoad() {
+        if (instance != null) return instance;
+
+        if (CONFIG_LOCATION.exists()) {
+            try {
+                FileReader fr = new FileReader(BerylliumConfig.CONFIG_LOCATION);
+                instance = BerylliumCommon.GSON.fromJson(fr, BerylliumConfig.class);
+                fr.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return instance;
+        }
+        return instance = new BerylliumConfig();
+    }
+
+    public void save() {
+        if (!CONFIG_LOCATION.exists()) {
+            if (!CONFIG_LOCATION.getParentFile().exists()) {
+                CONFIG_LOCATION.getParentFile().mkdirs();
+            }
+            try {
+                CONFIG_LOCATION.createNewFile();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        String json = BerylliumCommon.GSON.toJson(this);
+        try {
+            FileWriter fw = new FileWriter(CONFIG_LOCATION);
+            fw.write(json);
+            fw.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+}

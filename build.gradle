@@ -29,7 +29,7 @@ dependencies {
 
     cosmicReach("finalforeach:cosmic-reach:${cosmic_reach_version}")
 
-    commonImplementation "com.github.PuzzlesHQ:cosmic-api:${cosmic_api_version}"
+    commonBundle clientImplementation ("it.unimi.dsi:fastutil:$fastutil_version")
 }
 
 processCommonResources {
@@ -50,6 +50,50 @@ processCommonResources {
     }
 }
 
+tasks.register("runWithRenderDoc") {
+    group = "beryllium"
+    description = "Launches runModdedClient wrapped in RenderDoc"
+
+    dependsOn("classes")
+
+    doLast {
+        def renderdocPath = (findProperty("renderdocPath")
+                ?: "C:/Program Files/RenderDoc/renderdoccmd.exe") as String
+
+        if (!file(renderdocPath).exists()) {
+            throw new GradleException("RenderDoc not found at: $renderdocPath")
+        }
+
+        def clientTask = tasks.named("runModdedClient").get() as JavaExec
+        def captureDir = file("$projectDir/renderdoc_captures")
+        captureDir.mkdirs()
+
+        def javaHome = org.gradle.internal.jvm.Jvm.current().getJavaHome()
+        def javaPath = new File(javaHome, "bin/java").absolutePath
+
+        def cmd = new ArrayList<String>()
+        cmd.add(renderdocPath)
+        cmd.add("capture")
+        cmd.add("--opt-hook-children")
+        cmd.add("--wait-for-exit")
+        cmd.add(javaPath)
+        for (def arg : clientTask.allJvmArgs) { cmd.add(arg as String) }
+        cmd.add("-cp")
+        cmd.add(clientTask.classpath.asPath as String)
+        cmd.add(clientTask.mainClass.get() as String)
+        if (clientTask.args) {
+            for (def arg : clientTask.args) { cmd.add(arg as String) }
+        }
+
+        println "Running: ${cmd.join(' ')}"
+
+        new ProcessBuilder(cmd)
+                .directory(clientTask.workingDir)
+                .inheritIO()
+                .start()
+                .waitFor()
+    }
+}
 wrapper {
     gradleVersion = "8.14"
     distributionType = Wrapper.DistributionType.ALL

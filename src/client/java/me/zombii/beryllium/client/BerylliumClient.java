@@ -1,0 +1,94 @@
+package me.zombii.beryllium.client;
+
+import com.badlogic.gdx.Gdx;
+import dev.puzzleshq.puzzleloader.cosmic.game.GameRegistries;
+import dev.puzzleshq.puzzleloader.cosmic.game.util.IndependentAssetLoader;
+import dev.puzzleshq.puzzleloader.loader.launch.Piece;
+import dev.puzzleshq.puzzleloader.loader.mod.entrypoint.client.ClientModInit;
+import dev.puzzleshq.puzzleloader.loader.mod.entrypoint.client.ClientPostModInit;
+import finalforeach.cosmicreach.util.Identifier;
+import finalforeach.cosmicreach.util.assets.GameAssetLoader;
+import me.zombii.beryllium.client.events.EventCollectModels;
+import me.zombii.beryllium.client.events.EventCollectRenderLayers;
+import me.zombii.beryllium.client.rendering.layers.RenderLayer;
+import me.zombii.beryllium.client.rendering.layers.RenderLayers;
+import me.zombii.beryllium.client.rendering.model.loading.baking.ModelBaker;
+import me.zombii.beryllium.client.rendering.model.loading.BerylliumModelLoader;
+import me.zombii.beryllium.client.rendering.model.loading.baking.ModelBakingThread;
+import me.zombii.beryllium.client.rendering.opengl.textures.atlas.GLAtlas;
+import me.zombii.beryllium.common.BerylliumCommon;
+import me.zombii.beryllium.common.BerylliumConfig;
+import net.neoforged.bus.api.SubscribeEvent;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+
+public class BerylliumClient implements ClientModInit, ClientPostModInit {
+
+    public static final Identifier MISSING_TEXTURE_PATH = Identifier.of(BerylliumCommon.NAMESPACE, "textures/missing/missing-texture.png");
+    public static final Identifier MISSING_TEXTURE_EMISSIVE_PATH = Identifier.of(BerylliumCommon.NAMESPACE, "textures/missing/missing-texture-emissive.png");
+
+    public static final Identifier DEFAULT_TEXTURE_EMISSIVE_PATH = Identifier.of(BerylliumCommon.NAMESPACE, "textures/default/default-texture-emissive.png");
+    public static final Identifier DEFAULT_TEXTURE_NORMAL_MAP_PATH = Identifier.of(BerylliumCommon.NAMESPACE, "textures/default/default-texture-normal-map.png");
+    public static final Identifier DEFAULT_TEXTURE_AO_MAP_PATH = Identifier.of(BerylliumCommon.NAMESPACE, "textures/default/default-texture-ao-map.png");
+    public static final Identifier DEFAULT_TEXTURE_DEPTH_MAP_PATH = Identifier.of(BerylliumCommon.NAMESPACE, "textures/default/default-texture-depth-map.png");
+    public static final Identifier DEFAULT_TEXTURE_ROUGHNESS_MAP_PATH = Identifier.of(BerylliumCommon.NAMESPACE, "textures/default/default-texture-roughness-map.png");
+    public static final Identifier DEFAULT_TEXTURE_METALNESS_MAP_PATH = Identifier.of(BerylliumCommon.NAMESPACE, "textures/default/default-texture-metalness-map.png");
+
+    public BerylliumClient() {
+        GameRegistries.COSMIC_EVENT_BUS.register(this);
+    }
+
+    @Override
+    public void onClientInit() {
+        BerylliumAtlases.initAtlases();
+        ModelBakingThread.start();
+
+        IndependentAssetLoader.registerLoadingMethod(BufferedImage.class, (handle) -> {
+            try {
+                InputStream stream = handle.read();
+                BufferedImage image = ImageIO.read(stream);
+                stream.close();
+                return image;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        Gdx.app.postRunnable(RenderLayers::collectAndCompile);
+        ModelBaker.collectAndBake();
+    }
+
+    @SubscribeEvent
+    public void onEvent(EventCollectModels event) {
+        for (URL source : Piece.classLoader.getURLs()) {
+            System.out.println("Found: " + source.getFile());
+        }
+
+        GameAssetLoader.forEachAsset("models/blocks", ".json", (p, f) -> {
+            try {
+                event.registerForBaking(BerylliumModelLoader.loadVanillaBlockModel(Identifier.of(p.trim()), f));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @SubscribeEvent
+    public void onEvent(EventCollectRenderLayers event) {
+        event.registerRenderLayer(new RenderLayer(
+                Identifier.of(BerylliumCommon.NAMESPACE, "shaders/block-shader.vert"),
+                Identifier.of(BerylliumCommon.NAMESPACE, "shaders/block-shader.frag"),
+                Identifier.of(BerylliumCommon.NAMESPACE, "opaque-block-render-layer"),
+                true, 0
+        ));
+    }
+
+    @Override
+    public void onClientPostInit() {
+
+    }
+}
