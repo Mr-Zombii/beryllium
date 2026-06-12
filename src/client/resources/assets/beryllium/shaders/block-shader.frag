@@ -16,6 +16,7 @@ in vec4 v_blockLightColor;
 in vec3 v_vertexNormal;
 in vec3 v_vertexPosition;
 in vec2 v_albedoUV;
+in vec4 v_tintColor;
 
 out vec4 fragColor;
 
@@ -24,4 +25,9 @@ void main(void) {
 //    fragColor = vec4((v_vertexNormal + 1.0) * 0.5, 1);
 //    fragColor = vec4(v_albedoUV, 0, 1);
     fragColor = texture(u_albedoAtlas, v_albedoUV);
+    if ((fragColor.r == fragColor.g) && (fragColor.g == fragColor.b)) {
+        fragColor.r *= v_tintColor.r;
+        fragColor.g *= v_tintColor.g;
+        fragColor.b *= v_tintColor.b;
+    }
 }

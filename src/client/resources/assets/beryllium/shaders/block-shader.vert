@@ -6,6 +6,7 @@ uniform mat4 u_modelMat;
 
 uniform vec3 sunDirection = vec3(0, 1, 0);
 
+uniform samplerBuffer u_faceUVBuffer;
 uniform samplerBuffer u_albedoUVBuffer;
 #ifdef HAS_EMISSIVE_ATLAS
 uniform samplerBuffer u_emissiveUVBuffer;
@@ -20,24 +21,44 @@ uniform samplerBuffer u_materialUVBuffer;
 layout (location = 0) in vec3 a_position;
 layout (location = 1) in vec3 a_normal;
 layout (location = 2) in uint a_packed;
-layout (location = 3) in uint a_packed_2;
-layout (location = 4) in vec4 a_tint_color;
-layout (location = 5) in uint a_albedoIdx;
+layout (location = 3) in uint a_tintColorPacked;
+layout (location = 4) in uint a_albedoIdx;
+//layout (location = 5) in uint a_emissiveIdx;
+//layout (location = 6) in uint a_normalIdx;
+//layout (location = 7) in uint a_materialIdx;
 
 out float v_bakedAoValue;
 out vec4 v_blockLightColor;
 out vec3 v_vertexNormal;
 out vec3 v_vertexPosition;
 out vec2 v_albedoUV;
+out vec4 v_tintColor;
 
-float UV_ROTATION = (int(a_packed_2 & 0x3u) * 90) * 0.01745329;
-bool UV_FLIP_U = (a_packed_2 & 0x8u) != 0u ? true : false;
-bool UV_FLIP_V = (a_packed_2 & 0x4u) != 0u ? true : false;
-int LOCAL_DIRECTION = int((a_packed_2 >> 7u) & 7u);
+int CORNER_ID = int(a_packed & 3u);
+int FACE_ID = int(a_packed >> 2u) & 7;
+int AO_LEVEL_PACKED = int(a_packed >> 5u) & 3;
+int LIGHT_COLOR_PACKED = int(a_packed >> 7u) & 0xFFF;
 
-int CORNER_ID = int(a_packed_2 >> 8u) & 0xFF;
+float UV_ROTATION = (FACE_ID == 0 || FACE_ID == 1) ? 1.5707961 : 0;
+bool UV_FLIP_U = FACE_ID == 4 ? true : false;
+bool UV_FLIP_V = (FACE_ID != 0 && FACE_ID != 3) ? true : false;
+
 bool UV_MAX_U = (CORNER_ID & 2) != 0 ? !UV_FLIP_U : UV_FLIP_U;
 bool UV_MAX_V = (CORNER_ID & 1) != 0 ? !UV_FLIP_V : UV_FLIP_V;
+
+vec4 getTintColor(void) {
+    uint r_bits = (a_tintColorPacked >> 11u) & 0x1Fu;
+    uint g_bits = (a_tintColorPacked >> 5u) & 0x3Fu;
+    uint b_bits = a_tintColorPacked & 0x1Fu;
+
+    vec3 rgb = vec3(
+        float(r_bits) / 31,
+        float(g_bits) / 63,
+        float(b_bits) / 31
+    );
+
+    return vec4(rgb, 1);
+}
 
 vec2 rotateUV(vec2 uv, float rotation, vec2 mid) {
     float angleCos = cos(rotation);
@@ -57,12 +78,11 @@ vec2 getRotatedUV(vec4 full, vec2 uv) {
 }
 
 vec4 getBlockLightColor(void) {
-    int lightColorRaw = int(a_packed & 0x0FFFu);
-    int lightR = (lightColorRaw & 0x0F00) >> 8;
+    int lightR = (LIGHT_COLOR_PACKED & 0x0F00) >> 8;
     lightR = (lightR << 4 | lightR);
-    int lightG = (lightColorRaw & 0x00F0) >> 4;
+    int lightG = (LIGHT_COLOR_PACKED & 0x00F0) >> 4;
     lightG = (lightG << 4 | lightG);
-    int lightB = (lightColorRaw & 0x000F);
+    int lightB = (LIGHT_COLOR_PACKED & 0x000F);
     lightB = (lightB << 4 | lightB);
 
     vec4 lightColor = vec4(float(lightR) / 255.0, float(lightG) / 255.0, float(lightB) / 255.0, 1.0);
@@ -70,8 +90,7 @@ vec4 getBlockLightColor(void) {
 }
 
 float getBakedAOValue(void) {
-    int aoLevel = int((a_packed >> 12u) & 3u);
-    switch (aoLevel) {
+    switch (AO_LEVEL_PACKED) {
         case 1: return 0.25;
         case 2: return 0.50;
         case 3: return 0.75;
@@ -105,6 +124,7 @@ void main(void) {
     v_bakedAoValue = getBakedAOValue();
     v_blockLightColor = getBlockLightColor();
     v_albedoUV = getAlbedoUV();
+    v_tintColor = getTintColor();
 
 //    gl_Position = u_projMat * u_viewMat * u_modelMat * vec4(a_position, 1.0);
     gl_Position = (u_projMat * u_viewMat) * vec4(a_position, 1.0);

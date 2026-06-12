@@ -8,10 +8,13 @@ import dev.puzzleshq.puzzleloader.loader.mod.entrypoint.client.ClientModInit;
 import dev.puzzleshq.puzzleloader.loader.mod.entrypoint.client.ClientPostModInit;
 import finalforeach.cosmicreach.util.Identifier;
 import finalforeach.cosmicreach.util.assets.GameAssetLoader;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import me.zombii.beryllium.client.events.EventCollectModels;
 import me.zombii.beryllium.client.events.EventCollectRenderLayers;
 import me.zombii.beryllium.client.rendering.layers.RenderLayer;
 import me.zombii.beryllium.client.rendering.layers.RenderLayers;
+import me.zombii.beryllium.client.rendering.model.BerylliumModel;
 import me.zombii.beryllium.client.rendering.model.loading.baking.ModelBaker;
 import me.zombii.beryllium.client.rendering.model.loading.BerylliumModelLoader;
 import me.zombii.beryllium.client.rendering.model.loading.baking.ModelBakingThread;
@@ -37,6 +40,7 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
     public static final Identifier DEFAULT_TEXTURE_DEPTH_MAP_PATH = Identifier.of(BerylliumCommon.NAMESPACE, "textures/default/default-texture-depth-map.png");
     public static final Identifier DEFAULT_TEXTURE_ROUGHNESS_MAP_PATH = Identifier.of(BerylliumCommon.NAMESPACE, "textures/default/default-texture-roughness-map.png");
     public static final Identifier DEFAULT_TEXTURE_METALNESS_MAP_PATH = Identifier.of(BerylliumCommon.NAMESPACE, "textures/default/default-texture-metalness-map.png");
+    public static final ObjectList<BerylliumModel> INTERCEPTED_MODELS = new ObjectArrayList<>();
 
     public BerylliumClient() {
         GameRegistries.COSMIC_EVENT_BUS.register(this);
@@ -75,6 +79,10 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
                 throw new RuntimeException(e);
             }
         });
+
+        for (BerylliumModel interceptedModel : INTERCEPTED_MODELS) {
+            event.registerForBaking(interceptedModel);
+        }
     }
 
     @SubscribeEvent

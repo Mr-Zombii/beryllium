@@ -4,8 +4,10 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Matrix4;
 import me.zombii.beryllium.client.BerylliumAtlases;
 import me.zombii.beryllium.client.rendering.layers.RenderLayer;
+import me.zombii.beryllium.client.rendering.model.loading.BerylliumModelLoader;
 import me.zombii.beryllium.client.rendering.model.loading.baking.Tessallator;
 import me.zombii.beryllium.client.rendering.opengl.shader.BerylliumShaderProgram;
+import me.zombii.beryllium.common.BerylliumConfig;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryUtil;
 
@@ -72,18 +74,33 @@ public class BerylliumMesh {
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.ebo);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vbo);
 
-        GL20.glVertexAttribPointer(0, 3, GL15.GL_FLOAT, false, Tessallator.VERTEX_SIZE, 0);
+        GL20.glVertexAttribPointer(0, 3, GL30.GL_HALF_FLOAT, false, Tessallator.VERTEX_SIZE, 0);
         GL20.glEnableVertexAttribArray(0);
-        GL20.glVertexAttribPointer(1, 3, GL15.GL_FLOAT, false, Tessallator.VERTEX_SIZE, 12);
+        GL20.glVertexAttribPointer(1, 3, GL30.GL_HALF_FLOAT, false, Tessallator.VERTEX_SIZE, 6);
         GL20.glEnableVertexAttribArray(1);
-        GL30.glVertexAttribIPointer(2, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, 24);
+        GL30.glVertexAttribIPointer(2, 1, GL15.GL_UNSIGNED_INT, Tessallator.VERTEX_SIZE, 12);
         GL20.glEnableVertexAttribArray(2);
-        GL30.glVertexAttribIPointer(3, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, 26);
+        GL30.glVertexAttribIPointer(3, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, 16);
         GL20.glEnableVertexAttribArray(3);
-        GL30.glVertexAttribPointer(4, 4, GL15.GL_UNSIGNED_BYTE, true, Tessallator.VERTEX_SIZE, 28);
+        GL30.glVertexAttribIPointer(4, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, 18);
         GL20.glEnableVertexAttribArray(4);
-        GL30.glVertexAttribIPointer(5, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, 32);
-        GL20.glEnableVertexAttribArray(5);
+        int ptr = 20;
+
+        BerylliumConfig config = BerylliumConfig.getOrLoad();
+        if (config.enableEmissiveAtlas) {
+            GL30.glVertexAttribIPointer(5, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, ptr);
+            GL20.glEnableVertexAttribArray(5);
+            ptr += 2;
+        }
+        if (config.enableNormalAtlas) {
+            GL30.glVertexAttribIPointer(6, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, ptr);
+            GL20.glEnableVertexAttribArray(6);
+            ptr += 2;
+        }
+        if (config.enableMaterialAtlas) {
+            GL30.glVertexAttribIPointer(7, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, ptr);
+            GL20.glEnableVertexAttribArray(7);
+        }
     }
 
     public void unbind() {
@@ -104,6 +121,7 @@ public class BerylliumMesh {
 
         BerylliumAtlases.ALBEDO_ATLAS.bind(0);
         BerylliumAtlases.AlbedoUVBuffer.bind(1);
+        BerylliumAtlases.PerFaceUVBuffer.bind(2);
 
         int projMatLoc = program.getUniformLocation("u_projMat");
         int viewMatLoc = program.getUniformLocation("u_viewMat");
@@ -115,11 +133,14 @@ public class BerylliumMesh {
 
         int albedoAtlasLoc = program.getUniformLocation("u_albedoAtlas");
         int albedoUVBufferLoc = program.getUniformLocation("u_albedoUVBuffer");
+        int faceUVBufferLoc = program.getUniformLocation("u_faceUVBuffer");
 
         if (albedoAtlasLoc != -1)
             GL20.glUniform1i(albedoAtlasLoc, 0);
         if (albedoUVBufferLoc != -1)
             GL20.glUniform1i(albedoUVBufferLoc, 1);
+        if (faceUVBufferLoc != -1)
+            GL20.glUniform1i(faceUVBufferLoc, 2);
 
         bind();
         GL20.glDrawElements(GL20.GL_TRIANGLES, indexBuffer.capacity(), GL20.GL_UNSIGNED_INT, 0);
@@ -127,6 +148,7 @@ public class BerylliumMesh {
 
         BerylliumAtlases.ALBEDO_ATLAS.unbind();
         BerylliumAtlases.AlbedoUVBuffer.unbind();
+        BerylliumAtlases.PerFaceUVBuffer.unbind();
 
         if (depthWasEnabled) GL11.glEnable(GL11.GL_DEPTH_TEST);
         else GL11.glDisable(GL11.GL_DEPTH_TEST);

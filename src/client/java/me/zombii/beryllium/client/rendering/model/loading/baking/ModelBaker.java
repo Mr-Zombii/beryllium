@@ -6,7 +6,6 @@ import com.badlogic.gdx.math.Vector3;
 import dev.puzzleshq.puzzleloader.cosmic.game.GameRegistries;
 import dev.puzzleshq.puzzleloader.cosmic.game.util.IndependentAssetLoader;
 import finalforeach.cosmicreach.util.Identifier;
-import it.unimi.dsi.fastutil.Stack;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.objects.*;
@@ -29,10 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ModelBaker {
@@ -189,6 +185,19 @@ public class ModelBaker {
         });
     }
 
+    public static void requestFaceBufferUpdate() {
+        BerylliumConfig config = BerylliumConfig.getOrLoad();
+
+        ModelBakingThread.postRunnable(() -> {
+            Gdx.app.postRunnable(() -> {
+                BerylliumAtlases.PerFaceUVBuffer = createOrUpdateFaceUVTBO(
+                        config,
+                        BerylliumAtlases.PerFaceUVBuffer
+                );
+            });
+        });
+    }
+
     private static final int elementSize = 4 * 4;
     private static final float[] uvs = new float[4];
 
@@ -217,7 +226,6 @@ public class ModelBaker {
             for (int i = 0; i < texCount; i++) {
                 GLAtlas.SubTexture tex = texs.get(i);
                 tex.getUV(uvs);
-                System.out.println(Arrays.toString(uvs));
                 buffer.putFloat(uvs[0]);
                 buffer.putFloat(uvs[1]);
                 buffer.putFloat(uvs[2]);
@@ -231,15 +239,59 @@ public class ModelBaker {
 
     }
 
+    private static TBO createOrUpdateFaceUVTBO(BerylliumConfig config, TBO tbo) {
+        if (tbo == null) {
+            if (config.debugMode) LOGGER.log(Level.INFO, "Creating FaceUVBuffer's TBO");
+            tbo = new TBO(NEXT_INDEX.get() * elementSize, GL30.GL_RGBA32F, true);
+        }
+        if (config.debugMode) LOGGER.log(Level.INFO, "Updating FaceUVBuffer's TBO");
+        uploadFaceUVData(tbo);
+        return tbo;
+    }
+
+    private static void uploadFaceUVData(TBO tbo) {
+        int elementCount = NEXT_INDEX.get();
+        int tboSize = elementCount * elementSize;
+
+        if (elementSize * (elementCount - 1) > tbo.getSize()) {
+            tbo.resize(tboSize);
+        }
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            ByteBuffer buffer = stack.malloc(tboSize).order(ByteOrder.LITTLE_ENDIAN);
+
+            for (int i = 0; i < elementCount; i++) {
+                float[] data = UV_STACK.get(i);
+                buffer.putFloat(data[0]);
+                buffer.putFloat(data[1]);
+                buffer.putFloat(data[2]);
+                buffer.putFloat(data[3]);
+            }
+            buffer.flip();
+
+            tbo.write(0, buffer);
+        }
+
+    }
+
+    public static void requestModelToBake(BerylliumModel model) {
+        ModelBakingThread.requestBaking(model);
+        requestAtlasUpdate();
+        requestFaceBufferUpdate();
+    }
+
     public static void requestModelsToBake(List<BerylliumModel> models) {
         for (BerylliumModel model : models) {
             ModelBakingThread.requestBaking(model);
         }
+        requestAtlasUpdate();
+        requestFaceBufferUpdate();
     }
 
     public static void requestAllModelsToBake() {
         requestModelsToBake(BerylliumModelLoader.getModels());
         requestAtlasUpdate();
+        requestFaceBufferUpdate();
     }
 
     public static void bakeGroups(
@@ -362,7 +414,6 @@ public class ModelBaker {
         }
 
         ModelBaker.requestModelsToBake(collectedModels);
-        ModelBaker.requestAtlasUpdate();
     }
 
     public static BakedBerylliumModel get(BerylliumModel model) {
@@ -373,7 +424,7 @@ public class ModelBaker {
         return Object2ObjectMaps.unmodifiable(modelMap);
     }
 
-    private static final Stack<float[]> UV_STACK = new ObjectArrayList<>();
+    private static final ObjectList<float[]> UV_STACK = new ObjectArrayList<>();
     private static final Int2IntMap UV_TABLE = new Int2IntArrayMap();
     private static final AtomicInteger NEXT_INDEX = new AtomicInteger(0);
 
@@ -383,7 +434,7 @@ public class ModelBaker {
             return UV_TABLE.get(hash);
         }
         int idx = NEXT_INDEX.getAndIncrement();
-        UV_STACK.push(uvs);
+        UV_STACK.add(uvs);
         UV_TABLE.put(hash, idx);
 
         return idx;

@@ -136,7 +136,7 @@ public class VertexGroup {
             int faceMask,
             short lightLevel,
             byte[] faceAO,
-            int modelTint
+            short modelTint
     ) {
         for (int i = 0; i < BakedFace.MASKS.length; i++) {
             if ((faceMask & BakedFace.MASKS[i]) != 0) {
@@ -156,7 +156,7 @@ public class VertexGroup {
             short lightLevel,
             byte[] faceAO,
             int direction,
-            int modelTint
+            short modelTint
     ) {
         ObjectList<BakedFace> faces = getFacesByDirection(direction == 6 ? -1 : direction);
         for (BakedFace face : faces) {

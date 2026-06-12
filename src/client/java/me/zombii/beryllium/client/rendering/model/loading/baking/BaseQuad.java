@@ -22,9 +22,9 @@ public record BaseQuad(
 
     public static final BaseQuad POS_X = new BaseQuad(
             Direction.POS_X.ordinal(),
-            false,
-            false,
             true,
+            false,
+            false,
             true,
             90,
             new float[]{
@@ -37,9 +37,9 @@ public record BaseQuad(
 
     public static final BaseQuad NEG_X = new BaseQuad(
             Direction.NEG_X.ordinal(),
-            true,
             false,
-            true,
+            false,
+            false,
             false,
             90,
             new float[]{
@@ -52,9 +52,9 @@ public record BaseQuad(
 
     public static final BaseQuad POS_Y = new BaseQuad(
             Direction.POS_Y.ordinal(),
-            true,
             false,
-            true,
+            false,
+            false,
             false,
             0,
             new float[]{
@@ -67,9 +67,9 @@ public record BaseQuad(
 
     public static final BaseQuad NEG_Y = new BaseQuad(
             Direction.NEG_Y.ordinal(),
-            false,
-            false,
             true,
+            false,
+            false,
             true,
             0,
             new float[]{
@@ -82,10 +82,10 @@ public record BaseQuad(
 
     public static final BaseQuad POS_Z = new BaseQuad(
             Direction.POS_Z.ordinal(),
+            true,
             false,
             false,
-            false,
-            false,
+            true,
             0,
             new float[]{
                     -.5f, -.5f, .5f, // c00
@@ -97,10 +97,10 @@ public record BaseQuad(
 
     public static final BaseQuad NEG_Z = new BaseQuad(
             Direction.NEG_Z.ordinal(),
-            true,
+            false,
             false,
             true,
-            false,
+            true,
             0,
             new float[]{
                     -.5f, -.5f, -.5f, // c00

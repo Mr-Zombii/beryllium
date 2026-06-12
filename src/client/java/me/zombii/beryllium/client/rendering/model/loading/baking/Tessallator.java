@@ -48,7 +48,7 @@ public class Tessallator {
             BakedFace face,
             short lightLevel,
             byte[] aoLevels,
-            int tintColor
+            short tintColor
     ) {
         BerylliumModel model = face.model().getModel();
 
@@ -84,14 +84,9 @@ public class Tessallator {
             short normalIdx,
             short materialIdx,
             byte[] aoLevels,
-            int tintColor
+            short tintColor
     ) {
         float[] verts = bakedQuad.verts();
-
-        int faceID = (bakedQuad.defaultRotation() / 90) & 3;
-        faceID |= (bakedQuad.flipU() ? 1 : 0) << 3;
-        faceID |= (bakedQuad.flipV() ? 1 : 0) << 2;
-        faceID |= (bakedQuad.direction() & 7) << 4;
 
         addQuad(
                 verts[0], verts[1], verts[2],
@@ -103,7 +98,7 @@ public class Tessallator {
                 emissiveIdx,
                 normalIdx,
                 materialIdx,
-                faceID,
+                bakedQuad.direction(),
                 aoLevels,
                 bakedQuad.flipIndices(),
                 tintColor
@@ -120,10 +115,10 @@ public class Tessallator {
             short emissiveIdx,
             short normalIdx,
             short materialIdx,
-            int faceID,
+            int direction,
             byte[] aoLevels,
             boolean flipIndices,
-            int tintColor
+            short tintColor
     ) {
         float xA = c01x - c00x;
         float yA = c01y - c00y;
@@ -142,10 +137,10 @@ public class Tessallator {
         nY /= len;
         nZ /= len;
 
-        addVertex(c00x, c00y, c00z, nX, nY, nZ, albedoIdx, emissiveIdx, normalIdx, materialIdx, faceID, (byte) 0, lightLevel, aoLevels[0], tintColor);
-        addVertex(c01x, c01y, c01z, nX, nY, nZ, albedoIdx, emissiveIdx, normalIdx, materialIdx, faceID, (byte) 1, lightLevel, aoLevels[1], tintColor);
-        addVertex(c10x, c10y, c10z, nX, nY, nZ, albedoIdx, emissiveIdx, normalIdx, materialIdx, faceID, (byte) 2, lightLevel, aoLevels[2], tintColor);
-        addVertex(c11x, c11y, c11z, nX, nY, nZ, albedoIdx, emissiveIdx, normalIdx, materialIdx, faceID, (byte) 3, lightLevel, aoLevels[3], tintColor);
+        addVertex(c00x, c00y, c00z, nX, nY, nZ, albedoIdx, emissiveIdx, normalIdx, materialIdx, direction, 0, lightLevel, aoLevels[0], tintColor);
+        addVertex(c01x, c01y, c01z, nX, nY, nZ, albedoIdx, emissiveIdx, normalIdx, materialIdx, direction, 1, lightLevel, aoLevels[1], tintColor);
+        addVertex(c10x, c10y, c10z, nX, nY, nZ, albedoIdx, emissiveIdx, normalIdx, materialIdx, direction, 2, lightLevel, aoLevels[2], tintColor);
+        addVertex(c11x, c11y, c11z, nX, nY, nZ, albedoIdx, emissiveIdx, normalIdx, materialIdx, direction, 3, lightLevel, aoLevels[3], tintColor);
 
         int[] indices = flipIndices ? BaseQuad.indices_flipped : BaseQuad.indices;
         for (int index : indices) {
@@ -162,33 +157,36 @@ public class Tessallator {
             short emissiveIdx,
             short normalIdx,
             short materialIdx,
-            int faceID,
-            byte cornerID,
+            int direction,
+            int cornerID,
             short lightLevel,
             byte aoLevel,
-            int tintColor
+            short tintColor
     ) {
-        int Xi = Float.floatToRawIntBits(x);
-        int Yi = Float.floatToRawIntBits(y);
-        int Zi = Float.floatToRawIntBits(z);
+        int packedData = 0;
+        packedData |= (cornerID & 0b11);
+        packedData |= (direction & 0b111) << 2;
+        packedData |= (aoLevel & 0b11) << 5;
+        packedData |= (lightLevel & 0xFFF) << 7;
 
-        int nXi = Float.floatToRawIntBits(nX);
-        int nYi = Float.floatToRawIntBits(nY);
-        int nZi = Float.floatToRawIntBits(nZ);
+        short Xi = Float.floatToFloat16(x);
+        short Yi = Float.floatToFloat16(y);
+        short Zi = Float.floatToFloat16(z);
 
-        short light = (short) ((((int)aoLevel & 3) << 12) | (lightLevel & 0x0FFF));
+        short nXi = Float.floatToFloat16(nX);
+        short nYi = Float.floatToFloat16(nY);
+        short nZi = Float.floatToFloat16(nZ);
 
-        vertices.putInt(Xi);
-        vertices.putInt(Yi);
-        vertices.putInt(Zi);
+        vertices.putShort(Xi);
+        vertices.putShort(Yi);
+        vertices.putShort(Zi);
 
-        vertices.putInt(nXi);
-        vertices.putInt(nYi);
-        vertices.putInt(nZi);
+        vertices.putShort(nXi);
+        vertices.putShort(nYi);
+        vertices.putShort(nZi);
 
-        vertices.putShort(light);
-        vertices.putShort((short) ((((short)cornerID) << 8) | (faceID & 0xFF)));
-        vertices.putInt(tintColor);
+        vertices.putInt(packedData);
+        vertices.putShort(tintColor);
 
         BerylliumConfig config = BerylliumConfig.getOrLoad();
         vertices.putShort(albedoIdx);
@@ -198,7 +196,7 @@ public class Tessallator {
         if (config.enableMaterialAtlas) vertices.putShort(materialIdx);
     }
 
-    public static int VERTEX_SIZE = 34;
+    public static int VERTEX_SIZE = 20;
 
     static {
         BerylliumConfig config = BerylliumConfig.getOrLoad();

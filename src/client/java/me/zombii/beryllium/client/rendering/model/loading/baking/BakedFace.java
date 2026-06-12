@@ -58,10 +58,7 @@ public record BakedFace(
         System.out.println(Arrays.toString(newVerts));
         System.out.println("-------------------");
 
-        int faceID = (quad.defaultRotation() / 90) & 3;
-        faceID |= (quad.flipU() ? 1 : 0) << 3;
-        faceID |= (quad.flipV() ? 1 : 0) << 2;
-        faceID |= (quad.direction() & 7) << 4;
+        int faceID = quad.direction();
 
         return new BakedFace(
             model, faceID, newVerts, face.getTextureID(), uvIdx,

@@ -192,9 +192,9 @@ public class BerylliumModelLoader {
                         localBounds.get(0).asFloat(),
                         localBounds.get(1).asFloat(),
                         localBounds.get(2).asFloat(),
-                        localBounds.get(0).asFloat() - localBounds.get(3).asFloat(),
-                        localBounds.get(1).asFloat() - localBounds.get(4).asFloat(),
-                        localBounds.get(2).asFloat() - localBounds.get(5).asFloat()
+                        localBounds.get(3).asFloat() - localBounds.get(0).asFloat(),
+                        localBounds.get(4).asFloat() - localBounds.get(1).asFloat(),
+                        localBounds.get(5).asFloat() - localBounds.get(2).asFloat()
                 );
                 JsonValue faceValues = cuboidObject.get("faces");
                 if (faceValues == null) return;

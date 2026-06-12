@@ -17,7 +17,7 @@ public class TintProvider {
     }
 
     public interface TintFunction {
-        int getTint(BlockState state, BlockPosition pos, int tintIdx);
+        short getTint(BlockState state, BlockPosition pos, int tintIdx);
     }
 
 }
