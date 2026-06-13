@@ -24,9 +24,9 @@ layout (location = 2) in uint a_packed;
 layout (location = 3) in uint a_packedIndices;
 layout (location = 4) in uint a_uvRotation;
 layout (location = 5) in uint a_albedoIdx;
-//layout (location = 5) in uint a_emissiveIdx;
-//layout (location = 6) in uint a_normalIdx;
-//layout (location = 7) in uint a_materialIdx;
+//layout (location = 6) in uint a_emissiveIdx;
+//layout (location = 7) in uint a_normalIdx;
+//layout (location = 8) in uint a_materialIdx;
 
 out float v_bakedAoValue;
 out vec4 v_blockLightColor;
@@ -55,23 +55,6 @@ vec4 getTintColor(void) {
     );
 
     return vec4(rgb, 1);
-}
-
-vec2 rotateUV(vec2 uv, float rotation, vec2 mid) {
-    float angleCos = cos(rotation);
-    float angleSin = sin(rotation);
-    return vec2(
-        angleCos * (uv.x - mid.x) + angleSin * (uv.y - mid.y) + mid.x,
-        angleCos * (uv.y - mid.y) - angleSin * (uv.x - mid.x) + mid.y
-    );
-}
-
-vec2 getRotatedUV(vec4 full, vec2 uv) {
-    if (UV_ROTATION == 0) return uv;
-
-    vec2 middle = full.xy + ((full.zw - full.xy) * 0.5);
-
-    return rotateUV(uv, UV_ROTATION, middle);
 }
 
 vec4 getBlockLightColor(void) {
@@ -116,6 +99,15 @@ vec4 FACE_UV_RANGE = texelFetch(u_faceUVBuffer, FACE_UV_IDX);
 vec2 FACE_UV_MIN = FACE_UV_RANGE.xy;
 vec2 FACE_UV_SIZE = FACE_UV_RANGE.zw - FACE_UV_MIN;
 
+vec2 rotateUV(vec2 uv, float rotation, vec2 mid) {
+    float angleCos = cos(rotation);
+    float angleSin = sin(rotation);
+    return vec2(
+    angleCos * (uv.x - mid.x) + angleSin * (uv.y - mid.y) + mid.x,
+    angleCos * (uv.y - mid.y) - angleSin * (uv.x - mid.x) + mid.y
+    );
+}
+
 // I have given up on this function for today.
 vec2 getAlbedoUV() {
     return vec2(0, 0);
@@ -129,6 +121,5 @@ void main(void) {
     v_albedoUV = getAlbedoUV();
     v_tintColor = getTintColor();
 
-//    gl_Position = u_projMat * u_viewMat * u_modelMat * vec4(a_position, 1.0);
     gl_Position = (u_projMat * u_viewMat) * vec4(a_position, 1.0);
 }
