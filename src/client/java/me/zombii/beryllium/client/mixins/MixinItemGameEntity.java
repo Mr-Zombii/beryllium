@@ -73,8 +73,8 @@ public abstract class MixinItemGameEntity extends GameEntity {
         if (this.getItem() instanceof ItemBlock itemBlock) {
             if (model == null) {
                 renderLayer = RenderLayers.LAYER_REGISTRY.get(Identifier.of(BerylliumCommon.NAMESPACE, "opaque-block-render-layer"));
-                Tessallator tessallator = new Tessallator(64);
-                mesh = new BerylliumMesh(64, true);
+                Tessallator tessallator = new Tessallator(100);
+                mesh = new BerylliumMesh(100, true);
 //            model = ModelBaker.get(BerylliumModelLoader.getModel(Identifier.of("base:models/blocks/machines/pistons/model_piston_head.json")));
 //            model = ModelBaker.get(BerylliumModelLoader.getModel(Identifier.of("base:models/blocks/industrial_decor/aluminium_handrail.json")));
 //            model = ModelBaker.get(BerylliumModelLoader.getModel(Identifier.of("base:models/blocks/storage/cardboard_box.json")));

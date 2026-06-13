@@ -216,7 +216,7 @@ public class ModelBaker {
         int texCount = texs.size();
         int tboSize = texCount * elementSize;
 
-        if (elementSize * (texCount - 1) > tbo.getSize()) {
+        if (tboSize > tbo.getSize()) {
             tbo.resize(tboSize);
         }
 
@@ -253,7 +253,7 @@ public class ModelBaker {
         int elementCount = NEXT_INDEX.get();
         int tboSize = elementCount * elementSize;
 
-        if (elementSize * (elementCount - 1) > tbo.getSize()) {
+        if (tboSize > tbo.getSize()) {
             tbo.resize(tboSize);
         }
 
@@ -262,6 +262,7 @@ public class ModelBaker {
 
             for (int i = 0; i < elementCount; i++) {
                 float[] data = UV_STACK.get(i);
+
                 buffer.putFloat(data[0]);
                 buffer.putFloat(data[1]);
                 buffer.putFloat(data[2]);
