@@ -6,27 +6,26 @@ uniform mat4 u_modelMat;
 
 uniform vec3 sunDirection = vec3(0, 1, 0);
 
-uniform samplerBuffer u_faceUVBuffer;
-uniform samplerBuffer u_albedoUVBuffer;
+uniform usamplerBuffer u_faceUVBuffer;
+uniform usamplerBuffer u_albedoUVBuffer;
 #ifdef HAS_EMISSIVE_ATLAS
-uniform samplerBuffer u_emissiveUVBuffer;
+uniform usamplerBuffer u_emissiveUVBuffer;
 #endif
 #ifdef HAS_NORMAL_ATLAS
-uniform samplerBuffer u_normalUVBuffer;
+uniform usamplerBuffer u_normalUVBuffer;
 #endif
 #ifdef HAS_MATERIAL_ATLAS
-uniform samplerBuffer u_materialUVBuffer;
+uniform usamplerBuffer u_materialUVBuffer;
 #endif
 
 layout (location = 0) in vec3 a_position;
 layout (location = 1) in vec3 a_normal;
 layout (location = 2) in uint a_packed;
 layout (location = 3) in uint a_packedIndices;
-layout (location = 4) in uint a_uvRotation;
-layout (location = 5) in uint a_albedoIdx;
-//layout (location = 6) in uint a_emissiveIdx;
-//layout (location = 7) in uint a_normalIdx;
-//layout (location = 8) in uint a_materialIdx;
+layout (location = 4) in uint a_albedoIdx;
+//layout (location = 5) in uint a_emissiveIdx;
+//layout (location = 6) in uint a_normalIdx;
+//layout (location = 7) in uint a_materialIdx;
 
 out float v_bakedAoValue;
 out vec4 v_blockLightColor;
@@ -36,9 +35,9 @@ out vec2 v_albedoUV;
 out vec4 v_tintColor;
 
 int CORNER_ID = int(a_packed & 3u);
-int FACE_ID = int(a_packed >> 2u) & 7;
-int AO_LEVEL_PACKED = int(a_packed >> 5u) & 3;
-int LIGHT_COLOR_PACKED = int(a_packed >> 7u) & 0xFFF;
+int UV_ROTATION = int(a_packed >> 2u) & 3;
+int AO_LEVEL_PACKED = int(a_packed >> 4u) & 3;
+int LIGHT_COLOR_PACKED = int(a_packed >> 6u) & 0xFFF;
 
 uint TINT_COLOR_PACKED = (a_packedIndices >> 16u) & 0xFFFFu;
 int FACE_UV_IDX = int(a_packedIndices & 0xFFFFu);
@@ -82,49 +81,58 @@ vec2 getUV(void) {
     return vec2((CORNER_ID >> 1) & 1, CORNER_ID & 1);
 }
 
-float FACE_UV_ROTATION = a_uvRotation * 0.01745329;
+uvec2 ALBEDO_UV_OFFS = texelFetch(u_albedoUVBuffer, int(a_albedoIdx)).xy;
 
-float CORRECTIVE_UV_ROTATION = FACE_ID == 1 ? 4.712389 : (FACE_ID == 0 ? 0 : 0);
-bool CORRECTIVE_UV_FLIP_U = bool(FACE_ID == 4);
-bool CORRECTIVE_UV_FLIP_V = bool(FACE_ID == 1 || FACE_ID == 2 || FACE_ID == 4 || FACE_ID == 5);
+uvec4 FACE_UV_RANGE = texelFetch(u_faceUVBuffer, FACE_UV_IDX);
+uvec2 FACE_UV_MIN = FACE_UV_RANGE.xy;
+uvec2 FACE_UV_MAX = FACE_UV_RANGE.zw;
+uvec2 FACE_UV_SIZE = FACE_UV_RANGE.zw - FACE_UV_MIN;
 
-bool UV_MAX_U = (CORNER_ID & 2) != 0 ? true : false;
-bool UV_MAX_V = (CORNER_ID & 1) != 0 ? true : false;
+/*
+    rotationStyle is CCW
 
-vec4 ALBEDO_UV_RANGE = texelFetch(u_albedoUVBuffer, int(a_albedoIdx));
-vec2 ALBEDO_UV_MIN = ALBEDO_UV_RANGE.xy;
-vec2 ALBEDO_UV_SIZE = ALBEDO_UV_RANGE.zw - ALBEDO_UV_MIN;
-vec2 ALBEDO_UV_MAX = ALBEDO_UV_RANGE.zw;
+    rotation:
+        0 = normal
+        1 = 90°
+        2 = 180°
+        3 = 270°
+*/
+vec2 createRotatedUv(uint corner, vec2 min, vec2 max, int rotation) {
+    if (rotation == 0) {
+        if (corner == 3u) return min;
+        if (corner == 2u) return vec2(min.x, max.y);
+        if (corner == 1u) return vec2(max.x, min.y);
+        return max;
+    }
 
-vec4 FACE_UV_RANGE = texelFetch(u_faceUVBuffer, FACE_UV_IDX);
-vec2 FACE_UV_MIN = FACE_UV_RANGE.xy;
-vec2 FACE_UV_MAX = FACE_UV_RANGE.zw;
-vec2 FACE_UV_SIZE = FACE_UV_RANGE.zw - FACE_UV_MIN;
+    if (rotation == 3) {
+        if (corner == 3u) return vec2(max.x, min.y);
+        if (corner == 2u) return min;
+        if (corner == 1u) return max;
+        return vec2(min.x, max.y);
+    }
 
-vec2 rotateUV(vec2 uv, float rotation, vec2 mid) {
-    float angleCos = cos(rotation);
-    float angleSin = sin(rotation);
-    return vec2(
-    angleCos * (uv.x - mid.x) + angleSin * (uv.y - mid.y) + mid.x,
-    angleCos * (uv.y - mid.y) - angleSin * (uv.x - mid.x) + mid.y
-    );
+    if (rotation == 2) {
+        if (corner == 3u) return max;
+        if (corner == 2u) return vec2(max.x, min.y);
+        if (corner == 1u) return vec2(min.x, max.y);
+        return min;
+    }
+
+    if (corner == 3u) return vec2(min.x, max.y);
+    if (corner == 2u) return max;
+    if (corner == 1u) return min;
+    return vec2(max.x, min.y);
 }
 
-vec2 getAlbedoUV() {
+vec2 getAlbedoUV(void) {
+    vec2 faceMin = vec2(ALBEDO_UV_OFFS + FACE_UV_MIN) / 1024;
+    vec2 faceMax = vec2(ALBEDO_UV_OFFS + FACE_UV_MAX) / 1024;
+
     int vert_id = CORNER_ID;
-    vec2 uv = vec2(0.,0.);
-    if (vert_id == 3) {
-        uv = ALBEDO_UV_MIN;
-    } else if (vert_id == 2) {
-        uv.x = ALBEDO_UV_MIN.x;
-        uv.y = ALBEDO_UV_MAX.y;
-    } else if (vert_id == 0) {
-        uv = ALBEDO_UV_MAX.xy;
-    }
-     else if (vert_id == 1) {
-        uv.x = ALBEDO_UV_MAX.x;
-        uv.y = ALBEDO_UV_MIN.y;
-    }
+    vec2 uv = vec2(0.0, 0.0);
+
+    uv = createRotatedUv(uint(vert_id), faceMin, faceMax, UV_ROTATION);
     return uv;
 }
 

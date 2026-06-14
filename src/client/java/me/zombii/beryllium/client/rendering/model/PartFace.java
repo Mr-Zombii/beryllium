@@ -1,11 +1,16 @@
 package me.zombii.beryllium.client.rendering.model;
 
+import dev.puzzleshq.puzzleloader.cosmic.game.util.HJsonSerializable;
 import finalforeach.cosmicreach.util.constants.Direction;
+import org.hjson.JsonArray;
+import org.hjson.JsonObject;
+import org.hjson.JsonValue;
 
+import java.util.Arrays;
 import java.util.Objects;
 
-public class PartFace {
-    private final float[] uv = new float[]{0, 0, 16, 16};
+public class PartFace implements HJsonSerializable {
+    private final int[] uv = new int[]{0, 0, 16, 16};
     private boolean useAO = true;
     private final int direction;
     private boolean isCulled;
@@ -38,7 +43,7 @@ public class PartFace {
         this.direction = direction;
     }
 
-    public float[] getUV() {
+    public int[] getUV() {
         return uv;
     }
 
@@ -91,5 +96,18 @@ public class PartFace {
 
     public boolean usesAO() {
         return useAO;
+    }
+
+    @Override
+    public JsonValue toHJson() {
+        JsonObject obj = new JsonObject();
+        obj.set("uv", new JsonArray().add(uv[0]).add(uv[1]).add(uv[2]).add(uv[3]));
+        obj.set("textureID", textureID);
+        obj.set("doesCulling", isCulled);
+        obj.set("uvRotation", uvRotation);
+        obj.set("tintIndex", tintIndex);
+        obj.set("aoEnabled", useAO);
+
+        return obj;
     }
 }

@@ -1,16 +1,20 @@
 package me.zombii.beryllium.client.rendering.model;
 
 import com.badlogic.gdx.math.Vector3;
+import dev.puzzleshq.puzzleloader.cosmic.game.util.HJsonSerializable;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
+import org.hjson.JsonArray;
+import org.hjson.JsonObject;
+import org.hjson.JsonValue;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class PartGroup implements Iterable<Part> {
+public class PartGroup implements Iterable<Part>, HJsonSerializable {
 
     private final ObjectList<Part> parts = new ObjectArrayList<>();
 
@@ -117,5 +121,23 @@ public class PartGroup implements Iterable<Part> {
     @NonNull
     public Iterator<Part> iterator() {
         return parts.iterator();
+    }
+
+
+    @Override
+    public JsonValue toHJson() {
+        JsonObject obj = new JsonObject();
+        obj.set("pivot", new JsonArray().add(pivot.x).add(pivot.y).add(pivot.z));
+        obj.set("rotation", new JsonArray().add(rotation.x).add(rotation.y).add(rotation.z));
+        obj.set("name", name);
+        if (parentName != null)
+            obj.set("parent", parentName);
+        obj.set("enabled", enabled.get());
+
+        JsonArray parts = new JsonArray();
+        for (Part part : this) parts.add(part.toHJson());
+        obj.set("parts", parts);
+        
+        return obj;
     }
 }

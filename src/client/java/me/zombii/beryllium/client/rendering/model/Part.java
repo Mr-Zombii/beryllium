@@ -1,10 +1,15 @@
 package me.zombii.beryllium.client.rendering.model;
 
 import com.badlogic.gdx.math.Vector3;
+import dev.puzzleshq.puzzleloader.cosmic.game.util.HJsonSerializable;
+import finalforeach.cosmicreach.util.constants.Direction;
+import org.hjson.JsonArray;
+import org.hjson.JsonObject;
+import org.hjson.JsonValue;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-public class Part {
+public class Part implements HJsonSerializable {
     private final PartFace[] faces = new PartFace[6];
     private final BerylliumModel model;
     private final PartGroup group;
@@ -55,7 +60,7 @@ public class Part {
         return this;
     }
 
-    public Part setOrigin(float x, float y, float z) {
+    public Part setPivot(float x, float y, float z) {
         this.pivot.set(x, y, z);
         return this;
     }
@@ -96,5 +101,26 @@ public class Part {
 
     public PartGroup getGroup() {
         return group;
+    }
+
+    @Override
+    public JsonValue toHJson() {
+        JsonObject obj = new JsonObject();
+        obj.set("position", new JsonArray().add(pos.x).add(pos.y).add(pos.z));
+        obj.set("size", new JsonArray().add(size.x).add(size.y).add(size.z));
+        obj.set("pivot", new JsonArray().add(pivot.x).add(pivot.y).add(pivot.z));
+        obj.set("rotation", new JsonArray().add(rotation.x).add(rotation.y).add(rotation.z));
+
+        JsonObject faces = new JsonObject();
+        for (int i = 0; i < 6; i++) {
+            if (this.faces[i] == null) continue;
+
+            String dirName = Direction.ALL_DIRECTIONS[i].name();
+            String faceName = dirName.substring(0, 3).toUpperCase() + dirName.substring(4);
+            faces.set(faceName, this.faces[i].toHJson());
+        }
+        obj.set("faces", faces);
+
+        return obj;
     }
 }

@@ -10,11 +10,10 @@ import java.util.Arrays;
 
 public record BakedFace(
         BakedBerylliumModel model,
-        int faceID,
         float[] verts,
         String textureID,
         int faceUvIndex,
-        float uvRotation,
+        int uvRotation,
         boolean doAO,
         int tintIndex,
         boolean flipIndices
@@ -31,37 +30,6 @@ public record BakedFace(
         return bake(model, quad, face, mat);
     }
 
-    public static float[] getFinalUVs(PartFace face) {
-        float[] data = face.getUV();
-        float minX = data[0];
-        float minY = data[1];
-
-        float maxX = data[2] ;
-        float maxY = data[3] ;
-//
-        minX *= BerylliumAtlases.ALBEDO_ATLAS.getRatioX();
-        minY *= BerylliumAtlases.ALBEDO_ATLAS.getRatioY();
-
-        maxX *= BerylliumAtlases.ALBEDO_ATLAS.getRatioX();
-        maxY *= BerylliumAtlases.ALBEDO_ATLAS.getRatioY();
-//
-//        float midX = ((maxX - minX) / 2) + minX;
-//        float midY = ((maxY - minY) / 2) + minY;
-//
-//        float angleCos = (float) Math.cos(Math.toRadians(face.getUVRotation()));
-//        float angleSin = (float) Math.sin(Math.toRadians(face.getUVRotation()));
-//
-//        float newMinX = angleCos * (minX - midX) + angleSin * (minY - midY) + midX;
-//        float newMinY = angleCos * (minY - midY) - angleSin * (minX - midX) + midY;
-//
-//        float newMaxX = angleCos * (maxX - midX) + angleSin * (maxY - midY) + midX;
-//        float newMaxY = angleCos * (maxY - midY) - angleSin * (maxX - midX) + midY;
-//
-//        return new float[]{newMinX, newMinY, newMaxX, newMaxY};
-        return new float[]{minX, minY, maxX, maxY};
-//        return data;
-    }
-
     public static BakedFace bake(
             BakedBerylliumModel model,
             BaseQuad quad,
@@ -69,8 +37,7 @@ public record BakedFace(
             Matrix4 transform
     ) {
 //        float[] newUVS = QuadUvUtil.createRotatedUv(face.getUV(), face.getUVRotation() / 90);
-        float[] finalUVs = getFinalUVs(face);
-        int uvIdx = ModelBaker.getOrMakePerFaceIdx(finalUVs);
+        int uvIdx = ModelBaker.getOrMakePerFaceIdx(face.getUV());
 
         float[] oldVerts = quad.verts();
         float[] newVerts = new float[12];
@@ -92,10 +59,8 @@ public record BakedFace(
         System.out.println(Arrays.toString(newVerts));
         System.out.println("-------------------");
 
-        int faceID = quad.direction();
-
         return new BakedFace(
-            model, faceID, newVerts, face.getTextureID(), uvIdx, face.getUVRotation(),
+            model, newVerts, face.getTextureID(), uvIdx, face.getUVRotation(),
             face.usesAO(), face.getTintIndex(), quad.flipIndices()
         );
     }

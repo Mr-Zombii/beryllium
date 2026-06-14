@@ -199,12 +199,13 @@ public class ModelBaker {
     }
 
     private static final int elementSize = 4 * 4;
+    private static final int atlasElementSize = 4 * 4;
     private static final float[] uvs = new float[4];
 
     private static TBO createOrUpdateTBO(BerylliumConfig config, GLAtlas atlas, TBO tbo) {
         if (tbo == null) {
             if (config.debugMode) LOGGER.log(Level.INFO, "Creating \"{}\"'s TBO", atlas.getID());
-            tbo = new TBO(atlas.getSubtextureCount() * elementSize, GL30.GL_RGBA32F, true);
+            tbo = new TBO(atlas.getSubtextureCount() * atlasElementSize, GL30.GL_RG16UI, true);
         }
         if (config.debugMode) LOGGER.log(Level.INFO, "Updating \"{}\"'s TBO", atlas.getID());
         uploadData(atlas, tbo);
@@ -214,7 +215,7 @@ public class ModelBaker {
     private static void uploadData(GLAtlas atlas, TBO tbo) {
         List<GLAtlas.SubTexture> texs = atlas.getSubTextures();
         int texCount = texs.size();
-        int tboSize = texCount * elementSize;
+        int tboSize = texCount * atlasElementSize;
 
         if (tboSize > tbo.getSize()) {
             tbo.resize(tboSize);
@@ -225,11 +226,8 @@ public class ModelBaker {
 
             for (int i = 0; i < texCount; i++) {
                 GLAtlas.SubTexture tex = texs.get(i);
-                tex.getUV(uvs);
-                buffer.putFloat(uvs[0]);
-                buffer.putFloat(uvs[1]);
-                buffer.putFloat(uvs[2]);
-                buffer.putFloat(uvs[3]);
+                buffer.putShort((short) tex.getX());
+                buffer.putShort((short) tex.getY());
                 tex.setTBOIndex(i);
             }
             buffer.flip();
@@ -242,7 +240,7 @@ public class ModelBaker {
     private static TBO createOrUpdateFaceUVTBO(BerylliumConfig config, TBO tbo) {
         if (tbo == null) {
             if (config.debugMode) LOGGER.log(Level.INFO, "Creating FaceUVBuffer's TBO");
-            tbo = new TBO(NEXT_INDEX.get() * elementSize, GL30.GL_RGBA32F, true);
+            tbo = new TBO(NEXT_INDEX.get() * elementSize, GL30.GL_RGBA16UI, true);
         }
         if (config.debugMode) LOGGER.log(Level.INFO, "Updating FaceUVBuffer's TBO");
         uploadFaceUVData(tbo);
@@ -261,12 +259,12 @@ public class ModelBaker {
             ByteBuffer buffer = stack.malloc(tboSize).order(ByteOrder.LITTLE_ENDIAN);
 
             for (int i = 0; i < elementCount; i++) {
-                float[] data = UV_STACK.get(i);
+                int[] data = UV_STACK.get(i);
 
-                buffer.putFloat(data[0]);
-                buffer.putFloat(data[1]);
-                buffer.putFloat(data[2]);
-                buffer.putFloat(data[3]);
+                buffer.putShort((short) data[0]);
+                buffer.putShort((short) data[1]);
+                buffer.putShort((short) data[2]);
+                buffer.putShort((short) data[3]);
             }
             buffer.flip();
 
@@ -425,11 +423,11 @@ public class ModelBaker {
         return Object2ObjectMaps.unmodifiable(modelMap);
     }
 
-    private static final ObjectList<float[]> UV_STACK = new ObjectArrayList<>();
+    private static final ObjectList<int[]> UV_STACK = new ObjectArrayList<>();
     private static final Int2IntMap UV_TABLE = new Int2IntArrayMap();
     private static final AtomicInteger NEXT_INDEX = new AtomicInteger(0);
 
-    public static int getOrMakePerFaceIdx(float[] uvs) {
+    public static int getOrMakePerFaceIdx(int[] uvs) {
         int hash = Objects.hash(uvs[0], uvs[1], uvs[2], uvs[3]);
         if (UV_TABLE.containsKey(hash)) {
             return UV_TABLE.get(hash);

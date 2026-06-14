@@ -82,26 +82,24 @@ public class BerylliumMesh {
         GL20.glEnableVertexAttribArray(2);
         GL30.glVertexAttribIPointer(3, 1, GL15.GL_UNSIGNED_INT, Tessallator.VERTEX_SIZE, 16);
         GL20.glEnableVertexAttribArray(3);
-        GL30.glVertexAttribPointer(4, 1, GL30.GL_HALF_FLOAT, false, Tessallator.VERTEX_SIZE, 20);
+        GL30.glVertexAttribIPointer(4, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, 20);
         GL20.glEnableVertexAttribArray(4);
-        GL30.glVertexAttribIPointer(5, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, 22);
-        GL20.glEnableVertexAttribArray(5);
-        int ptr = 24;
+        int ptr = 22;
 
         BerylliumConfig config = BerylliumConfig.getOrLoad();
         if (config.enableEmissiveAtlas) {
+            GL30.glVertexAttribIPointer(5, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, ptr);
+            GL20.glEnableVertexAttribArray(5);
+            ptr += 2;
+        }
+        if (config.enableNormalAtlas) {
             GL30.glVertexAttribIPointer(6, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, ptr);
             GL20.glEnableVertexAttribArray(6);
             ptr += 2;
         }
-        if (config.enableNormalAtlas) {
+        if (config.enableMaterialAtlas) {
             GL30.glVertexAttribIPointer(7, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, ptr);
             GL20.glEnableVertexAttribArray(7);
-            ptr += 2;
-        }
-        if (config.enableMaterialAtlas) {
-            GL30.glVertexAttribIPointer(8, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, ptr);
-            GL20.glEnableVertexAttribArray(8);
         }
     }
 

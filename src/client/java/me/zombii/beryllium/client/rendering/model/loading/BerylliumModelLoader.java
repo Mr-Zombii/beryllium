@@ -235,11 +235,11 @@ public class BerylliumModelLoader {
                             "Expected uv array in face \""  + direction + "\" to be four numbers in length in model \"" + name + "\""
                     );
 
-                    float[] uvs = face.getUV();
-                    uvs[0] = uvsArray.get(0).asFloat();
-                    uvs[1] = uvsArray.get(1).asFloat();
-                    uvs[2] = uvsArray.get(2).asFloat();
-                    uvs[3] = uvsArray.get(3).asFloat();
+                    int[] uvs = face.getUV();
+                    uvs[0] = uvsArray.get(0).asInt();
+                    uvs[1] = uvsArray.get(1).asInt();
+                    uvs[2] = uvsArray.get(2).asInt();
+                    uvs[3] = uvsArray.get(3).asInt();
                 }
             });
         } else {
@@ -262,13 +262,7 @@ public class BerylliumModelLoader {
                                 continue;
                             }
                             PartFace oldFace = oldFaces[i];
-                            PartFace newFace = new PartFace(oldFace.getDirection());
-                            newFace.setAO(oldFace.usesAO())
-                                    .setCulled(oldFace.isCulled())
-                                    .setTextureID(oldFace.getTextureID())
-                                    .setTintIndex(oldFace.getTintIndex())
-                                    .setUVRotation(oldFace.getUVRotation())
-                            ;
+                            PartFace newFace = new PartFace(oldFace);
                             newFaces[i] = newFace;
                         }
                     }

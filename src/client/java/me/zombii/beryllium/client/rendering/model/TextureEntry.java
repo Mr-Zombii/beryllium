@@ -1,12 +1,15 @@
 package me.zombii.beryllium.client.rendering.model;
 
+import dev.puzzleshq.puzzleloader.cosmic.game.util.HJsonSerializable;
 import finalforeach.cosmicreach.util.Identifier;
 import me.zombii.beryllium.client.BerylliumClient;
+import org.hjson.JsonObject;
+import org.hjson.JsonValue;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
-public class TextureEntry {
+public class TextureEntry implements HJsonSerializable {
     private final String name;
     private Identifier albedoTexturePath = BerylliumClient.MISSING_TEXTURE_PATH;
     private Identifier emissiveTexturePath = BerylliumClient.MISSING_TEXTURE_EMISSIVE_PATH;
@@ -138,5 +141,19 @@ public class TextureEntry {
 
     public String getName() {
         return name;
+    }
+
+    @Override
+    public JsonValue toHJson() {
+        JsonObject obj = new JsonObject();
+        obj.set("albedoPath", albedoTexturePath.toString());
+        obj.set("emissivePath", emissiveTexturePath.toString());
+        obj.set("normalMapPath", normalMapTexturePath.toString());
+        obj.set("roughnessMapPath", roughnessMapTexturePath.toString());
+        obj.set("metalnessMapPath", metalnessMapTexturePath.toString());
+        obj.set("aoMapPath", aoMapTexturePath.toString());
+        obj.set("depthMapPath", depthMapTexturePath.toString());
+
+        return obj;
     }
 }

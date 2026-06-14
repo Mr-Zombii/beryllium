@@ -1,17 +1,20 @@
 package me.zombii.beryllium.client.rendering.model;
 
+import dev.puzzleshq.puzzleloader.cosmic.game.util.HJsonSerializable;
 import finalforeach.cosmicreach.util.Identifier;
 import it.unimi.dsi.fastutil.objects.*;
 import me.zombii.beryllium.client.rendering.layers.RenderLayer;
 import me.zombii.beryllium.client.rendering.layers.RenderLayers;
 import me.zombii.beryllium.common.BerylliumCommon;
+import org.hjson.JsonObject;
+import org.hjson.JsonValue;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class BerylliumModel implements Iterable<PartGroup> {
+public class BerylliumModel implements Iterable<PartGroup>, HJsonSerializable {
 
     private final Object2ObjectMap<String, TextureEntry> textureMap = new Object2ObjectArrayMap<>();
 
@@ -115,4 +118,24 @@ public class BerylliumModel implements Iterable<PartGroup> {
         return false;
     }
 
+    @Override
+    public JsonValue toHJson() {
+        JsonObject obj = new JsonObject();
+        JsonObject textures = new JsonObject();
+        this.textureMap.forEach((name, texture) -> {
+            textures.set(name, texture.toHJson());
+        });
+        obj.add("textures", textures);
+
+        JsonObject groups = new JsonObject();
+        for (PartGroup group : this.groups) {
+            groups.set(group.getName(), group.toHJson());
+        }
+        obj.add("groups", groups);
+
+        obj.set("id", this.id.toString());
+        obj.set("renderLayer", this.renderLayerId.toString());
+
+        return obj;
+    }
 }

@@ -66,7 +66,6 @@ public abstract class MixinItemGameEntity extends GameEntity {
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private void render(Camera worldCamera, CallbackInfo ci) {
         if (GameSingletons.isHost()) this.age += Gdx.graphics.getDeltaTime();
-
 //        matrix4.idt();
 //        matrix4.translate(position.x, position.y, position.z);
 

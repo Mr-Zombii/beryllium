@@ -67,7 +67,6 @@ public record BaseQuad(
                     .5f, .5f, -.5f, // c01 // top right
                     -.5f, .5f, .5f, // c10 bot right
                     -.5f, .5f, -.5f, // c11 //top right
-
             }
     );
 
