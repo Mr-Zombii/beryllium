@@ -36,8 +36,8 @@ public record BakedFace(
         float minX = data[0];
         float minY = data[1];
 
-        float maxX = data[2] + minX;
-        float maxY = data[3] + minY;
+        float maxX = data[2] ;
+        float maxY = data[3] ;
 //
         minX *= BerylliumAtlases.ALBEDO_ATLAS.getRatioX();
         minY *= BerylliumAtlases.ALBEDO_ATLAS.getRatioY();

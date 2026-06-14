@@ -149,7 +149,7 @@ public class Tessallator {
         addVertex(c01x, c01y, c01z, nX, nY, nZ, uvRotation, albedoIdx, faceUVIdx, emissiveIdx, normalIdx, materialIdx, direction, 1, lightLevel, aoLevels[1], tintColor);
         addVertex(c10x, c10y, c10z, nX, nY, nZ, uvRotation, albedoIdx, faceUVIdx, emissiveIdx, normalIdx, materialIdx, direction, 2, lightLevel, aoLevels[2], tintColor);
         addVertex(c11x, c11y, c11z, nX, nY, nZ, uvRotation, albedoIdx, faceUVIdx, emissiveIdx, normalIdx, materialIdx, direction, 3, lightLevel, aoLevels[3], tintColor);
-
+        flipIndices= false;
         int[] indices = flipIndices ? BaseQuad.indices_flipped : BaseQuad.indices;
         for (int index : indices) {
             this.indices.putInt(index + indexCount);

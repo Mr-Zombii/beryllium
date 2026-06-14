@@ -94,9 +94,11 @@ bool UV_MAX_V = (CORNER_ID & 1) != 0 ? true : false;
 vec4 ALBEDO_UV_RANGE = texelFetch(u_albedoUVBuffer, int(a_albedoIdx));
 vec2 ALBEDO_UV_MIN = ALBEDO_UV_RANGE.xy;
 vec2 ALBEDO_UV_SIZE = ALBEDO_UV_RANGE.zw - ALBEDO_UV_MIN;
+vec2 ALBEDO_UV_MAX = ALBEDO_UV_RANGE.zw;
 
 vec4 FACE_UV_RANGE = texelFetch(u_faceUVBuffer, FACE_UV_IDX);
 vec2 FACE_UV_MIN = FACE_UV_RANGE.xy;
+vec2 FACE_UV_MAX = FACE_UV_RANGE.zw;
 vec2 FACE_UV_SIZE = FACE_UV_RANGE.zw - FACE_UV_MIN;
 
 vec2 rotateUV(vec2 uv, float rotation, vec2 mid) {
@@ -108,9 +110,22 @@ vec2 rotateUV(vec2 uv, float rotation, vec2 mid) {
     );
 }
 
-// I have given up on this function for today.
 vec2 getAlbedoUV() {
-    return vec2(0, 0);
+    int vert_id = CORNER_ID;
+    vec2 uv = vec2(0.,0.);
+    if (vert_id == 3) {
+        uv = ALBEDO_UV_MIN;
+    } else if (vert_id == 2) {
+        uv.x = ALBEDO_UV_MIN.x;
+        uv.y = ALBEDO_UV_MAX.y;
+    } else if (vert_id == 0) {
+        uv = ALBEDO_UV_MAX.xy;
+    }
+     else if (vert_id == 1) {
+        uv.x = ALBEDO_UV_MAX.x;
+        uv.y = ALBEDO_UV_MIN.y;
+    }
+    return uv;
 }
 
 void main(void) {
