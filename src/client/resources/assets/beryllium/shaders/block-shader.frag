@@ -25,9 +25,15 @@ void main(void) {
 //    fragColor = vec4((v_vertexNormal + 1.0) * 0.5, 1);
 //    fragColor = vec4(v_albedoUV, 0, 1);
     fragColor = texture(u_albedoAtlas, v_albedoUV);
-//    if ((fragColor.r == fragColor.g) && (fragColor.g == fragColor.b)) {
-//        fragColor.r *= v_tintColor.r;
-//        fragColor.g *= v_tintColor.g;
-//        fragColor.b *= v_tintColor.b;
-//    }
+    if (fragColor.a == 0) discard;
+
+    float threshold = 0.01;
+    if (
+        abs(fragColor.r - fragColor.g) < threshold &&
+        abs(fragColor.g - fragColor.b) < threshold
+    ) {
+        fragColor.r *= v_tintColor.r;
+        fragColor.g *= v_tintColor.g;
+        fragColor.b *= v_tintColor.b;
+    }
 }

@@ -138,6 +138,19 @@ public class VertexGroup {
             byte[] faceAO,
             short modelTint
     ) {
+        addFaces(tessallator, faceMask, lightLevel, faceAO, modelTint, 0, 0, 0);
+    }
+
+    public void addFaces(
+            Tessallator tessallator,
+            int faceMask,
+            short lightLevel,
+            byte[] faceAO,
+            short modelTint,
+            int offsX,
+            int offsY,
+            int offsZ
+    ) {
         for (int i = 0; i < BakedFace.MASKS.length; i++) {
             if ((faceMask & BakedFace.MASKS[i]) != 0) {
                 addFaces(
@@ -145,7 +158,10 @@ public class VertexGroup {
                         lightLevel,
                         faceAO,
                         i,
-                        modelTint
+                        modelTint,
+                        offsX,
+                        offsY,
+                        offsZ
                 );
             }
         }
@@ -158,13 +174,27 @@ public class VertexGroup {
             int direction,
             short modelTint
     ) {
+        addFaces(tessallator, lightLevel, faceAO, direction, modelTint, 0, 0, 0);
+    }
+
+    public void addFaces(
+            Tessallator tessallator,
+            short lightLevel,
+            byte[] faceAO,
+            int direction,
+            short modelTint,
+            int offsX,
+            int offsY,
+            int offsZ
+    ) {
         ObjectList<BakedFace> faces = getFacesByDirection(direction == 6 ? -1 : direction);
         for (BakedFace face : faces) {
             tessallator.addQuad(
                     face,
                     lightLevel,
                     faceAO,
-                    modelTint
+                    modelTint,
+                    offsX, offsY, offsZ
             );
         }
     }

@@ -6,6 +6,7 @@ import dev.puzzleshq.puzzleloader.cosmic.game.util.IndependentAssetLoader;
 import dev.puzzleshq.puzzleloader.loader.launch.Piece;
 import dev.puzzleshq.puzzleloader.loader.mod.entrypoint.client.ClientModInit;
 import dev.puzzleshq.puzzleloader.loader.mod.entrypoint.client.ClientPostModInit;
+import finalforeach.cosmicreach.singletons.GameSingletons;
 import finalforeach.cosmicreach.util.Identifier;
 import finalforeach.cosmicreach.util.assets.GameAssetLoader;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -19,6 +20,8 @@ import me.zombii.beryllium.client.rendering.model.loading.baking.ModelBaker;
 import me.zombii.beryllium.client.rendering.model.loading.BerylliumModelLoader;
 import me.zombii.beryllium.client.rendering.model.loading.baking.ModelBakingThread;
 import me.zombii.beryllium.client.rendering.opengl.textures.atlas.GLAtlas;
+import me.zombii.beryllium.client.rendering.world.BerylliumMeshingThread;
+import me.zombii.beryllium.client.rendering.world.BerylliumZoneRenderer;
 import me.zombii.beryllium.common.BerylliumCommon;
 import me.zombii.beryllium.common.BerylliumConfig;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -50,6 +53,7 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
     public void onClientInit() {
         BerylliumAtlases.initAtlases();
         ModelBakingThread.start();
+        BerylliumMeshingThread.THREAD.start();
 
         IndependentAssetLoader.registerLoadingMethod(BufferedImage.class, (handle) -> {
             try {
@@ -97,6 +101,6 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
 
     @Override
     public void onClientPostInit() {
-
+        GameSingletons.zoneRenderer = new BerylliumZoneRenderer();
     }
 }

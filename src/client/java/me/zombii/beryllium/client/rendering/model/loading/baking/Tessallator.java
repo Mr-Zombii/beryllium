@@ -48,7 +48,10 @@ public class Tessallator {
             BakedFace face,
             short lightLevel,
             byte[] aoLevels,
-            short tintColor
+            short tintColor,
+            int offsX,
+            int offsY,
+            int offsZ
     ) {
         BerylliumModel model = face.model().getModel();
 
@@ -60,10 +63,10 @@ public class Tessallator {
         float[] verts = face.verts();
 
         addQuad(
-                verts[0], verts[1], verts[2],
-                verts[3], verts[4], verts[5],
-                verts[6], verts[7], verts[8],
-                verts[9], verts[10], verts[11],
+                verts[0] + offsX, verts[1] + offsY, verts[2] + offsZ,
+                verts[3] + offsX, verts[4] + offsY, verts[5] + offsZ,
+                verts[6] + offsX, verts[7] + offsY, verts[8] + offsZ,
+                verts[9] + offsX, verts[10] + offsY, verts[11] + offsZ,
                 face.uvRotation(),
                 lightLevel,
                 albedoIdx,
@@ -87,15 +90,18 @@ public class Tessallator {
             short normalIdx,
             short materialIdx,
             byte[] aoLevels,
-            short tintColor
+            short tintColor,
+            int offsX,
+            int offsY,
+            int offsZ
     ) {
         float[] verts = bakedQuad.verts();
 
         addQuad(
-                verts[0], verts[1], verts[2],
-                verts[3], verts[4], verts[5],
-                verts[6], verts[7], verts[8],
-                verts[9], verts[10], verts[11],
+                verts[0] + offsX, verts[1] + offsY, verts[2] + offsZ,
+                verts[3] + offsX, verts[4] + offsY, verts[5] + offsZ,
+                verts[6] + offsX, verts[7] + offsY, verts[8] + offsZ,
+                verts[9] + offsX, verts[10] + offsY, verts[11] + offsZ,
                 uvRotation,
                 lightLevel,
                 albedoIdx,

@@ -144,5 +144,6 @@ void main(void) {
     v_albedoUV = getAlbedoUV();
     v_tintColor = getTintColor();
 
-    gl_Position = (u_projMat * u_viewMat) * vec4(a_position, 1.0);
+//    gl_Position = (u_projMat * u_viewMat) * vec4(a_position, 1.0);
+    gl_Position = (u_projMat * u_viewMat * u_modelMat) * vec4(a_position, 1.0);
 }

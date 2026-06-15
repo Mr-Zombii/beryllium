@@ -57,13 +57,28 @@ public class BakedBerylliumModel implements Iterable<VertexGroup> {
             int faceMask,
             short modelTint
     ) {
+        addVertices(tessallator, lightLevel, faceMask, modelTint, 0, 0, 0);
+    }
+
+    public void addVertices(
+            Tessallator tessallator,
+            short lightLevel,
+            int faceMask,
+            short modelTint,
+            int offsX,
+            int offsY,
+            int offsZ
+    ) {
         for (VertexGroup group : groupList) {
             group.addFaces(
                     tessallator,
                     faceMask,
                     lightLevel,
                     Tessallator.EMPTY_AO,
-                    modelTint
+                    modelTint,
+                    offsX,
+                    offsY,
+                    offsZ
             );
         }
     }

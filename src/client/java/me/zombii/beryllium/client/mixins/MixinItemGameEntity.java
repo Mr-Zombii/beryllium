@@ -15,6 +15,7 @@ import finalforeach.cosmicreach.items.ItemBlock;
 import finalforeach.cosmicreach.items.ItemStack;
 import finalforeach.cosmicreach.singletons.GameSingletons;
 import finalforeach.cosmicreach.util.Identifier;
+import finalforeach.cosmicreach.world.Chunk;
 import me.zombii.beryllium.client.rendering.BerylliumMesh;
 import me.zombii.beryllium.client.rendering.layers.RenderLayer;
 import me.zombii.beryllium.client.rendering.layers.RenderLayers;
@@ -22,6 +23,7 @@ import me.zombii.beryllium.client.rendering.model.BerylliumModel;
 import me.zombii.beryllium.client.rendering.model.loading.BerylliumModelLoader;
 import me.zombii.beryllium.client.rendering.model.loading.baking.*;
 import me.zombii.beryllium.client.rendering.opengl.shader.BerylliumShaderProgram;
+import me.zombii.beryllium.client.rendering.world.chunk.ChunkMeshingGroup;
 import me.zombii.beryllium.common.BerylliumCommon;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -53,24 +55,12 @@ public abstract class MixinItemGameEntity extends GameEntity {
 
     private final Matrix4 matrix4 = new Matrix4();
 
-    private static short argb8888ToRgb565(int argb) {
-        int r = (argb >> 16) & 0xFF;
-        int g = (argb >> 8) & 0xFF;
-        int b = argb & 0xFF;
-        r >>= 3;
-        g >>= 2;
-        b >>= 3;
-        return (short) ((r << 11) | (g << 5) | b);
-    }
-
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private void render(Camera worldCamera, CallbackInfo ci) {
-        if (GameSingletons.isHost()) this.age += Gdx.graphics.getDeltaTime();
-//        matrix4.idt();
-//        matrix4.translate(position.x, position.y, position.z);
-
         if (this.getItem() instanceof ItemBlock itemBlock) {
-            if (model == null) {
+            if (GameSingletons.isHost()) this.age += Gdx.graphics.getDeltaTime();
+
+            if (mesh == null && currentChunk != null) {
                 renderLayer = RenderLayers.LAYER_REGISTRY.get(Identifier.of(BerylliumCommon.NAMESPACE, "opaque-block-render-layer"));
                 Tessallator tessallator = new Tessallator(100);
                 mesh = new BerylliumMesh(100, true);
@@ -81,17 +71,28 @@ public abstract class MixinItemGameEntity extends GameEntity {
                 BlockState state = itemBlock.getBlockState();
                 try {
                     Identifier modelId = Identifier.of((String) ReflectionUtil.getField(state, "modelName").get(state));
-                    System.out.println(modelId);
                     model = ModelBaker.get(BerylliumModelLoader.getModel(modelId));
                 } catch (NoSuchFieldException | IllegalAccessException e) {
                     throw new RuntimeException(e);
                 }
-                model.addVertices(tessallator, (short)0, BakedFace.ALL_FACES_SHOWING, (short) -1);
-                model.addVertices(tessallator, (short)0, -1, (short) -1);
-                mesh.dump(tessallator);
+//                short color = (short) 0xF800;
+                short color = (short) 0;
+                model.addVertices(tessallator, (short)0, BakedFace.ALL_FACES_SHOWING, color);
+                model.addVertices(tessallator, (short)0, -1, color);
+                mesh.dump(tessallator, true);
                 tessallator.dispose();
                 mesh.initGL();
+//                mesh = new BerylliumMesh(1, true);
+//                Chunk chunk = zone.getChunkAtChunkCoords(currentChunk.chunkX, currentChunk.chunkY, currentChunk.chunkZ);
+//                ChunkMeshingGroup.meshChunk(chunk, mesh);
+//                mesh.initGL();
+
                 if (mesh == null) throw new IllegalStateException("Failed to initialize BerylliumMesh");
+            }
+
+            if (mesh == null) {
+                ci.cancel();
+                return;
             }
 
             float cx = worldCamera.position.x;
@@ -110,8 +111,8 @@ public abstract class MixinItemGameEntity extends GameEntity {
             mesh.render(worldCamera, renderLayer, tmpModelMatrix);
             worldCamera.position.set(cx, cy, cz);
             worldCamera.update();
+            ci.cancel();
         }
-        ci.cancel();
     }
 
 }

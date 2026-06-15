@@ -73,6 +73,7 @@ public record BakedFace(
     public static final int POS_Z_SHOWING = 0b0100000;
     public static final int NO_CULL_FACES = 0b1000000;
     public static final int ALL_FACES_SHOWING = 0b1111111;
+    public static final int ALL_CULLABLE_SHOWING = 0b0111111;
     public static final int[] MASKS = new int[] {
             NEG_X_SHOWING,
             POS_X_SHOWING,
