@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ChunkMesh extends BerylliumMesh {
 
+    public int scale = 1;
     Chunk chunk;
     AtomicBoolean isFinished;
 

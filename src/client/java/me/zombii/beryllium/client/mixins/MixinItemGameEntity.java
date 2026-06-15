@@ -2,9 +2,7 @@ package me.zombii.beryllium.client.mixins;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Vector3;
 import dev.puzzleshq.puzzleloader.loader.util.ReflectionUtil;
 import finalforeach.cosmicreach.TickRunner;
 import finalforeach.cosmicreach.blocks.BlockState;
@@ -15,23 +13,17 @@ import finalforeach.cosmicreach.items.ItemBlock;
 import finalforeach.cosmicreach.items.ItemStack;
 import finalforeach.cosmicreach.singletons.GameSingletons;
 import finalforeach.cosmicreach.util.Identifier;
-import finalforeach.cosmicreach.world.Chunk;
 import me.zombii.beryllium.client.rendering.BerylliumMesh;
 import me.zombii.beryllium.client.rendering.layers.RenderLayer;
 import me.zombii.beryllium.client.rendering.layers.RenderLayers;
-import me.zombii.beryllium.client.rendering.model.BerylliumModel;
 import me.zombii.beryllium.client.rendering.model.loading.BerylliumModelLoader;
 import me.zombii.beryllium.client.rendering.model.loading.baking.*;
-import me.zombii.beryllium.client.rendering.opengl.shader.BerylliumShaderProgram;
-import me.zombii.beryllium.client.rendering.world.chunk.ChunkMeshingGroup;
 import me.zombii.beryllium.common.BerylliumCommon;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.awt.*;
 
 @Mixin(ItemGameEntity.class)
 public abstract class MixinItemGameEntity extends GameEntity {

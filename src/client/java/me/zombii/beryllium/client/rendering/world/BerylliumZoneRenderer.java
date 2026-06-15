@@ -45,7 +45,9 @@ public class BerylliumZoneRenderer implements IZoneRenderer {
         ObjectCollection<ChunkMesh> chunkMeshes = meshes.values();
 
         meshList.clear();
-        meshList.addAll(chunkMeshes);
+        try {
+            meshList.addAll(chunkMeshes);
+        } catch (Exception ignore) {}
 
 //        meshList.sort((a, b) -> {
 //            Chunk aChunk = a.getChunk();
@@ -65,13 +67,11 @@ public class BerylliumZoneRenderer implements IZoneRenderer {
         for (ChunkMesh chunkMesh : meshList) {
             if (chunkMesh == null) continue;
             if (!chunkMesh.isFinished()) continue;
-//            if (!chunkMesh.isInitialized()) {
-//                chunkMesh.initGL();
-//            }
             Chunk chunk = chunkMesh.getChunk();
 
             matrix4.idt();
             matrix4.translate(chunk.blockX, chunk.blockY, chunk.blockZ);
+//            matrix4.scl(Math.max(chunkMesh.scale / 2, 1));
             chunkMesh.render(camera, renderLayer, matrix4);
         }
     }

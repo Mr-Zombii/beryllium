@@ -2,16 +2,12 @@ package me.zombii.beryllium.client.rendering.world;
 
 import finalforeach.cosmicreach.world.Chunk;
 import me.zombii.beryllium.client.rendering.world.chunk.ChunkMesh;
-import me.zombii.beryllium.client.rendering.world.chunk.ChunkMeshingGroup;
-import org.spongepowered.asm.mixin.injection.At;
+import me.zombii.beryllium.client.rendering.world.chunk.ChunkMesher;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BerylliumMeshingThread implements Runnable {
@@ -47,7 +43,7 @@ public class BerylliumMeshingThread implements Runnable {
         workingList.put(chunkMesh.getChunk(), chunkMesh);
         chunkRunnableQueue.add(() -> {
             chunkMesh.getIsFinished().set(false);
-            ChunkMeshingGroup.meshChunk(chunkMesh.getChunk(), chunkMesh);
+            ChunkMesher.meshChunk(chunkMesh.getChunk(), chunkMesh);
             chunkMesh.getIsFinished().set(true);
             workingList.remove(chunkMesh.getChunk());
         });

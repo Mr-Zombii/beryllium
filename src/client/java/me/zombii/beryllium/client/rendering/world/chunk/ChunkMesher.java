@@ -7,7 +7,6 @@ import finalforeach.cosmicreach.world.Chunk;
 import finalforeach.cosmicreach.world.Zone;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import me.zombii.beryllium.client.rendering.BerylliumMesh;
 import me.zombii.beryllium.client.rendering.TintProvider;
 import me.zombii.beryllium.client.rendering.model.BerylliumModel;
 import me.zombii.beryllium.client.rendering.model.loading.BerylliumModelLoader;
@@ -16,22 +15,20 @@ import me.zombii.beryllium.client.rendering.model.loading.baking.BakedFace;
 import me.zombii.beryllium.client.rendering.model.loading.baking.ModelBaker;
 import me.zombii.beryllium.client.rendering.model.loading.baking.Tessallator;
 
-import java.lang.reflect.Field;
-
-public class ChunkMeshingGroup {
+public class ChunkMesher {
 
     public static final int quadsPerChunk = 16 * 16 * 16 * BakedBerylliumModel.MAX_FACES_PER_MODEL;
 
     private static final Tessallator globalTessallator = new Tessallator(quadsPerChunk);
 
-    public static void meshChunk(Chunk chunk, BerylliumMesh mesh) {
+    public static void meshChunk(Chunk chunk, ChunkMesh mesh) {
         if (mesh.isDisposed()) return;
         globalTessallator.reset();
         mesh.clear();
 
-//        System.out.println("Meshing chunk " + chunk);
         int levelOfDetail = 0;
         int blockSize = 1 << levelOfDetail;
+        mesh.scale = blockSize;
 
         int cx = chunk.getChunkX();
         int cy = chunk.getChunkY();
@@ -46,37 +43,39 @@ public class ChunkMeshingGroup {
         Chunk NY = zone.getChunkAtChunkCoords(cx, cy - 1, cz);
         Chunk NZ = zone.getChunkAtChunkCoords(cx, cy, cz - 1);
 
-        int maxBlockX = 15;
-        int maxBlockY = 15;
-        int maxBlockZ = 15;
+        int maxBlockX = (16 / blockSize) - 1;
+        int maxBlockY = (16 / blockSize) - 1;
+        int maxBlockZ = (16 / blockSize) - 1;
 
         for (int x = 0; x < 16; x += 1) {
             for (int y = 0; y < 16; y += 1) {
                 for (int z = 0; z < 16; z += 1) {
-                    BlockState state = chunk.getBlockState(x, y, z);
-//                    BlockState state = getMostAbundant(x, y, z, blockSize, chunk);
+//                    BlockState state = chunk.getBlockState(x, y, z);
+                    BlockState state = getMostAbundant(x, y, z, blockSize, chunk);
 
                     // skip model-less blocks
+                    if (state == null) continue;
                     if (state.hasEmptyModel()) continue;
 
                     int faceMask = 0; // will be inverted for model stuff
-                    if (x == 0 && NX != null && checkState(state, NX.getBlockState(maxBlockX, y, z))) faceMask |= BakedFace.NEG_X_SHOWING;
-                    else if (checkState(state, chunk.getBlockState(x - blockSize, y, z))) faceMask |= BakedFace.NEG_X_SHOWING;
 
-                    if (y == 0 && NY != null && checkState(state, NY.getBlockState(x, maxBlockY, z))) faceMask |= BakedFace.NEG_Y_SHOWING;
-                    else if (checkState(state, chunk.getBlockState(x, y - blockSize, z))) faceMask |= BakedFace.NEG_Y_SHOWING;
+                    if (x == 0 && NX != null && checkState(state, getMostAbundant(maxBlockX, y, z, blockSize, NX))) faceMask |= BakedFace.NEG_X_SHOWING;
+                    else if (checkState(state, getMostAbundant(x - blockSize, y, z, blockSize, chunk))) faceMask |= BakedFace.NEG_X_SHOWING;
 
-                    if (z == 0 && NZ != null && checkState(state, NZ.getBlockState(x, y, maxBlockZ))) faceMask |= BakedFace.NEG_Z_SHOWING;
-                    else if (checkState(state, chunk.getBlockState(x, y, z - blockSize))) faceMask |= BakedFace.NEG_Z_SHOWING;
+                    if (y == 0 && NY != null && checkState(state, getMostAbundant(x, maxBlockY, z, blockSize, NY))) faceMask |= BakedFace.NEG_Y_SHOWING;
+                    else if (checkState(state, getMostAbundant(x, y - blockSize, z, blockSize, chunk))) faceMask |= BakedFace.NEG_Y_SHOWING;
 
-                    if (x == maxBlockX && PX != null && checkState(state, PX.getBlockState(0, y, z))) faceMask |= BakedFace.POS_X_SHOWING;
-                    else if (checkState(state, chunk.getBlockState(x + blockSize, y, z))) faceMask |= BakedFace.POS_X_SHOWING;
+                    if (z == 0 && NZ != null && checkState(state, getMostAbundant(x, y, maxBlockZ, blockSize, NZ))) faceMask |= BakedFace.NEG_Z_SHOWING;
+                    else if (checkState(state, getMostAbundant(x, y, z - blockSize, blockSize, chunk))) faceMask |= BakedFace.NEG_Z_SHOWING;
 
-                    if (y == maxBlockY && PY != null && checkState(state, PY.getBlockState(x, 0, z))) faceMask |= BakedFace.POS_Y_SHOWING;
-                    else if (checkState(state, chunk.getBlockState(x, y + blockSize, z))) faceMask |= BakedFace.POS_Y_SHOWING;
+                    if (x == maxBlockX && PX != null && checkState(state, getMostAbundant(0, y, z, blockSize, PX))) faceMask |= BakedFace.POS_X_SHOWING;
+                    else if (checkState(state, getMostAbundant(x + blockSize, y, z, blockSize, chunk))) faceMask |= BakedFace.POS_X_SHOWING;
 
-                    if (z == maxBlockZ && PZ != null && checkState(state, PZ.getBlockState(x, y, 0))) faceMask |= BakedFace.POS_Z_SHOWING;
-                    else if (checkState(state, chunk.getBlockState(x, y, z + blockSize))) faceMask |= BakedFace.POS_Z_SHOWING;
+                    if (y == maxBlockY && PY != null && checkState(state, getMostAbundant(x, 0, z, blockSize, PY))) faceMask |= BakedFace.POS_Y_SHOWING;
+                    else if (checkState(state, getMostAbundant(x, y + blockSize, z, blockSize, chunk))) faceMask |= BakedFace.POS_Y_SHOWING;
+
+                    if (z == maxBlockZ && PZ != null && checkState(state, getMostAbundant(x, y, 0, blockSize, PZ))) faceMask |= BakedFace.POS_Z_SHOWING;
+                    else if (checkState(state, getMostAbundant(x, y, z + blockSize, blockSize, chunk))) faceMask |= BakedFace.POS_Z_SHOWING;
 
                     if ((faceMask & BakedFace.ALL_CULLABLE_SHOWING) == BakedFace.ALL_CULLABLE_SHOWING)
                         continue;

@@ -95,7 +95,8 @@ public class BerylliumMesh {
 
         GL30.glBindVertexArray(this.vao);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vbo);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, this.vertexBuffer, this.usage);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, (long) budget * Tessallator.VERTEX_SIZE * 4, this.usage);
+        GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, this.vertexBuffer);
 
         GL20.glVertexAttribPointer(0, 3, GL30.GL_HALF_FLOAT, false, Tessallator.VERTEX_SIZE, 0);
         GL20.glEnableVertexAttribArray(0);
@@ -109,10 +110,12 @@ public class BerylliumMesh {
         GL20.glEnableVertexAttribArray(4);
 
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.ebo);
-        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, this.indexBuffer, this.usage);
+        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, (long) budget * 6 * 4, this.usage);
+        GL15.glBufferSubData(GL15.GL_ELEMENT_ARRAY_BUFFER, 0, this.indexBuffer);
 
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         GL30.glBindVertexArray(0);
+        resized = false;
     }
 
     private int glBudget = 0;
