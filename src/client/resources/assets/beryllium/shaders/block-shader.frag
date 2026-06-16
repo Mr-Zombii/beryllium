@@ -84,9 +84,6 @@ void renderMode0(void) {
     fragColor.rgb = max(fragColor.rgb, emissiveColor.rgb * emissiveColor.a);
     #endif
 
-    vec3 fogColor = getFogColor(u_ambientSkyColor, v_blockLightColor.rgb, .25, v_worldPos, u_cameraPos);
-    fragColor.rgb = applyFog(fogColor, fragColor.rgb, .25, v_worldPos, u_cameraPos);
-
     fragColor.rgb = max(fragColor.rgb, albedoColor.rgb * u_ambientWorldColor * u_ambientSkyColor);
 //    fragColor.rgb = max(fragColor.rgb, albedoColor.rgb * u_ambientWorldColor);
 
@@ -107,7 +104,7 @@ void renderMode3(void) {
     fragColor.rgba = vec4(vec3(v_bakedAoValue), 1);
 }
 
-#define RENDER_MODE 0
+#define RENDER_MODE 1
 
 void main(void) {
     switch (RENDER_MODE) {
