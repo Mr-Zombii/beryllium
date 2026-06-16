@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 public class VertexGroup {
 
@@ -131,37 +132,25 @@ public class VertexGroup {
         this.enabled.set(enabled);
     }
 
-    public void addFaces(
-            Tessallator tessallator,
-            int faceMask,
-            short lightLevel,
-            byte[] faceAO,
-            short modelTint
-    ) {
-        addFaces(tessallator, faceMask, lightLevel, faceAO, modelTint, 0, 0, 0);
-    }
 
     public void addFaces(
             Tessallator tessallator,
+            short[] skyLightLevels,
+            short[] blockLightLevels,
+            byte[] aoLevels,
             int faceMask,
-            short lightLevel,
-            byte[] faceAO,
-            short modelTint,
-            int offsX,
-            int offsY,
-            int offsZ
+            Function<Integer, Short> tintGetter,
+            int x, int y, int z
     ) {
-        for (int i = 0; i < BakedFace.MASKS.length; i++) {
-            if ((faceMask & BakedFace.MASKS[i]) != 0) {
+        for (int d = 0; d < BakedFace.MASKS.length; d++) {
+            if ((faceMask & BakedFace.MASKS[d]) != 0) {
                 addFaces(
                         tessallator,
-                        lightLevel,
-                        faceAO,
-                        i,
-                        modelTint,
-                        offsX,
-                        offsY,
-                        offsZ
+                        skyLightLevels,
+                        blockLightLevels,
+                        aoLevels,
+                        tintGetter,
+                        d, x, y, z
                 );
             }
         }
@@ -169,32 +158,23 @@ public class VertexGroup {
 
     public void addFaces(
             Tessallator tessallator,
-            short lightLevel,
-            byte[] faceAO,
-            int direction,
-            short modelTint
-    ) {
-        addFaces(tessallator, lightLevel, faceAO, direction, modelTint, 0, 0, 0);
-    }
-
-    public void addFaces(
-            Tessallator tessallator,
-            short lightLevel,
-            byte[] faceAO,
-            int direction,
-            short modelTint,
-            int offsX,
-            int offsY,
-            int offsZ
+            short[] skyLightLevels,
+            short[] blockLightLevels,
+            byte[] aoLevels,
+            Function<Integer, Short> tintGetter,
+            int direction, int x, int y, int z
     ) {
         ObjectList<BakedFace> faces = getFacesByDirection(direction == 6 ? -1 : direction);
         for (BakedFace face : faces) {
+            int directionOrdinal = face.direction();
+
             tessallator.addQuad(
                     face,
-                    lightLevel,
-                    faceAO,
-                    modelTint,
-                    offsX, offsY, offsZ
+                    skyLightLevels[directionOrdinal],
+                    blockLightLevels[directionOrdinal],
+                    aoLevels,
+                    tintGetter.apply(face.tintIndex()),
+                    directionOrdinal * 4, x, y, z
             );
         }
     }

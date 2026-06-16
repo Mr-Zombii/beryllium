@@ -6,6 +6,7 @@ import dev.puzzleshq.puzzleloader.cosmic.game.util.IndependentAssetLoader;
 import dev.puzzleshq.puzzleloader.loader.launch.Piece;
 import dev.puzzleshq.puzzleloader.loader.mod.entrypoint.client.ClientModInit;
 import dev.puzzleshq.puzzleloader.loader.mod.entrypoint.client.ClientPostModInit;
+import finalforeach.cosmicreach.blocks.Block;
 import finalforeach.cosmicreach.singletons.GameSingletons;
 import finalforeach.cosmicreach.util.Identifier;
 import finalforeach.cosmicreach.util.assets.GameAssetLoader;
@@ -22,11 +23,13 @@ import me.zombii.beryllium.client.rendering.model.loading.baking.ModelBakingThre
 import me.zombii.beryllium.client.rendering.opengl.textures.atlas.GLAtlas;
 import me.zombii.beryllium.client.rendering.world.BerylliumMeshingThread;
 import me.zombii.beryllium.client.rendering.world.BerylliumZoneRenderer;
+import me.zombii.beryllium.client.rendering.world.chunk.ChunkMesher;
 import me.zombii.beryllium.common.BerylliumCommon;
 import me.zombii.beryllium.common.BerylliumConfig;
 import net.neoforged.bus.api.SubscribeEvent;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -101,6 +104,13 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
 
     @Override
     public void onClientPostInit() {
+        ChunkMesher.init();
         GameSingletons.zoneRenderer = new BerylliumZoneRenderer();
+//        register(Block.getById("base:grass"), (state, pos, tintIdx) -> {
+//            int r = (int) ((pos.localX / 16f) * 255);
+//            int g = (int) ((pos.localY / 16f) * 255);
+//            int b = (int) ((pos.localZ / 16f) * 255);
+//            return argb8888ToRgb565(new Color(r, g, b).getRGB());
+//        });
     }
 }

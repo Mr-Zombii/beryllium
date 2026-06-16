@@ -12,6 +12,7 @@ public record BakedFace(
         BakedBerylliumModel model,
         float[] verts,
         String textureID,
+        int direction,
         int faceUvIndex,
         int uvRotation,
         boolean doAO,
@@ -54,13 +55,8 @@ public record BakedFace(
             newVerts[i + 2] = tmp.z;
         }
 
-        System.out.println("-------------------");
-        System.out.println(Arrays.toString(oldVerts));
-        System.out.println(Arrays.toString(newVerts));
-        System.out.println("-------------------");
-
         return new BakedFace(
-            model, newVerts, face.getTextureID(), uvIdx, face.getUVRotation(),
+            model, newVerts, face.getTextureID(), face.getDirection(), uvIdx, face.getUVRotation(),
             face.usesAO(), face.getTintIndex(), quad.flipIndices()
         );
     }

@@ -24,7 +24,7 @@ public class RenderLayers {
         EventCollectRenderLayers collectRenderLayersEvent = new EventCollectRenderLayers(collectedRenderLayers);
         GameRegistries.COSMIC_EVENT_BUS.post(collectRenderLayersEvent);
 
-        boolean debugMode = BerylliumConfig.getOrLoad().debugMode;
+        boolean debugMode = BerylliumConfig.INSTANCE.debugMode;
 
         if (debugMode)
             LOGGER.log(Level.INFO, "Collected {} RenderLayer(s) for registration", collectedRenderLayers.size());

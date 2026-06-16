@@ -26,15 +26,6 @@ public class TintProvider {
         return (short) ((r << 11) | (g << 5) | b);
     }
 
-    static {
-        register(Block.getById("base:grass"), (state, pos, tintIdx) -> {
-            int r = (int) ((pos.localX / 16f) * 255);
-            int g = (int) ((pos.localY / 16f) * 255);
-            int b = (int) ((pos.localZ / 16f) * 255);
-            return argb8888ToRgb565(new Color(r, g, b).getRGB());
-        });
-    }
-
     public static void register(Block block, TintFunction function) {
         TINT_FUNCTION_REGISTRY.store(Identifier.of(block.getStringId()), function);
     }

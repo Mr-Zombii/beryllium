@@ -46,6 +46,8 @@ public abstract class MixinItemGameEntity extends GameEntity {
     }
 
     private final Matrix4 matrix4 = new Matrix4();
+    private final short[] emptyShorts = new short[]{15, 15, 15, 15, 15, 15};
+    private final byte[] emptyBytes = new byte[6 * 4];
 
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private void render(Camera worldCamera, CallbackInfo ci) {
@@ -68,9 +70,13 @@ public abstract class MixinItemGameEntity extends GameEntity {
                     throw new RuntimeException(e);
                 }
 //                short color = (short) 0xF800;
-                short color = (short) 0;
-                model.addVertices(tessallator, (short)0, BakedFace.ALL_FACES_SHOWING, color);
-                model.addVertices(tessallator, (short)0, -1, color);
+                model.addVertices(
+                        tessallator,
+                        emptyShorts, emptyShorts, emptyBytes,
+                        BakedFace.ALL_FACES_SHOWING,
+                        (i) -> (short) 0,
+                        0, 0, 0
+                );
                 mesh.dump(tessallator, true);
                 tessallator.dispose();
                 mesh.initGL();
@@ -100,7 +106,7 @@ public abstract class MixinItemGameEntity extends GameEntity {
             tmpModelMatrix.translate(0.0F, this.renderSize / 2.0F + this.renderSize / 2.0F, 0.0F);
             worldCamera.position.sub(tmpRenderPos);
             worldCamera.update();
-            mesh.render(worldCamera, renderLayer, tmpModelMatrix);
+            mesh.render(worldCamera, renderLayer, tmpModelMatrix, true);
             worldCamera.position.set(cx, cy, cz);
             worldCamera.update();
             ci.cancel();

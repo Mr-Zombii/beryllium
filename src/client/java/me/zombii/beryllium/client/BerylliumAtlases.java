@@ -20,7 +20,7 @@ public class BerylliumAtlases {
     public static TBO PerFaceUVBuffer;
 
     public static void initAtlases() {
-        BerylliumConfig config = BerylliumConfig.getOrLoad();
+        BerylliumConfig config = BerylliumConfig.INSTANCE;
 
         ALBEDO_ATLAS = new GLAtlas(Identifier.of(BerylliumCommon.NAMESPACE, "albedo-atlas"), 1024, 1024);
 

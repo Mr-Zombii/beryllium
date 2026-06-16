@@ -8,7 +8,7 @@ import java.io.IOException;
 public class BerylliumConfig {
 
     public static final File CONFIG_LOCATION = new File(".beryllium/config.json");
-    private static BerylliumConfig instance;
+    public static BerylliumConfig INSTANCE = getOrLoad();
 
     public boolean debugMode = true;
     public boolean enableEmissiveAtlas = false;
@@ -17,20 +17,19 @@ public class BerylliumConfig {
 
     public BerylliumConfig() {}
 
-    public static BerylliumConfig getOrLoad() {
-        if (instance != null) return instance;
-
+    private static BerylliumConfig getOrLoad() {
         if (CONFIG_LOCATION.exists()) {
             try {
+                BerylliumConfig config;
                 FileReader fr = new FileReader(BerylliumConfig.CONFIG_LOCATION);
-                instance = BerylliumCommon.GSON.fromJson(fr, BerylliumConfig.class);
+                config = BerylliumCommon.GSON.fromJson(fr, BerylliumConfig.class);
                 fr.close();
+                return config;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            return instance;
         }
-        return instance = new BerylliumConfig();
+        return new BerylliumConfig();
     }
 
     public void save() {

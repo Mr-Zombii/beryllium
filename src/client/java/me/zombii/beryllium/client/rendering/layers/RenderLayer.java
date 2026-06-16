@@ -26,7 +26,7 @@ public class RenderLayer {
         this.usesDepthBuffer = usesDepthBuffer;
         this.sortOrder = sortOrder;
 
-        BerylliumConfig config = BerylliumConfig.getOrLoad();
+        BerylliumConfig config = BerylliumConfig.INSTANCE;
 
         String prependCode = "";
         if (config.enableEmissiveAtlas)

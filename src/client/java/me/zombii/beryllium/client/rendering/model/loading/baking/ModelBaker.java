@@ -43,7 +43,7 @@ public class ModelBaker {
         GLAtlas normalAtlas = BerylliumAtlases.NORMAL_ATLAS;
         GLAtlas materialAtlas = BerylliumAtlases.MATERIAL_ATLAS;
 
-        BerylliumConfig config = BerylliumConfig.getOrLoad();
+        BerylliumConfig config = BerylliumConfig.INSTANCE;
 
         for (TextureEntry value : textureMap.values()) {
             Identifier albedoTexturePath = value.getAlbedoTexturePath();
@@ -106,7 +106,7 @@ public class ModelBaker {
     private static final Matrix4 matTrns = new Matrix4();
 
     public static void requestAtlasUpdate() {
-        BerylliumConfig config = BerylliumConfig.getOrLoad();
+        BerylliumConfig config = BerylliumConfig.INSTANCE;
 
         ModelBakingThread.postRunnable(() -> {
             if (config.debugMode) LOGGER.log(Level.INFO, "Finished Baking Models");
@@ -186,7 +186,7 @@ public class ModelBaker {
     }
 
     public static void requestFaceBufferUpdate() {
-        BerylliumConfig config = BerylliumConfig.getOrLoad();
+        BerylliumConfig config = BerylliumConfig.INSTANCE;
 
         ModelBakingThread.postRunnable(() -> {
             Gdx.app.postRunnable(() -> {
@@ -382,7 +382,7 @@ public class ModelBaker {
                 groups, groupMap,
                 model.getGroups()
         );
-        if (BerylliumConfig.getOrLoad().debugMode) {
+        if (BerylliumConfig.INSTANCE.debugMode) {
             int groupCount = groups.size();
             int quadCount = 0;
             for (VertexGroup vertexGroup : groups) {
@@ -403,7 +403,7 @@ public class ModelBaker {
         EventCollectModels collectModelsEvent = new EventCollectModels(collectedModels);
         GameRegistries.COSMIC_EVENT_BUS.post(collectModelsEvent);
 
-        if (BerylliumConfig.getOrLoad().debugMode)
+        if (BerylliumConfig.INSTANCE.debugMode)
             LOGGER.log(Level.INFO, "Collected {} models for baking", collectedModels.size());
 
         for (BerylliumModel collectedModel : collectedModels) {

@@ -28,7 +28,6 @@ public class BerylliumMesh {
     int usage;
     int budget;
 
-    // Fix #4: cache config instead of calling getOrLoad() every bind()
     private BerylliumConfig cachedConfig;
 
     public BerylliumMesh(
@@ -41,7 +40,7 @@ public class BerylliumMesh {
         vertexBufferPtr = MemoryUtil.memAddress(vertexBuffer);
         indexBufferPtr = MemoryUtil.memAddress(indexBuffer);
         this.usage = isStatic ? GL15.GL_STATIC_DRAW : GL15.GL_DYNAMIC_DRAW;
-        this.cachedConfig = BerylliumConfig.getOrLoad();
+        this.cachedConfig = BerylliumConfig.INSTANCE;
     }
 
     private volatile long dumpVertSize = 0;
@@ -109,6 +108,23 @@ public class BerylliumMesh {
         GL30.glVertexAttribIPointer(4, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, 20);
         GL20.glEnableVertexAttribArray(4);
 
+        int ptr = 22;
+
+        if (cachedConfig.enableEmissiveAtlas) {
+            GL30.glVertexAttribIPointer(5, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, ptr);
+            GL20.glEnableVertexAttribArray(5);
+            ptr += 2;
+        }
+        if (cachedConfig.enableNormalAtlas) {
+            GL30.glVertexAttribIPointer(6, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, ptr);
+            GL20.glEnableVertexAttribArray(6);
+            ptr += 2;
+        }
+        if (cachedConfig.enableMaterialAtlas) {
+            GL30.glVertexAttribIPointer(7, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, ptr);
+            GL20.glEnableVertexAttribArray(7);
+        }
+
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.ebo);
         GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, (long) budget * 6 * 4, this.usage);
         GL15.glBufferSubData(GL15.GL_ELEMENT_ARRAY_BUFFER, 0, this.indexBuffer);
@@ -123,7 +139,6 @@ public class BerylliumMesh {
     public void bind() {
         if (dirty) {
             if (!initialized || budget > glBudget) {
-                // GL buffers don't exist or are too small — full reinit
                 initGL();
                 glBudget = budget;
             } else {
@@ -143,23 +158,6 @@ public class BerylliumMesh {
         GL30.glBindVertexArray(this.vao);
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.ebo);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vbo);
-
-        int ptr = 22;
-
-        if (cachedConfig.enableEmissiveAtlas) {
-            GL30.glVertexAttribIPointer(5, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, ptr);
-            GL20.glEnableVertexAttribArray(5);
-            ptr += 2;
-        }
-        if (cachedConfig.enableNormalAtlas) {
-            GL30.glVertexAttribIPointer(6, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, ptr);
-            GL20.glEnableVertexAttribArray(6);
-            ptr += 2;
-        }
-        if (cachedConfig.enableMaterialAtlas) {
-            GL30.glVertexAttribIPointer(7, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, ptr);
-            GL20.glEnableVertexAttribArray(7);
-        }
     }
 
     private void disposeJavaBuffers() {
@@ -185,12 +183,13 @@ public class BerylliumMesh {
     int albedoAtlasLoc = -1;
     int albedoUVBufferLoc = -1;
     int faceUVBufferLoc = -1;
+    int emissiveUVBufferLoc = -1;
+    int emissiveAtlasLoc = -1;
 
     boolean initUniforms = true;
 
-    public void render(Camera camera, RenderLayer layer, Matrix4 modelMatrix) {
-
-        bind(); // process dirty/upload first
+    public void render(Camera camera, RenderLayer layer, Matrix4 modelMatrix, boolean bindShader) {
+        bind();
 
         if (indexBuffer.limit() == 0) {
             unbind();
@@ -200,7 +199,7 @@ public class BerylliumMesh {
         boolean useDepthBuffer = layer.usesDepthBuffer();
 
         BerylliumShaderProgram program = layer.getProgram();
-        program.bind();
+        if (bindShader) program.bind();
 
         if (initUniforms) {
             projMatLoc = program.getUniformLocation("u_projMat");
@@ -209,25 +208,38 @@ public class BerylliumMesh {
             albedoAtlasLoc = program.getUniformLocation("u_albedoAtlas");
             albedoUVBufferLoc = program.getUniformLocation("u_albedoUVBuffer");
             faceUVBufferLoc = program.getUniformLocation("u_faceUVBuffer");
+            emissiveUVBufferLoc = program.getUniformLocation("u_emissiveUVBuffer");
+            emissiveAtlasLoc = program.getUniformLocation("u_emissiveAtlas");
             initUniforms = false;
         }
 
         GL11.glEnable(GL11.GL_DEPTH_TEST);
 
-        BerylliumAtlases.ALBEDO_ATLAS.bind(0);
-        BerylliumAtlases.AlbedoUVBuffer.bind(1);
-        BerylliumAtlases.PerFaceUVBuffer.bind(2);
+        int unit = 0;
+        int albedoAtlas = -1;
+        int albedoBuffer = -1;
+        int faceBuffer = -1;
+        int emissiveAtlas = -1;
+        int emissiveBuffer = -1;
+
+        albedoAtlas = BerylliumAtlases.ALBEDO_ATLAS.bind(unit++);
+        albedoBuffer = BerylliumAtlases.AlbedoUVBuffer.bind(unit++);
+        if (BerylliumConfig.INSTANCE.enableEmissiveAtlas) {
+            emissiveAtlas = BerylliumAtlases.EMISSIVE_ATLAS.bind(unit++);
+            emissiveBuffer = BerylliumAtlases.EmissiveUVBuffer.bind(unit++);
+        }
+        faceBuffer = BerylliumAtlases.PerFaceUVBuffer.bind(unit++);
 
         program.bindUniformMat(projMatLoc, false, camera.projection);
         program.bindUniformMat(viewMatLoc, false, camera.view);
         program.bindUniformMat(modelMatLoc, false, modelMatrix);
 
-        if (albedoAtlasLoc != -1)
-            GL20.glUniform1i(albedoAtlasLoc, 0);
-        if (albedoUVBufferLoc != -1)
-            GL20.glUniform1i(albedoUVBufferLoc, 1);
-        if (faceUVBufferLoc != -1)
-            GL20.glUniform1i(faceUVBufferLoc, 2);
+        if (albedoAtlasLoc != -1) GL20.glUniform1i(albedoAtlasLoc, albedoAtlas);
+        if (albedoUVBufferLoc != -1) GL20.glUniform1i(albedoUVBufferLoc, albedoBuffer);
+        if (faceUVBufferLoc != -1) GL20.glUniform1i(faceUVBufferLoc, faceBuffer);
+        if (emissiveUVBufferLoc != -1) GL20.glUniform1i(emissiveAtlasLoc, emissiveAtlas);
+        if (emissiveAtlasLoc != -1) GL20.glUniform1i(emissiveUVBufferLoc, emissiveBuffer);
+
 
         bind();
         GL20.glDrawElements(GL20.GL_TRIANGLES, indexBuffer.limit() / 4, GL20.GL_UNSIGNED_INT, 0);
@@ -236,6 +248,10 @@ public class BerylliumMesh {
         BerylliumAtlases.ALBEDO_ATLAS.unbind();
         BerylliumAtlases.AlbedoUVBuffer.unbind();
         BerylliumAtlases.PerFaceUVBuffer.unbind();
+        if (BerylliumConfig.INSTANCE.enableEmissiveAtlas) {
+            BerylliumAtlases.EMISSIVE_ATLAS.unbind();
+            BerylliumAtlases.EmissiveUVBuffer.unbind();
+        }
     }
 
     private boolean isDisposed;
@@ -257,6 +273,9 @@ public class BerylliumMesh {
     private boolean dirty;
 
     public void resize(int quadBudget) {
+        if (isDisposed)
+            throw new IllegalStateException("Tried to resize disposed mesh!");
+
         if (this.budget >= quadBudget) {
             return;
         }

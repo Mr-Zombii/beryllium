@@ -11,6 +11,8 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class BakedBerylliumModel implements Iterable<VertexGroup> {
 
@@ -53,32 +55,22 @@ public class BakedBerylliumModel implements Iterable<VertexGroup> {
 
     public void addVertices(
             Tessallator tessallator,
-            short lightLevel,
+            short[] skyLightLevels,
+            short[] blockLightLevels,
+            byte[] aoLevels,
             int faceMask,
-            short modelTint
-    ) {
-        addVertices(tessallator, lightLevel, faceMask, modelTint, 0, 0, 0);
-    }
-
-    public void addVertices(
-            Tessallator tessallator,
-            short lightLevel,
-            int faceMask,
-            short modelTint,
-            int offsX,
-            int offsY,
-            int offsZ
+            Function<Integer, Short> tintGetter,
+            int x, int y, int z
     ) {
         for (VertexGroup group : groupList) {
             group.addFaces(
                     tessallator,
+                    skyLightLevels,
+                    blockLightLevels,
+                    aoLevels,
                     faceMask,
-                    lightLevel,
-                    Tessallator.EMPTY_AO,
-                    modelTint,
-                    offsX,
-                    offsY,
-                    offsZ
+                    tintGetter,
+                    x, y, z
             );
         }
     }

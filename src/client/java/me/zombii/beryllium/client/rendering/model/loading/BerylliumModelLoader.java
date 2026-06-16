@@ -48,7 +48,6 @@ public class BerylliumModelLoader {
     public static Map<Identifier, BerylliumModel> getModelMap() {
         return Object2ObjectMaps.unmodifiable(modelMap);
     }
-
     public static BerylliumModel loadVanillaBlockModel(Identifier modelID, File file) throws IOException {
         FileInputStream fis = new FileInputStream(file);
         byte[] bytes = fis.readAllBytes();
@@ -78,7 +77,7 @@ public class BerylliumModelLoader {
             return modelMap.get(name);
         }
 
-        boolean debugMode = BerylliumConfig.getOrLoad().debugMode;
+        boolean debugMode = BerylliumConfig.INSTANCE.debugMode;
 
         JsonValue value = JsonValue.readHjson(json);
         if (!value.isObject()) throw new IllegalArgumentException("Expected a json object as input, got a \"" + value.getType() + "\" for model \"" + name + "\"");
@@ -278,7 +277,7 @@ public class BerylliumModelLoader {
     }
 
     public static BerylliumModel register(BerylliumModel newModel, boolean overwrite) {
-        boolean debugMode = BerylliumConfig.getOrLoad().debugMode;
+        boolean debugMode = BerylliumConfig.INSTANCE.debugMode;
 
         int partCount = 0;
         if (debugMode) {

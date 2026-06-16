@@ -1,6 +1,6 @@
 {
   "debugMode": true,
-  "enableEmissiveAtlas": false,
+  "enableEmissiveAtlas": true,
   "enableNormalAtlas": false,
   "enableMaterialAtlas": false
 }

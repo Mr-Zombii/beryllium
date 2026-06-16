@@ -17,7 +17,7 @@ public record BaseQuad(
     };
 
     public static final int[] indices_flipped = new int[]{
-            0, 2, 3, 3, 1, 0
+            2, 1, 3, 0, 1, 2
     };
 
     //Base quad based on direction will have the bottom right corner be the coordinate be c00 (first 3 floats of verts)

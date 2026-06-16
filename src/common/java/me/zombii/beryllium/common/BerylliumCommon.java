@@ -12,7 +12,7 @@ public class BerylliumCommon implements ModInit {
     @Override
     public void onInit() {
         // create or load instance and save to create dir and file
-        BerylliumConfig.getOrLoad().save();
+        BerylliumConfig.INSTANCE.save();
     }
 
 }

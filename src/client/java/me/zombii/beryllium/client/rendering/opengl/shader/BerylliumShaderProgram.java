@@ -54,10 +54,16 @@ public class BerylliumShaderProgram {
         this.fragmentSource = IndependentAssetLoader.loadAsset(fragmentShader).getString();
 
         if (this.prependVertexSource != null) {
-            this.vertexSource = this.prependVertexSource + this.vertexSource;
+            int firstNewLine = this.vertexSource.indexOf('\n');
+            String first = this.vertexSource.substring(0, firstNewLine + 1);
+            String second = this.vertexSource.substring(firstNewLine);
+            this.vertexSource = first + this.prependVertexSource + second;
         }
         if (this.prependFragmentSource != null) {
-            this.fragmentSource = this.prependFragmentSource + this.fragmentSource;
+            int firstNewLine = this.fragmentSource.indexOf('\n');
+            String first = this.fragmentSource.substring(0, firstNewLine + 1);
+            String second = this.fragmentSource.substring(firstNewLine);
+            this.fragmentSource = first + this.prependFragmentSource + second;
         }
 
         if (programID != -1) {
