@@ -63,11 +63,11 @@ vec4 getTintColor(void) {
 
 vec4 getBlockLightColor(void) {
     int lightR = (LIGHT_COLOR_PACKED & 0x0F00) >> 8;
-//    lightR = (lightR << 4 | lightR);
+    lightR = (lightR << 4 | lightR);
     int lightG = (LIGHT_COLOR_PACKED & 0x00F0) >> 4;
-//    lightG = (lightG << 4 | lightG);
+    lightG = (lightG << 4 | lightG);
     int lightB = (LIGHT_COLOR_PACKED & 0x000F);
-//    lightB = (lightB << 4 | lightB);
+    lightB = (lightB << 4 | lightB);
 
     vec4 lightColor = vec4(float(lightR) / 255.0, float(lightG) / 255.0, float(lightB) / 255.0, 1.0);
     return lightColor;
