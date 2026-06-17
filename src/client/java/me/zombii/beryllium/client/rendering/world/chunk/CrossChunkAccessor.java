@@ -39,8 +39,7 @@ public class CrossChunkAccessor {
         if (offs.x < 0) {
             offs.x = 15;
             cx = -1;
-        }
-        else if (offs.x > 15) {
+        } else if (offs.x > 15) {
             offs.x = 0;
             cx = 1;
         }
@@ -48,8 +47,7 @@ public class CrossChunkAccessor {
         if (offs.y < 0) {
             offs.y = 15;
             cy = -1;
-        }
-        else if (offs.y > 15) {
+        } else if (offs.y > 15) {
             offs.y = 0;
             cy = 1;
         }
@@ -57,8 +55,7 @@ public class CrossChunkAccessor {
         if (offs.z < 0) {
             offs.z = 15;
             cz = -1;
-        }
-        else if (offs.z > 15) {
+        } else if (offs.z > 15) {
             offs.z = 0;
             cz = 1;
         }
@@ -67,6 +64,86 @@ public class CrossChunkAccessor {
         if (c == null) return null;
 
         return c.getBlockState((int) offs.x, (int) offs.y, (int) offs.z);
+    }
+
+    public byte getSkyLight(
+            Vector3 offs,
+            int x, int y, int z
+    ) {
+        offs.add(x, y, z);
+
+        int cx = 0;
+        int cy = 0;
+        int cz = 0;
+
+        if (offs.x < 0) {
+            offs.x = 15;
+            cx = -1;
+        } else if (offs.x > 15) {
+            offs.x = 0;
+            cx = 1;
+        }
+
+        if (offs.y < 0) {
+            offs.y = 15;
+            cy = -1;
+        } else if (offs.y > 15) {
+            offs.y = 0;
+            cy = 1;
+        }
+
+        if (offs.z < 0) {
+            offs.z = 15;
+            cz = -1;
+        } else if (offs.z > 15) {
+            offs.z = 0;
+            cz = 1;
+        }
+
+        Chunk c = getChunk(cx, cy, cz);
+        if (c == null) return 0;
+
+        return (byte) c.getSkyLight((int) offs.x, (int) offs.y, (int) offs.z);
+    }
+
+    public short getBlockLight(
+            Vector3 offs,
+            int x, int y, int z
+    ) {
+        offs.add(x, y, z);
+
+        int cx = 0;
+        int cy = 0;
+        int cz = 0;
+
+        if (offs.x < 0) {
+            offs.x = 15;
+            cx = -1;
+        } else if (offs.x > 15) {
+            offs.x = 0;
+            cx = 1;
+        }
+
+        if (offs.y < 0) {
+            offs.y = 15;
+            cy = -1;
+        } else if (offs.y > 15) {
+            offs.y = 0;
+            cy = 1;
+        }
+
+        if (offs.z < 0) {
+            offs.z = 15;
+            cz = -1;
+        } else if (offs.z > 15) {
+            offs.z = 0;
+            cz = 1;
+        }
+
+        Chunk c = getChunk(cx, cy, cz);
+        if (c == null) return 0;
+
+        return c.getBlockLight((int) offs.x, (int) offs.y, (int) offs.z);
     }
 
     public void init(Zone zone, Chunk center) {

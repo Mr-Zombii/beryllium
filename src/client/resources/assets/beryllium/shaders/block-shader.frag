@@ -93,7 +93,7 @@ void renderMode0(void) {
 
 void renderMode1(void) {
     fragColor.rgba = vec4(vec3(v_skyLight), 1);
-//    fragColor.rgba *= vec4(vec3(v_bakedAoValue), 1);
+    fragColor.rgba *= vec4(vec3(v_bakedAoValue), 1);
 }
 
 void renderMode2(void) {
@@ -104,7 +104,7 @@ void renderMode3(void) {
     fragColor.rgba = vec4(vec3(v_bakedAoValue), 1);
 }
 
-#define RENDER_MODE 1
+#define RENDER_MODE 3
 
 void main(void) {
     switch (RENDER_MODE) {
