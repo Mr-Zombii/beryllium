@@ -15,6 +15,7 @@ import me.zombii.beryllium.client.rendering.layers.RenderLayer;
 import me.zombii.beryllium.client.rendering.layers.RenderLayers;
 import me.zombii.beryllium.client.rendering.opengl.shader.BerylliumShaderProgram;
 import me.zombii.beryllium.client.rendering.world.chunk.ChunkMesh;
+import me.zombii.beryllium.client.rendering.world.chunk.ChunkMesher;
 import me.zombii.beryllium.client.rendering.world.chunk.LayeredChunkMesh;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
@@ -22,9 +23,9 @@ import org.lwjgl.opengl.GL20;
 public class BerylliumZoneRenderer implements IZoneRenderer {
 
     private final Object2ObjectMap<Chunk, LayeredChunkMesh> meshes = Object2ObjectMaps.synchronize(new Object2ObjectLinkedOpenHashMap<>());
-    private RenderLayer renderLayer;
 
     public BerylliumZoneRenderer() {
+        ChunkMesher.init();
     }
 
     @Override

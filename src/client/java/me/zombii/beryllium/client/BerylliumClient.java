@@ -110,8 +110,7 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
 
     @Override
     public void onClientPostInit() {
-        ChunkMesher.init();
-//        GameSingletons.zoneRenderer = new BerylliumZoneRenderer();
+        GameSingletons.zoneRenderer = new BerylliumZoneRenderer();
 //        register(Block.getById("base:grass"), (state, pos, tintIdx) -> {
 //            int r = (int) ((pos.localX / 16f) * 255);
 //            int g = (int) ((pos.localY / 16f) * 255);

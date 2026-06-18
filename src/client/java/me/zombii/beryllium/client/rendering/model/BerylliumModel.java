@@ -153,7 +153,7 @@ public class BerylliumModel implements Iterable<PartGroup>, HJsonSerializable {
         for (PartGroup group : groups) {
             for (Part part : group.getParts()) {
                 PartFace face = part.getFaces()[d];
-                if (face == null) continue;
+                if (face == null) return false;
                 if (!face.isCulled()) return false;
             }
         }
