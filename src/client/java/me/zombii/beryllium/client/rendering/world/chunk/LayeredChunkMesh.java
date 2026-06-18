@@ -26,6 +26,7 @@ public class LayeredChunkMesh {
     Chunk chunk;
     AtomicBoolean isFinished;
     AtomicBoolean scheduledForDisposal;
+    AtomicBoolean canRenderOldMesh;
 
     public LayeredChunkMesh(Chunk chunk, AtomicBoolean isFinished) {
         this.chunk = chunk;
@@ -34,6 +35,7 @@ public class LayeredChunkMesh {
         for (int i = 0; i < this.layers.length; i++) {
             this.layers[i] = new ChunkMesh(this);
         }
+        this.canRenderOldMesh = new AtomicBoolean(false);
     }
 
     public Chunk getChunk() {
@@ -43,9 +45,13 @@ public class LayeredChunkMesh {
     public boolean isFinished() {
         return isFinished.get();
     }
+    public void setFinished(boolean finished) {
+        canRenderOldMesh.set(!finished);
+        isFinished.set(finished);
+    }
 
-    public AtomicBoolean getIsFinished() {
-        return isFinished;
+    public boolean canRenderOldMesh() {
+        return canRenderOldMesh.get();
     }
 
     public void scheduleForDisposal() {
