@@ -176,9 +176,11 @@ public class BerylliumZoneRenderer implements IZoneRenderer {
     }
 
     @Override public void onChunkFlaggedForRemeshing(Chunk chunk) {
+        updated = true;
         queueOrCreate(chunk, true);
     }
     @Override public void addChunk(Chunk chunk) {
+        updated = true;
         queueOrCreate(chunk, false);
     }
     @Override
