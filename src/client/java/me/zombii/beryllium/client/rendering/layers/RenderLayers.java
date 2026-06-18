@@ -14,9 +14,13 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Arrays;
+import java.util.Comparator;
+
 public class RenderLayers {
 
     public static final IRegistry<RenderLayer> LAYER_REGISTRY = new GenericRegistry<>(Identifier.of(BerylliumCommon.NAMESPACE, "RENDER_LAYERS"));
+    public static RenderLayer[] LAYER_ORDER;
     private static final Logger LOGGER = LogManager.getLogger("Beryllium | RenderLayers");
 
     public static void collectAndCompile() {
@@ -40,6 +44,9 @@ public class RenderLayers {
                 renderLayer.getProgram().fetchAndCompile();
             });
         }
+        LAYER_ORDER = collectedRenderLayers.toArray(new RenderLayer[0]);
+        Arrays.sort(LAYER_ORDER, Comparator.comparingInt(RenderLayer::getSortOrder));
+
         Gdx.app.postRunnable(() -> {
             if (debugMode)
                 LOGGER.log(Level.INFO, "Compiled all {} render layers, freezing layer registry.", collectedRenderLayers.size());

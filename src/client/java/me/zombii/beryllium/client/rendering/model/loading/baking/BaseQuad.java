@@ -4,21 +4,16 @@ import finalforeach.cosmicreach.util.constants.Direction;
 
 public record BaseQuad(
         int direction,
-        boolean flipIndices,
-        boolean flipVerts,
         boolean flipU,
         boolean flipV,
         int defaultRotation,
         float[] verts
 ) {
 
-    public static final int[] indices = new int[]{
+    public static final int[] INDICES = new int[]{
             0, 1, 2, 2, 1, 3
     };
 
-    public static final int[] indices_flipped = new int[]{
-            2, 1, 3, 0, 1, 2
-    };
 
     //Base quad based on direction will have the bottom right corner be the coordinate be c00 (first 3 floats of verts)
     //Uses a right handed y up z forward direction so looking forward you see the neg z face
@@ -29,8 +24,6 @@ public record BaseQuad(
             Direction.POS_X.ordinal(),
             true,
             false,
-            false,
-            true,
             90,
             new float[]{
                     .5f, -.5f, -.5f, // c00
@@ -42,8 +35,6 @@ public record BaseQuad(
 
     public static final BaseQuad NEG_X = new BaseQuad(
             Direction.NEG_X.ordinal(),
-            false,
-            false,
             false,
             false,
             90,
@@ -59,8 +50,6 @@ public record BaseQuad(
             Direction.POS_Y.ordinal(),
             false,
             false,
-            false,
-            false,
             0,
             new float[]{ //cr might have facing y top be towards neg z idk
                     .5f, .5f, .5f, // c00 //bot right
@@ -74,8 +63,6 @@ public record BaseQuad(
             Direction.NEG_Y.ordinal(),
             true,
             false,
-            false,
-            true,
             0,
             new float[]{
                     .5f, -.5f, -.5f, // c00
@@ -89,8 +76,6 @@ public record BaseQuad(
             Direction.POS_Z.ordinal(),
             true,
             false,
-            false,
-            true,
             0,
             new float[]{
                     .5f, -.5f, .5f, // c00
@@ -104,8 +89,6 @@ public record BaseQuad(
             Direction.NEG_Z.ordinal(),
             false,
             false,
-            true,
-            true,
             0,
             new float[]{
                     -.5f, -.5f, -.5f, // c00 //bot right

@@ -185,6 +185,8 @@ public class BerylliumMesh {
     int faceUVBufferLoc = -1;
     int emissiveUVBufferLoc = -1;
     int emissiveAtlasLoc = -1;
+    int normalUVBufferLoc = -1;
+    int normalAtlasLoc = -1;
 
     boolean initUniforms = true;
 
@@ -210,10 +212,16 @@ public class BerylliumMesh {
             faceUVBufferLoc = program.getUniformLocation("u_faceUVBuffer");
             emissiveUVBufferLoc = program.getUniformLocation("u_emissiveUVBuffer");
             emissiveAtlasLoc = program.getUniformLocation("u_emissiveAtlas");
+            normalUVBufferLoc = program.getUniformLocation("u_normalUVBuffer");
+            normalAtlasLoc = program.getUniformLocation("u_normalAtlas");
             initUniforms = false;
         }
 
-        GL11.glEnable(GL11.GL_DEPTH_TEST);
+        boolean wasEnabled = GL11.glIsEnabled(GL11.GL_DEPTH_TEST);
+        if (useDepthBuffer) {
+            if (!wasEnabled) GL11.glEnable(GL11.GL_DEPTH_TEST);
+        }
+        else if (wasEnabled) GL11.glDisable(GL11.GL_DEPTH_TEST);
 
         int unit = 0;
         int albedoAtlas = -1;
@@ -221,12 +229,18 @@ public class BerylliumMesh {
         int faceBuffer = -1;
         int emissiveAtlas = -1;
         int emissiveBuffer = -1;
+        int normalAtlas = -1;
+        int normalBuffer = -1;
 
         albedoAtlas = BerylliumAtlases.ALBEDO_ATLAS.bind(unit++);
         albedoBuffer = BerylliumAtlases.AlbedoUVBuffer.bind(unit++);
         if (BerylliumConfig.INSTANCE.enableEmissiveAtlas) {
             emissiveAtlas = BerylliumAtlases.EMISSIVE_ATLAS.bind(unit++);
             emissiveBuffer = BerylliumAtlases.EmissiveUVBuffer.bind(unit++);
+        }
+        if (BerylliumConfig.INSTANCE.enableNormalAtlas) {
+            normalAtlas = BerylliumAtlases.NORMAL_ATLAS.bind(unit++);
+            normalBuffer = BerylliumAtlases.NormalUVBuffer.bind(unit++);
         }
         faceBuffer = BerylliumAtlases.PerFaceUVBuffer.bind(unit++);
 
@@ -237,9 +251,10 @@ public class BerylliumMesh {
         if (albedoAtlasLoc != -1) GL20.glUniform1i(albedoAtlasLoc, albedoAtlas);
         if (albedoUVBufferLoc != -1) GL20.glUniform1i(albedoUVBufferLoc, albedoBuffer);
         if (faceUVBufferLoc != -1) GL20.glUniform1i(faceUVBufferLoc, faceBuffer);
-        if (emissiveUVBufferLoc != -1) GL20.glUniform1i(emissiveAtlasLoc, emissiveAtlas);
-        if (emissiveAtlasLoc != -1) GL20.glUniform1i(emissiveUVBufferLoc, emissiveBuffer);
-
+        if (emissiveAtlasLoc != -1) GL20.glUniform1i(emissiveAtlasLoc, emissiveAtlas);
+        if (emissiveUVBufferLoc != -1) GL20.glUniform1i(emissiveUVBufferLoc, emissiveBuffer);
+        if (normalAtlasLoc != -1) GL20.glUniform1i(normalAtlasLoc, normalAtlas);
+        if (normalUVBufferLoc != -1) GL20.glUniform1i(normalUVBufferLoc, normalBuffer);
 
         bind();
         GL20.glDrawElements(GL20.GL_TRIANGLES, indexBuffer.limit() / 4, GL20.GL_UNSIGNED_INT, 0);
@@ -252,6 +267,14 @@ public class BerylliumMesh {
             BerylliumAtlases.EMISSIVE_ATLAS.unbind();
             BerylliumAtlases.EmissiveUVBuffer.unbind();
         }
+        if (BerylliumConfig.INSTANCE.enableNormalAtlas) {
+            BerylliumAtlases.NORMAL_ATLAS.unbind();
+            BerylliumAtlases.NormalUVBuffer.unbind();
+        }
+
+        if (wasEnabled) {
+            if (!useDepthBuffer) GL11.glEnable(GL11.GL_DEPTH_TEST);
+        } else if (useDepthBuffer) GL11.glDisable(GL11.GL_DEPTH_TEST);
     }
 
     private boolean isDisposed;

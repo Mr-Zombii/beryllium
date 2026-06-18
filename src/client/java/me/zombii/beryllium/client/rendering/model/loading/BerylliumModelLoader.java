@@ -7,6 +7,7 @@ import finalforeach.cosmicreach.util.Identifier;
 import finalforeach.cosmicreach.util.constants.Direction;
 import it.unimi.dsi.fastutil.objects.*;
 import me.zombii.beryllium.client.rendering.model.*;
+import me.zombii.beryllium.common.BerylliumCommon;
 import me.zombii.beryllium.common.BerylliumConfig;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -82,6 +83,9 @@ public class BerylliumModelLoader {
         JsonValue value = JsonValue.readHjson(json);
         if (!value.isObject()) throw new IllegalArgumentException("Expected a json object as input, got a \"" + value.getType() + "\" for model \"" + name + "\"");
         BerylliumModel model = new BerylliumModel(name);
+
+        if (name.getName().contains("water"))
+            model.setRenderLayer(Identifier.of(BerylliumCommon.NAMESPACE, "translucent-block-render-layer"));
 
         JsonObject object = value.asObject();
         if (object.isEmpty()) {
@@ -268,6 +272,12 @@ public class BerylliumModelLoader {
                 }
             }
         }
+        if (object.get("isTransparent") != null) {
+            model.setTransparent(object.getBoolean("isTransparent", false));
+        } else if (foundParentModel != null) {
+            model.setTransparent(foundParentModel.isTransparent());
+        }
+
         if (debugMode) LOGGER.log(Level.INFO, "Loading Vanilla Block Model \"{}\"", name);
         return register(model);
     }

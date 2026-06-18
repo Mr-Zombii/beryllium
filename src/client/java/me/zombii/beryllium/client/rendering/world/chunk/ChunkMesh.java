@@ -1,41 +1,17 @@
 package me.zombii.beryllium.client.rendering.world.chunk;
 
-import finalforeach.cosmicreach.world.Chunk;
 import me.zombii.beryllium.client.rendering.BerylliumMesh;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ChunkMesh extends BerylliumMesh {
 
-    public int scale = 1;
-    Chunk chunk;
-    AtomicBoolean isFinished;
-    AtomicBoolean scheduledForDisposal;
+    private final LayeredChunkMesh parent;
 
-    public ChunkMesh(Chunk chunk, AtomicBoolean isFinished) {
+    public ChunkMesh(LayeredChunkMesh parent) {
         super(128, true);
-        this.chunk = chunk;
-        this.isFinished = isFinished;
-        this.scheduledForDisposal = new AtomicBoolean(false);
+        this.parent = parent;
     }
 
-    public Chunk getChunk() {
-        return chunk;
-    }
-
-    public boolean isFinished() {
-        return isFinished.get();
-    }
-
-    public AtomicBoolean getIsFinished() {
-        return isFinished;
-    }
-
-    public void scheduleForDisposal() {
-        scheduledForDisposal.set(true);
-    }
-
-    public boolean isScheduledForDisposal() {
-        return scheduledForDisposal.get();
+    public LayeredChunkMesh getParent() {
+        return parent;
     }
 }

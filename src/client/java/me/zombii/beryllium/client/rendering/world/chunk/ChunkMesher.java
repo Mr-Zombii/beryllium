@@ -1,5 +1,6 @@
 package me.zombii.beryllium.client.rendering.world.chunk;
 
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import finalforeach.cosmicreach.blocks.BlockPosition;
 import finalforeach.cosmicreach.blocks.BlockState;
@@ -7,6 +8,8 @@ import finalforeach.cosmicreach.util.Identifier;
 import finalforeach.cosmicreach.world.Chunk;
 import finalforeach.cosmicreach.world.Zone;
 import me.zombii.beryllium.client.rendering.TintProvider;
+import me.zombii.beryllium.client.rendering.layers.RenderLayer;
+import me.zombii.beryllium.client.rendering.layers.RenderLayers;
 import me.zombii.beryllium.client.rendering.model.BerylliumModel;
 import me.zombii.beryllium.client.rendering.model.loading.BerylliumModelLoader;
 import me.zombii.beryllium.client.rendering.model.loading.baking.BakedBerylliumModel;
@@ -24,12 +27,15 @@ public class ChunkMesher {
     private static Tessallator globalTessallator;
     private static boolean initialized = false;
     private static final CrossChunkAccessor crossChunkAccessor = new CrossChunkAccessor();
+    private static Matrix4 transform;
 
     public static void init() {
         if (initialized) return;
         initialized = true;
 
         globalTessallator = new Tessallator(quadsPerChunk);
+        transform = globalTessallator.getTransform();
+
         generateAoTable();
     }
 
@@ -37,14 +43,21 @@ public class ChunkMesher {
     private static final short[] TMP_BLOCK_LIGHT = new short[6];
     private static final byte[] TMP_AO_VALUES = new byte[4 * 6];
 
-    public static void meshChunk(Chunk chunk, ChunkMesh mesh) {
+    public static void meshChunk(Chunk chunk, LayeredChunkMesh chunkMesh) {
+        for (int i = 0; i < RenderLayers.LAYER_ORDER.length; i++) {
+            RenderLayer layer = RenderLayers.LAYER_ORDER[i];
+            meshChunk(layer, chunk, chunkMesh.getLayers()[i]);
+        }
+    }
+
+    public static void meshChunk(RenderLayer layer, Chunk chunk, ChunkMesh mesh) {
+        if (mesh == null) return;
         if (mesh.isDisposed()) return;
         globalTessallator.reset();
         mesh.clear();
 
-        int levelOfDetail = 0;
-        int blockSize = 1 << levelOfDetail;
-        mesh.scale = blockSize;
+//        int levelOfDetail = 0;
+//        int blockSize = 1 << levelOfDetail;
 
         if (chunk.region == null) return;
         Zone zone = chunk.getZone();
@@ -59,7 +72,10 @@ public class ChunkMesher {
                     if (self == null) continue;
                     if (self.hasEmptyModel()) continue;
 
-                    int visibleFaces = getVisibleFaces(self, x, y, z);
+                    BerylliumModel model = BerylliumModelLoader.getModel(getModelId(self));
+                    if (model.getRenderLayer() != layer) continue;
+
+                    int visibleFaces = getVisibleFaces(self, model, x, y, z);
                     getSkyLight(TMP_SKY_LIGHT, x, y, z);
                     getBlockLight(TMP_BLOCK_LIGHT, x, y, z);
                     getAmbientOcclusion(TMP_AO_VALUES, x, y, z);
@@ -77,8 +93,15 @@ public class ChunkMesher {
                                     ),
                             idx);
 
-                    BerylliumModel model = BerylliumModelLoader.getModel(getModelId(self));
                     BakedBerylliumModel bakedModel = ModelBaker.get(model);
+
+                    transform.idt();
+                    transform.translate(.5f + x, .5f + y, .5f + z);
+                    transform.rotate(Vector3.Z, self.rotation[2]);
+                    transform.rotate(Vector3.Y, 360-self.rotation[1]);
+                    transform.rotate(Vector3.X, 360-self.rotation[0]);
+                    transform.translate(-.5f - x, -.5f - y, -.5f - z);
+
                     bakedModel.addVertices(
                             globalTessallator,
                             TMP_SKY_LIGHT, TMP_BLOCK_LIGHT, TMP_AO_VALUES,
@@ -88,7 +111,7 @@ public class ChunkMesher {
                 }
             }
         }
-        if (mesh.isScheduledForDisposal()) return;
+        if (mesh.getParent().isScheduledForDisposal()) return;
         if (globalTessallator.getQuadsWritten() == 0) {
             mesh.clear();
             return;
@@ -97,15 +120,22 @@ public class ChunkMesher {
         mesh.dump(globalTessallator, true);
     }
 
-    private static int getVisibleFaces(BlockState self, int x, int y, int z) {
+    private static int getVisibleFaces(BlockState self, BerylliumModel model, int x, int y, int z) {
         int visibilityMask = BakedFace.NO_CULL_FACES;
 
-        visibilityMask |= isOccluded(self, crossChunkAccessor.getBlockState(tmp.set(-1,  0,  0), x, y, z)) ? 0 : BakedFace.NEG_X_SHOWING;
-        visibilityMask |= isOccluded(self, crossChunkAccessor.getBlockState(tmp.set( 1,  0,  0), x, y, z)) ? 0 : BakedFace.POS_X_SHOWING;
-        visibilityMask |= isOccluded(self, crossChunkAccessor.getBlockState(tmp.set( 0, -1,  0), x, y, z)) ? 0 : BakedFace.NEG_Y_SHOWING;
-        visibilityMask |= isOccluded(self, crossChunkAccessor.getBlockState(tmp.set( 0,  1,  0), x, y, z)) ? 0 : BakedFace.POS_Y_SHOWING;
-        visibilityMask |= isOccluded(self, crossChunkAccessor.getBlockState(tmp.set( 0,  0, -1), x, y, z)) ? 0 : BakedFace.NEG_Z_SHOWING;
-        visibilityMask |= isOccluded(self, crossChunkAccessor.getBlockState(tmp.set( 0,  0,  1), x, y, z)) ? 0 : BakedFace.POS_Z_SHOWING;
+        BlockState nx = crossChunkAccessor.getBlockState(tmp.set(-1,  0,  0), x, y, z);
+        BlockState px = crossChunkAccessor.getBlockState(tmp.set( 1,  0,  0), x, y, z);
+        BlockState ny = crossChunkAccessor.getBlockState(tmp.set( 0, -1,  0), x, y, z);
+        BlockState py = crossChunkAccessor.getBlockState(tmp.set( 0,  1,  0), x, y, z);
+        BlockState nz = crossChunkAccessor.getBlockState(tmp.set( 0,  0, -1), x, y, z);
+        BlockState pz = crossChunkAccessor.getBlockState(tmp.set( 0,  0,  1), x, y, z);
+
+        visibilityMask |= isOccluded(0,1, self, model, nx) ? 0 : BakedFace.NEG_X_SHOWING;
+        visibilityMask |= isOccluded(1,0, self, model, px) ? 0 : BakedFace.POS_X_SHOWING;
+        visibilityMask |= isOccluded(2,3, self, model, ny) ? 0 : BakedFace.NEG_Y_SHOWING;
+        visibilityMask |= isOccluded(3,2, self, model, py) ? 0 : BakedFace.POS_Y_SHOWING;
+        visibilityMask |= isOccluded(4,5, self, model, nz) ? 0 : BakedFace.NEG_Z_SHOWING;
+        visibilityMask |= isOccluded(5,4, self, model, pz) ? 0 : BakedFace.POS_Z_SHOWING;
 
         return visibilityMask;
     }
@@ -273,10 +303,13 @@ public class ChunkMesher {
         return Identifier.of(state.modelName);
     }
 
-    private static boolean isOccluded(BlockState self, BlockState state) {
-        if (self.equals(state) && self.cullsSelf()) return true;
-        if (state == null) return false;
-        return state.isOpaque && !state.isFluid && !state.hasEmptyModel();
+    private static boolean isOccluded(int d, int od, BlockState self, BerylliumModel selfModel, BlockState state) {
+        if (state == null || state.hasEmptyModel()) return false;
+        if (self.getBlock().equals(state.getBlock()) && self.cullsSelf()) return true;
+
+        BerylliumModel stateModel = BerylliumModelLoader.getModel(getModelId(state));
+        if (stateModel.isTransparent() || selfModel.isTransparent()) return false;
+        return selfModel.canAllCullInDirection(d) && stateModel.canAllCullInDirection(od);
     }
 
 //    private static final Object2IntMap<BlockState> stateAbundanceMap = new Object2IntArrayMap<>();

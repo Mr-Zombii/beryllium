@@ -18,13 +18,15 @@ uniform vec3 u_cameraPos;
 
 in float v_bakedAoValue;
 in vec4 v_blockLightColor;
-in float v_skyLight;
 in vec3 v_vertexNormal;
 in vec3 v_vertexPosition;
 in vec2 v_albedoUV;
 in vec4 v_tintColor;
 #ifdef HAS_EMISSIVE_ATLAS
 in vec2 v_emissiveUV;
+#endif
+#ifdef HAS_NORMAL_ATLAS
+in vec2 v_normalUV;
 #endif
 in vec3 v_worldPos;
 out vec4 fragColor;
@@ -47,6 +49,9 @@ vec4 tintColor(vec4 c) {
 #define USE_SKY_LIGHT 1
 
 void renderMode0(void) {
+//    vec4 newNormal = normalize(texture(u_normalAtlas, v_normalUV) * 2 - 1);
+//    newNormal.w = 1;
+
     //    fragColor = vec4(1, 1, 1, 1);
     //    fragColor = vec4((v_vertexNormal + 1.0) * 0.5, 1);
     //    fragColor = vec4(v_albedoUV, 0, 1);
@@ -65,7 +70,7 @@ void renderMode0(void) {
     #if USE_SKY_LIGHT == 0
         float skyLight = 0;
     #else
-        float skyLight = v_skyLight;
+        float skyLight = v_blockLightColor.a;
     #endif
 
 
@@ -84,7 +89,7 @@ void renderMode0(void) {
     fragColor.rgb = max(fragColor.rgb, emissiveColor.rgb * emissiveColor.a);
     #endif
 
-    fragColor.rgb = max(fragColor.rgb, albedoColor.rgb * u_ambientWorldColor * u_ambientSkyColor);
+    fragColor.rgb = max(fragColor.rgb, albedoColor.rgb * u_ambientWorldColor);
 //    fragColor.rgb = max(fragColor.rgb, albedoColor.rgb * u_ambientWorldColor);
 
 //    fragColor.rgb *= v_bakedAoValue;
@@ -92,7 +97,7 @@ void renderMode0(void) {
 }
 
 void renderMode1(void) {
-    fragColor.rgba = vec4(vec3(v_skyLight), 1);
+    fragColor.rgba = vec4(vec3(v_blockLightColor.a), 1);
     fragColor.rgba *= vec4(vec3(v_bakedAoValue), 1);
 }
 
@@ -104,7 +109,7 @@ void renderMode3(void) {
     fragColor.rgba = vec4(vec3(v_bakedAoValue), 1);
 }
 
-#define RENDER_MODE 3
+#define RENDER_MODE 0
 
 void main(void) {
     switch (RENDER_MODE) {

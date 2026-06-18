@@ -34,15 +34,21 @@ out float v_skyLight;
 out vec3 v_vertexNormal;
 out vec3 v_vertexPosition;
 out vec2 v_albedoUV;
+
+#ifdef HAS_EMISSIVE_ATLAS
 out vec2 v_emissiveUV;
+#endif
+#ifdef HAS_NORMAL_ATLAS
+out vec2 v_normalUV;
+#endif
+
 out vec4 v_tintColor;
 out vec3 v_worldPos;
 
 int CORNER_ID = int(a_packed & 3u);
 int UV_ROTATION = int(a_packed >> 2u) & 3;
 int AO_LEVEL_PACKED = int(a_packed >> 4u) & 3;
-int LIGHT_COLOR_PACKED = int(a_packed >> 6u) & 0xFFF;
-int SKY_LIGHT = int(a_packed >> 18u) & 0xF;
+int LIGHT_COLOR_PACKED = int(a_packed >> 6u) & 0xFFFF;
 
 uint TINT_COLOR_PACKED = (a_packedIndices >> 16u) & 0xFFFFu;
 int FACE_UV_IDX = int(a_packedIndices & 0xFFFFu);
@@ -62,15 +68,16 @@ vec4 getTintColor(void) {
 }
 
 vec4 getBlockLightColor(void) {
-    int lightR = (LIGHT_COLOR_PACKED & 0x0F00) >> 8;
+    int lightR = (LIGHT_COLOR_PACKED & 0xF000) >> 12;
     lightR = (lightR << 4 | lightR);
-    int lightG = (LIGHT_COLOR_PACKED & 0x00F0) >> 4;
+    int lightG = (LIGHT_COLOR_PACKED & 0x0F00) >> 8;
     lightG = (lightG << 4 | lightG);
-    int lightB = (LIGHT_COLOR_PACKED & 0x000F);
+    int lightB = (LIGHT_COLOR_PACKED & 0x00F0) >> 4;
     lightB = (lightB << 4 | lightB);
+    int lightA = (LIGHT_COLOR_PACKED & 0x000F);
+    lightA = (lightA << 4 | lightA);
 
-    vec4 lightColor = vec4(float(lightR) / 255.0, float(lightG) / 255.0, float(lightB) / 255.0, 1.0);
-    return lightColor;
+    return vec4(float(lightR) / 255.0, float(lightG) / 255.0, float(lightB) / 255.0, float(lightA) / 255.0);
 }
 
 float getBakedAOValue(void) {
@@ -129,10 +136,9 @@ vec2 createRotatedUv(uint corner, vec2 min, vec2 max, int rotation) {
     return vec2(max.x, min.y);
 }
 
-vec2 getAlbedoUV(void) {
-    uvec2 ALBEDO_UV_OFFS = texelFetch(u_albedoUVBuffer, int(a_albedoIdx)).xy;
-    vec2 faceMin = vec2(ALBEDO_UV_OFFS + FACE_UV_MIN) / 1024;
-    vec2 faceMax = vec2(ALBEDO_UV_OFFS + FACE_UV_MAX) / 1024;
+vec2 getUV(uvec2 offs) {
+    vec2 faceMin = vec2(offs + FACE_UV_MIN) / 1024;
+    vec2 faceMax = vec2(offs + FACE_UV_MAX) / 1024;
 
     int vert_id = CORNER_ID;
     vec2 uv = vec2(0.0, 0.0);
@@ -141,18 +147,12 @@ vec2 getAlbedoUV(void) {
     return uv;
 }
 
+vec2 getAlbedoUV(void) { return getUV(texelFetch(u_albedoUVBuffer, int(a_albedoIdx)).xy); }
 #ifdef HAS_EMISSIVE_ATLAS
-    vec2 getEmissiveUV(void) {
-        uvec2 EMISSIVE_UV_OFFS = texelFetch(u_emissiveUVBuffer, int(a_emissiveIdx)).xy;
-        vec2 faceMin = vec2(EMISSIVE_UV_OFFS + FACE_UV_MIN) / 1024;
-        vec2 faceMax = vec2(EMISSIVE_UV_OFFS + FACE_UV_MAX) / 1024;
-
-        int vert_id = CORNER_ID;
-        vec2 uv = vec2(0.0, 0.0);
-
-        uv = createRotatedUv(uint(vert_id), faceMin, faceMax, UV_ROTATION);
-        return uv;
-    }
+vec2 getEmissiveUV(void) { return getUV(texelFetch(u_emissiveUVBuffer, int(a_emissiveIdx)).xy); }
+#endif
+#ifdef HAS_NORMAL_ATLAS
+vec2 getNormalUV(void) { return getUV(texelFetch(u_normalUVBuffer, int(a_normalIdx)).xy); }
 #endif
 
 void main(void) {
@@ -162,9 +162,11 @@ void main(void) {
     v_blockLightColor = getBlockLightColor();
     v_albedoUV = getAlbedoUV();
     v_tintColor = getTintColor();
-    v_skyLight = float(SKY_LIGHT) / 15.0;
     #ifdef HAS_EMISSIVE_ATLAS
     v_emissiveUV = getEmissiveUV();
+    #endif
+    #ifdef HAS_NORMAL_ATLAS
+    v_normalUV = getNormalUV();
     #endif
     v_worldPos = (u_modelMat * vec4(a_position, 1.0)).xyz;
 

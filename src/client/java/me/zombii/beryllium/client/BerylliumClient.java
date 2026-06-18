@@ -100,12 +100,18 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
                 Identifier.of(BerylliumCommon.NAMESPACE, "opaque-block-render-layer"),
                 true, 0
         ));
+        event.registerRenderLayer(new RenderLayer(
+                Identifier.of(BerylliumCommon.NAMESPACE, "shaders/block-shader.vert"),
+                Identifier.of(BerylliumCommon.NAMESPACE, "shaders/block-shader.frag"),
+                Identifier.of(BerylliumCommon.NAMESPACE, "translucent-block-render-layer"),
+                true, 1
+        ));
     }
 
     @Override
     public void onClientPostInit() {
         ChunkMesher.init();
-        GameSingletons.zoneRenderer = new BerylliumZoneRenderer();
+//        GameSingletons.zoneRenderer = new BerylliumZoneRenderer();
 //        register(Block.getById("base:grass"), (state, pos, tintIdx) -> {
 //            int r = (int) ((pos.localX / 16f) * 255);
 //            int g = (int) ((pos.localY / 16f) * 255);

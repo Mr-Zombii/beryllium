@@ -13,6 +13,7 @@ import org.jspecify.annotations.NonNull;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BerylliumModel implements Iterable<PartGroup>, HJsonSerializable {
 
@@ -23,6 +24,7 @@ public class BerylliumModel implements Iterable<PartGroup>, HJsonSerializable {
 
     private final Identifier id;
     private Identifier renderLayerId;
+    private final AtomicBoolean isTransparent = new AtomicBoolean(false);
 
     public BerylliumModel(
             Identifier id
@@ -37,6 +39,14 @@ public class BerylliumModel implements Iterable<PartGroup>, HJsonSerializable {
             return;
         }
         this.renderLayerId = layerID;
+    }
+
+    public void setTransparent(boolean isTransparent) {
+        this.isTransparent.set(isTransparent);
+    }
+
+    public boolean isTransparent() {
+        return this.isTransparent.get();
     }
 
     public Identifier getRenderLayerId() {
@@ -138,4 +148,16 @@ public class BerylliumModel implements Iterable<PartGroup>, HJsonSerializable {
 
         return obj;
     }
+
+    public boolean canAllCullInDirection(int d) {
+        for (PartGroup group : groups) {
+            for (Part part : group.getParts()) {
+                PartFace face = part.getFaces()[d];
+                if (face == null) continue;
+                if (!face.isCulled()) return false;
+            }
+        }
+        return true;
+    }
+
 }

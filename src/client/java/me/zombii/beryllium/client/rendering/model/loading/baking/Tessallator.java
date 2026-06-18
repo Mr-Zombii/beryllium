@@ -1,5 +1,8 @@
 package me.zombii.beryllium.client.rendering.model.loading.baking;
 
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import me.zombii.beryllium.client.BerylliumAtlases;
 import me.zombii.beryllium.client.rendering.model.BerylliumModel;
 import me.zombii.beryllium.client.rendering.model.TextureEntry;
@@ -11,8 +14,6 @@ import java.nio.ByteOrder;
 import java.util.function.Function;
 
 public class Tessallator {
-
-    public static final byte[] EMPTY_AO = new byte[4];
 
     /*
     *   float 32
@@ -29,12 +30,14 @@ public class Tessallator {
     ByteBuffer indices;
     int indexCount;
     int quadsWritten;
+    Matrix4 transform;
 
     public Tessallator(int quadBudget) {
         this.indexCount = 0;
         this.quadsWritten = 0;
         this.vertices = MemoryUtil.memAlloc(quadBudget * (Tessallator.VERTEX_SIZE * 4)).order(ByteOrder.LITTLE_ENDIAN);
         this.indices = MemoryUtil.memAlloc(quadBudget * (4 * 6)).order(ByteOrder.LITTLE_ENDIAN);
+        this.transform = new Matrix4();
     }
 
     public void reset() {
@@ -80,8 +83,7 @@ public class Tessallator {
                 albedoIdx,
                 emissiveIdx,
                 normalIdx,
-                materialIdx,
-                face.flipIndices()
+                materialIdx
         );
     }
 
@@ -114,11 +116,11 @@ public class Tessallator {
                 albedoIdx,
                 emissiveIdx,
                 normalIdx,
-                materialIdx,
-                bakedQuad.flipIndices()
+                materialIdx
         );
     }
 
+    final Vector3 tmp0 = new Vector3();
     public void addQuad(
             float c00x, float c00y, float c00z,
             float c01x, float c01y, float c01z,
@@ -132,11 +134,34 @@ public class Tessallator {
             short albedoIdx,
             short emissiveIdx,
             short normalIdx,
-            short materialIdx,
-            boolean flipIndices
+            short materialIdx
     ) {
         if (uvRotation % 90 != 0) throw new IllegalArgumentException("uvRotation is not a multiple of 90 or 0");
         byte uvRot = (byte) ((uvRotation % 360) / 90);
+
+        tmp0.set(c00x, c00y, c00z);
+        tmp0.mul(transform);
+        c00x = tmp0.x;
+        c00y = tmp0.y;
+        c00z = tmp0.z;
+
+        tmp0.set(c01x, c01y, c01z);
+        tmp0.mul(transform);
+        c01x = tmp0.x;
+        c01y = tmp0.y;
+        c01z = tmp0.z;
+
+        tmp0.set(c10x, c10y, c10z);
+        tmp0.mul(transform);
+        c10x = tmp0.x;
+        c10y = tmp0.y;
+        c10z = tmp0.z;
+
+        tmp0.set(c11x, c11y, c11z);
+        tmp0.mul(transform);
+        c11x = tmp0.x;
+        c11y = tmp0.y;
+        c11z = tmp0.z;
 
         float xA = c01x - c00x;
         float yA = c01y - c00y;
@@ -173,9 +198,7 @@ public class Tessallator {
             addVertex(c10x, c10y, c10z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c10ao, faceTint, faceUVIdx, albedoIdx, emissiveIdx, normalIdx, materialIdx, 2);
             addVertex(c11x, c11y, c11z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c11ao, faceTint, faceUVIdx, albedoIdx, emissiveIdx, normalIdx, materialIdx, 3);
         }
-//        flipIndices = false;
-//        int[] indices = flipIndices ? BaseQuad.indices_flipped : BaseQuad.indices;
-        for (int index : BaseQuad.indices) {
+        for (int index : BaseQuad.INDICES) {
             this.indices.putInt(index + indexCount);
         }
         indexCount += 4;
@@ -192,12 +215,13 @@ public class Tessallator {
             short normalIdx, short materialIdx,
             int cornerID
     ) {
+        short packedLight = (short) ((blockLightLevel << 4) | skyLightLevel);
+
         int packedData = 0;
         packedData |= (cornerID & 0b11);
         packedData |= (uvRotation & 0b11) << 2;
         packedData |= (aoLevel & 0b11) << 4;
-        packedData |= (blockLightLevel & 0xFFF) << 6;
-        packedData |= (skyLightLevel & 0xF) << 18;
+        packedData |= (packedLight & 0xFFFF) << 6;
 
         int packedData2 = 0;
         packedData2 |= vertexTint << 16;
@@ -228,6 +252,7 @@ public class Tessallator {
         if (config.enableEmissiveAtlas) vertices.putShort(emissiveIdx);
         if (config.enableNormalAtlas) vertices.putShort(normalIdx);
         if (config.enableMaterialAtlas) vertices.putShort(materialIdx);
+
     }
 
     public static int VERTEX_SIZE = 22
@@ -256,5 +281,13 @@ public class Tessallator {
 
     public int getQuadsWritten() {
         return quadsWritten;
+    }
+
+    public void setTransform(Matrix4 transform) {
+        this.transform.set(transform);
+    }
+
+    public Matrix4 getTransform() {
+        return transform;
     }
 }

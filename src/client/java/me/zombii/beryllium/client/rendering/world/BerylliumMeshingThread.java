@@ -3,6 +3,7 @@ package me.zombii.beryllium.client.rendering.world;
 import finalforeach.cosmicreach.world.Chunk;
 import me.zombii.beryllium.client.rendering.world.chunk.ChunkMesh;
 import me.zombii.beryllium.client.rendering.world.chunk.ChunkMesher;
+import me.zombii.beryllium.client.rendering.world.chunk.LayeredChunkMesh;
 
 import java.util.Map;
 import java.util.Queue;
@@ -21,14 +22,14 @@ public class BerylliumMeshingThread implements Runnable {
 
     private static final AtomicBoolean running = new AtomicBoolean(true);
     private static final Queue<Runnable> chunkRunnableQueue = new ConcurrentLinkedQueue<>();
-    private static final Map<Chunk, ChunkMesh> workingList = new ConcurrentHashMap<>();
+    private static final Map<Chunk, LayeredChunkMesh> workingList = new ConcurrentHashMap<>();
 
     public static void setRunning(boolean running) {
         BerylliumMeshingThread.running.set(running);
     }
 
-    public static ChunkMesh queueChunk(Chunk chunk) {
-        ChunkMesh chunkMesh = new ChunkMesh(chunk, new AtomicBoolean(false));
+    public static LayeredChunkMesh queueChunk(Chunk chunk) {
+        LayeredChunkMesh chunkMesh = new LayeredChunkMesh(chunk, new AtomicBoolean(false));
         return queueChunk(chunkMesh);
     }
 
@@ -36,7 +37,7 @@ public class BerylliumMeshingThread implements Runnable {
         chunkRunnableQueue.clear();
     }
 
-    public static ChunkMesh queueChunk(ChunkMesh chunkMesh) {
+    public static LayeredChunkMesh queueChunk(LayeredChunkMesh chunkMesh) {
         if (workingList.containsKey(chunkMesh.getChunk())) {
             return workingList.get(chunkMesh.getChunk());
         }

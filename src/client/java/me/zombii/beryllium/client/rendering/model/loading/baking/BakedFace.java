@@ -16,8 +16,7 @@ public record BakedFace(
         int faceUvIndex,
         int uvRotation,
         boolean doAO,
-        int tintIndex,
-        boolean flipIndices
+        int tintIndex
 ) {
 
     private static final Matrix4 mat = new Matrix4();
@@ -57,7 +56,7 @@ public record BakedFace(
 
         return new BakedFace(
             model, newVerts, face.getTextureID(), face.getDirection(), uvIdx, face.getUVRotation(),
-            face.usesAO(), face.getTintIndex(), quad.flipIndices()
+            face.usesAO(), face.getTintIndex()
         );
     }
 
