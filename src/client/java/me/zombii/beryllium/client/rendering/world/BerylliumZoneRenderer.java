@@ -49,8 +49,6 @@ public class BerylliumZoneRenderer implements IZoneRenderer {
 
     Vector3 tmp = new Vector3();
 
-    boolean updated = true;
-
     @Override
     public void render(Zone zone, Camera camera) {
         if (multiLayerMeshList == null) {
@@ -65,42 +63,38 @@ public class BerylliumZoneRenderer implements IZoneRenderer {
         GL11.glDepthFunc(GL11.GL_LESS);
         GL11.glCullFace(GL11.GL_BACK);
 
-        if (updated) {
-            ObjectCollection<LayeredChunkMesh> layeredChunkMeshes = meshes.values();
+        ObjectCollection<LayeredChunkMesh> layeredChunkMeshes = meshes.values();
 
-            snapshotMeshLayerList.clear();
-            try {
-                snapshotMeshLayerList.addAll(layeredChunkMeshes);
-            } catch (Exception ignore) {}
-            for (ObjectList<ChunkMesh> chunkMeshes : multiLayerMeshList) {
-                chunkMeshes.clear();
+        snapshotMeshLayerList.clear();
+        try {
+            snapshotMeshLayerList.addAll(layeredChunkMeshes);
+        } catch (Exception ignore) {}
+        for (ObjectList<ChunkMesh> chunkMeshes : multiLayerMeshList) {
+            chunkMeshes.clear();
+        }
+        for (LayeredChunkMesh layeredChunkMesh : snapshotMeshLayerList) {
+            if (layeredChunkMesh == null) continue;
+
+            for (int i = 0; i < RenderLayers.LAYER_ORDER.length; i++) {
+                multiLayerMeshList[i].add(layeredChunkMesh.getLayer(i));
             }
-            for (LayeredChunkMesh layeredChunkMesh : snapshotMeshLayerList) {
-                if (layeredChunkMesh == null) continue;
+        }
 
-                for (int i = 0; i < RenderLayers.LAYER_ORDER.length; i++) {
-                    multiLayerMeshList[i].add(layeredChunkMesh.getLayer(i));
-                }
-            }
+        for (ObjectList<ChunkMesh> chunkMeshes : multiLayerMeshList) {
+            chunkMeshes.sort((a, b) -> {
+                Chunk aChunk = a.getParent().getChunk();
+                Chunk bChunk = b.getParent().getChunk();
 
-            for (ObjectList<ChunkMesh> chunkMeshes : multiLayerMeshList) {
-                chunkMeshes.sort((a, b) -> {
-                    Chunk aChunk = a.getParent().getChunk();
-                    Chunk bChunk = b.getParent().getChunk();
-
-                    float aDst = Vector3.dst2(
-                            aChunk.blockX, aChunk.blockY, aChunk.blockZ,
-                            camera.position.x, camera.position.y, camera.position.z
-                    );
-                    float bDst = Vector3.dst2(
-                            bChunk.blockX, bChunk.blockY, bChunk.blockZ,
-                            camera.position.x, camera.position.y, camera.position.z
-                    );
-                    return Float.compare(aDst, bDst);
-                });
-            }
-
-            updated = false;
+                float aDst = Vector3.dst2(
+                        aChunk.blockX, aChunk.blockY, aChunk.blockZ,
+                        camera.position.x, camera.position.y, camera.position.z
+                );
+                float bDst = Vector3.dst2(
+                        bChunk.blockX, bChunk.blockY, bChunk.blockZ,
+                        camera.position.x, camera.position.y, camera.position.z
+                );
+                return Float.compare(aDst, bDst);
+            });
         }
 
         for (int i = 0; i < RenderLayers.LAYER_ORDER.length; i++) {
@@ -127,9 +121,7 @@ public class BerylliumZoneRenderer implements IZoneRenderer {
             if (camPosLoc != -1) GL20.glUniform3f(camPosLoc, camera.position.x, camera.position.y, camera.position.z);
 
             for (ChunkMesh chunkMesh : meshObjectList) {
-                if (!chunkMesh.getParent().canRenderOldMesh()) {
-                    if (!chunkMesh.getParent().isFinished()) continue;
-                }
+                if (!chunkMesh.getParent().canRenderOldMesh() && !chunkMesh.getParent().isFinished()) continue;
 
                 Chunk chunk = chunkMesh.getParent().getChunk();
 
@@ -148,7 +140,6 @@ public class BerylliumZoneRenderer implements IZoneRenderer {
 
     @Override
     public void unload() {
-        updated = true;
         BerylliumMeshingThread.clear();
     }
 
@@ -159,7 +150,6 @@ public class BerylliumZoneRenderer implements IZoneRenderer {
 
     @Override
     public void removeChunk(Chunk chunk) {
-        updated = true;
         LayeredChunkMesh c = meshes.remove(chunk);
         if (c == null) return;
         c.scheduleForDisposal();
@@ -176,11 +166,9 @@ public class BerylliumZoneRenderer implements IZoneRenderer {
     }
 
     @Override public void onChunkFlaggedForRemeshing(Chunk chunk) {
-        updated = true;
         queueOrCreate(chunk, true);
     }
     @Override public void addChunk(Chunk chunk) {
-        updated = true;
         queueOrCreate(chunk, false);
     }
     @Override
