@@ -55,7 +55,7 @@ public class BerylliumModel implements Iterable<PartGroup>, HJsonSerializable {
     }
 
     public RenderLayer getRenderLayer() {
-        return BerylliumClientRegistries.RENDER_LAYER_REGISTRY.get(renderLayerId);
+        return BerylliumClientRegistries.RENDER_LAYERS.get(renderLayerId);
     }
 
     public PartGroup getOrCreateGroup(String name) {

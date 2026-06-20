@@ -34,7 +34,7 @@ public class RenderLayers {
             LOGGER.log(Level.INFO, "Collected {} RenderLayer(s) for registration", collectedRenderLayers.size());
 
         for (RenderLayer renderLayer : collectedRenderLayers) {
-            BerylliumClientRegistries.RENDER_LAYER_REGISTRY.store(renderLayer.getId(), renderLayer);
+            BerylliumClientRegistries.RENDER_LAYERS.store(renderLayer.getId(), renderLayer);
             Gdx.app.postRunnable(() -> {
                 if (debugMode)
                     LOGGER.log(Level.INFO,
@@ -52,7 +52,7 @@ public class RenderLayers {
                 LOGGER.log(Level.INFO, "Compiled all {} render layers, freezing layer registry.", collectedRenderLayers.size());
         });
 
-        BerylliumClientRegistries.RENDER_LAYER_REGISTRY.freeze();
+        BerylliumClientRegistries.RENDER_LAYERS.freeze();
     }
 
 }

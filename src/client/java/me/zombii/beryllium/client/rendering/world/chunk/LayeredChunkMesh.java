@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LayeredChunkMesh {
 
-    private final ChunkMesh[] layers = new ChunkMesh[BerylliumClientRegistries.RENDER_LAYER_REGISTRY.names().size()];
+    private final ChunkMesh[] layers = new ChunkMesh[BerylliumClientRegistries.RENDER_LAYERS.names().size()];
 
     public ChunkMesh getLayer(int idx) {
         return layers[idx];
