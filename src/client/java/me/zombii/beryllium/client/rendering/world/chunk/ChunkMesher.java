@@ -7,6 +7,7 @@ import finalforeach.cosmicreach.blocks.BlockState;
 import finalforeach.cosmicreach.util.Identifier;
 import finalforeach.cosmicreach.world.Chunk;
 import finalforeach.cosmicreach.world.Zone;
+import me.zombii.beryllium.client.IdentifierCache;
 import me.zombii.beryllium.client.rendering.TintProvider;
 import me.zombii.beryllium.client.rendering.layers.RenderLayer;
 import me.zombii.beryllium.client.rendering.layers.RenderLayers;
@@ -23,7 +24,7 @@ import java.util.function.Function;
 public class ChunkMesher {
 
     public static final int quadsPerChunk = 16 * 16 * 16 * BakedBerylliumModel.MAX_FACES_PER_MODEL;
-
+    private static final ReusableTintGetter tintFunction = new ReusableTintGetter();
     private static Tessallator globalTessallator;
     private static boolean initialized = false;
     private static final CrossChunkAccessor crossChunkAccessor = new CrossChunkAccessor();
@@ -80,18 +81,11 @@ public class ChunkMesher {
                     getBlockLight(TMP_BLOCK_LIGHT, x, y, z);
                     getAmbientOcclusion(TMP_AO_VALUES, x, y, z);
 
-                    final int xFinal = x;
-                    final int yFinal = y;
-                    final int zFinal = z;
-                    TintProvider.TintFunction tintFunction = TintProvider.getForState(self.getBlock());
-                    Function<Integer, Short> tintGetter = (idx) ->
-                            tintFunction.getTint(
-                                    self,
-                                    new BlockPosition(
-                                            chunk,
-                                            xFinal, yFinal, zFinal
-                                    ),
-                            idx);
+
+                    //The lambda expression was allocating a new Function<> for every single block
+                    TintProvider.TintFunction altTintFunction = TintProvider.getForState(self.getBlock());
+                    tintFunction.set(altTintFunction, self, chunk, x,y,z);
+
 
                     BakedBerylliumModel bakedModel = ModelBaker.get(model);
 
@@ -105,7 +99,7 @@ public class ChunkMesher {
                     bakedModel.addVertices(
                             globalTessallator,
                             TMP_SKY_LIGHT, TMP_BLOCK_LIGHT, TMP_AO_VALUES,
-                            visibleFaces, tintGetter,
+                            visibleFaces, tintFunction,
                             x, y, z
                     );
                 }
@@ -300,7 +294,7 @@ public class ChunkMesher {
     }
 
     private static Identifier getModelId(BlockState state) {
-        return Identifier.of(state.modelName);
+        return IdentifierCache.getOrInsert(state.modelName);
     }
 
     private static boolean isOccluded(int d, int od, BlockState self, BerylliumModel selfModel, BlockState state) {
@@ -343,5 +337,25 @@ public class ChunkMesher {
 //
 //        return blockState;
 //    }
+static final class ReusableTintGetter implements Function<Integer, Short> {
+    private TintProvider.TintFunction tintFunction;
+    private BlockState self;
+    private BlockPosition scratch = new BlockPosition();
 
+    public ReusableTintGetter() {
+        this.tintFunction = TintProvider.DEFAULT_TINT_FUNCTION;
+    }
+
+    void set(TintProvider.TintFunction tintFunction, BlockState self, Chunk chunk, int x, int y, int z) {
+        this.tintFunction = tintFunction;
+        this.self = self;
+        this.scratch.set(chunk, x, y, z);
+
+    }
+
+    @Override
+    public Short apply(Integer idx) {
+        return tintFunction.getTint(self, scratch, idx);
+    }
+}
 }

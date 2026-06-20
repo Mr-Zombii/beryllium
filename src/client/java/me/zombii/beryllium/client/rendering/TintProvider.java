@@ -6,6 +6,7 @@ import finalforeach.cosmicreach.blocks.Block;
 import finalforeach.cosmicreach.blocks.BlockPosition;
 import finalforeach.cosmicreach.blocks.BlockState;
 import finalforeach.cosmicreach.util.Identifier;
+import me.zombii.beryllium.client.IdentifierCache;
 import me.zombii.beryllium.common.BerylliumCommon;
 
 import java.awt.*;
@@ -31,8 +32,9 @@ public class TintProvider {
     }
 
     public static TintFunction getForState(Block block) {
-        if (TINT_FUNCTION_REGISTRY.contains(Identifier.of(block.getStringId()))) {
-            return TINT_FUNCTION_REGISTRY.get(Identifier.of(block.getStringId()));
+        Identifier identifier = IdentifierCache.getOrInsert(block.getStringId());
+        if (TINT_FUNCTION_REGISTRY.contains(identifier)) {
+            return TINT_FUNCTION_REGISTRY.get(identifier);
         }
         return DEFAULT_TINT_FUNCTION;
     }

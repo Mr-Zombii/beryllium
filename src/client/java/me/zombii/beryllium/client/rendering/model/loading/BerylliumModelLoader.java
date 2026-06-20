@@ -6,6 +6,7 @@ import dev.puzzleshq.puzzleloader.loader.util.RawAssetLoader;
 import finalforeach.cosmicreach.util.Identifier;
 import finalforeach.cosmicreach.util.constants.Direction;
 import it.unimi.dsi.fastutil.objects.*;
+import me.zombii.beryllium.client.IdentifierCache;
 import me.zombii.beryllium.client.rendering.model.*;
 import me.zombii.beryllium.common.BerylliumCommon;
 import me.zombii.beryllium.common.BerylliumConfig;
@@ -32,6 +33,9 @@ public class BerylliumModelLoader {
 
     public static BerylliumModel getModel(Identifier name) {
         return modelMap.get(name);
+    }
+    public static BerylliumModel getModel(String id) {
+        return modelMap.get(IdentifierCache.getOrInsert(id));
     }
 
     public static boolean isRegistered(Identifier name) {
@@ -297,6 +301,10 @@ public class BerylliumModelLoader {
         }
 
         Identifier modelName = newModel.getID();
+        //make the IdentifierCache use this version of the identifier
+        //so when in the mesher the cache will retriver the version used in the modelmap and it should eliminate any string comparisons done
+        //should just be pointer equals
+        IdentifierCache.insert(modelName);
         if (modelMap.containsKey(modelName)) {
             if (!overwrite) throw new IllegalArgumentException("Tried to re-register a model that was already loaded!");
 
