@@ -29,11 +29,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ModelBaker {
 
-    private static final Object2ObjectMap<BerylliumModel, BakedBerylliumModel> modelMap = Object2ObjectMaps.synchronize(new Object2ObjectArrayMap<>());
+    private static final Object2ObjectMap<String, BakedBerylliumModel> modelMap = Object2ObjectMaps.synchronize(new Object2ObjectArrayMap<>());
 
     private static final Logger LOGGER = LogManager.getLogger("Beryllium | ModelBaker");
 
@@ -98,6 +99,7 @@ public class ModelBaker {
                 }
 
                 materialAtlas.add(value.getAtlasMaterialID(), materialMap).draw();
+
             }
         }
     }
@@ -105,96 +107,91 @@ public class ModelBaker {
     private static final Matrix4 matRot = new Matrix4();
     private static final Matrix4 matTrns = new Matrix4();
 
-    public static void requestAtlasUpdate() {
+    public static void requestAtlasUpdateFromMainThread() {
         BerylliumConfig config = BerylliumConfig.INSTANCE;
 
-        ModelBakingThread.postRunnable(() -> {
-            if (config.debugMode) LOGGER.log(Level.INFO, "Finished Baking Models");
+        if (config.debugMode) LOGGER.log(Level.INFO, "Reordering \"{}\"'s objects", BerylliumAtlases.ALBEDO_ATLAS.getID());
+        BerylliumAtlases.ALBEDO_ATLAS.reorder();
+        if (config.debugMode) LOGGER.log(Level.INFO, "Redrawing \"{}\"'s objects", BerylliumAtlases.ALBEDO_ATLAS.getID());
+        BerylliumAtlases.ALBEDO_ATLAS.redrawSubtextures();
+        if (config.enableEmissiveAtlas) {
+            if (config.debugMode) LOGGER.log(Level.INFO, "Reordering \"{}\"'s objects", BerylliumAtlases.EMISSIVE_ATLAS.getID());
+            BerylliumAtlases.EMISSIVE_ATLAS.reorder();
+            if (config.debugMode) LOGGER.log(Level.INFO, "Redrawing \"{}\"'s objects", BerylliumAtlases.EMISSIVE_ATLAS.getID());
+            BerylliumAtlases.EMISSIVE_ATLAS.redrawSubtextures();
+        }
+        if (config.enableNormalAtlas) {
+            if (config.debugMode) LOGGER.log(Level.INFO, "Reordering \"{}\"'s objects", BerylliumAtlases.NORMAL_ATLAS.getID());
+            BerylliumAtlases.NORMAL_ATLAS.reorder();
+            if (config.debugMode) LOGGER.log(Level.INFO, "Redrawing \"{}\"'s objects", BerylliumAtlases.NORMAL_ATLAS.getID());
+            BerylliumAtlases.NORMAL_ATLAS.redrawSubtextures();
+        }
+        if (config.enableMaterialAtlas) {
+            if (config.debugMode) LOGGER.log(Level.INFO, "Reordering \"{}\"'s objects", BerylliumAtlases.MATERIAL_ATLAS.getID());
+            BerylliumAtlases.MATERIAL_ATLAS.reorder();
+            if (config.debugMode) LOGGER.log(Level.INFO, "Redrawing \"{}\"'s objects", BerylliumAtlases.MATERIAL_ATLAS.getID());
+            BerylliumAtlases.MATERIAL_ATLAS.redrawSubtextures();
+        }
 
-            if (config.debugMode) LOGGER.log(Level.INFO, "Reordering \"{}\"'s objects", BerylliumAtlases.ALBEDO_ATLAS.getID());
-            BerylliumAtlases.ALBEDO_ATLAS.reorder();
-            if (config.debugMode) LOGGER.log(Level.INFO, "Redrawing \"{}\"'s objects", BerylliumAtlases.ALBEDO_ATLAS.getID());
-            BerylliumAtlases.ALBEDO_ATLAS.redrawSubtextures();
+        Gdx.app.postRunnable(() -> {
+            BerylliumAtlases.AlbedoUVBuffer = createOrUpdateTBO(
+                    config,
+                    BerylliumAtlases.ALBEDO_ATLAS,
+                    BerylliumAtlases.AlbedoUVBuffer
+            );
+
             if (config.enableEmissiveAtlas) {
-                if (config.debugMode) LOGGER.log(Level.INFO, "Reordering \"{}\"'s objects", BerylliumAtlases.EMISSIVE_ATLAS.getID());
-                BerylliumAtlases.EMISSIVE_ATLAS.reorder();
-                if (config.debugMode) LOGGER.log(Level.INFO, "Redrawing \"{}\"'s objects", BerylliumAtlases.EMISSIVE_ATLAS.getID());
-                BerylliumAtlases.EMISSIVE_ATLAS.redrawSubtextures();
-            }
-            if (config.enableNormalAtlas) {
-                if (config.debugMode) LOGGER.log(Level.INFO, "Reordering \"{}\"'s objects", BerylliumAtlases.NORMAL_ATLAS.getID());
-                BerylliumAtlases.NORMAL_ATLAS.reorder();
-                if (config.debugMode) LOGGER.log(Level.INFO, "Redrawing \"{}\"'s objects", BerylliumAtlases.NORMAL_ATLAS.getID());
-                BerylliumAtlases.NORMAL_ATLAS.redrawSubtextures();
-            }
-            if (config.enableMaterialAtlas) {
-                if (config.debugMode) LOGGER.log(Level.INFO, "Reordering \"{}\"'s objects", BerylliumAtlases.MATERIAL_ATLAS.getID());
-                BerylliumAtlases.MATERIAL_ATLAS.reorder();
-                if (config.debugMode) LOGGER.log(Level.INFO, "Redrawing \"{}\"'s objects", BerylliumAtlases.MATERIAL_ATLAS.getID());
-                BerylliumAtlases.MATERIAL_ATLAS.redrawSubtextures();
-            }
-
-            Gdx.app.postRunnable(() -> {
-                BerylliumAtlases.AlbedoUVBuffer = createOrUpdateTBO(
+                BerylliumAtlases.EmissiveUVBuffer = createOrUpdateTBO(
                         config,
-                        BerylliumAtlases.ALBEDO_ATLAS,
-                        BerylliumAtlases.AlbedoUVBuffer
+                        BerylliumAtlases.EMISSIVE_ATLAS,
+                        BerylliumAtlases.EmissiveUVBuffer
                 );
+            }
 
-                if (config.enableEmissiveAtlas) {
-                    BerylliumAtlases.EmissiveUVBuffer = createOrUpdateTBO(
-                            config,
-                            BerylliumAtlases.EMISSIVE_ATLAS,
-                            BerylliumAtlases.EmissiveUVBuffer
-                    );
-                }
+            if (config.enableNormalAtlas) {
+                BerylliumAtlases.NormalUVBuffer = createOrUpdateTBO(
+                        config,
+                        BerylliumAtlases.NORMAL_ATLAS,
+                        BerylliumAtlases.NormalUVBuffer
+                );
+            }
 
-                if (config.enableNormalAtlas) {
-                    BerylliumAtlases.NormalUVBuffer = createOrUpdateTBO(
-                            config,
-                            BerylliumAtlases.NORMAL_ATLAS,
-                            BerylliumAtlases.NormalUVBuffer
-                    );
-                }
+            if (config.enableMaterialAtlas) {
+                BerylliumAtlases.MaterialUVBuffer = createOrUpdateTBO(
+                        config,
+                        BerylliumAtlases.MATERIAL_ATLAS,
+                        BerylliumAtlases.MaterialUVBuffer
+                );
+            }
 
-                if (config.enableMaterialAtlas) {
-                    BerylliumAtlases.MaterialUVBuffer = createOrUpdateTBO(
-                            config,
-                            BerylliumAtlases.MATERIAL_ATLAS,
-                            BerylliumAtlases.MaterialUVBuffer
-                    );
-                }
+            try {
+                BerylliumAtlases.ALBEDO_ATLAS.toFile(new File("ambient.png"));
+                if (config.enableEmissiveAtlas) BerylliumAtlases.EMISSIVE_ATLAS.toFile(new File("emissive.png"));
+                if (config.enableNormalAtlas) BerylliumAtlases.NORMAL_ATLAS.toFile(new File("normal.png"));
+                if (config.enableMaterialAtlas) BerylliumAtlases.MATERIAL_ATLAS.toFile(new File("material.png"));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
-                try {
-                    BerylliumAtlases.ALBEDO_ATLAS.toFile(new File("ambient.png"));
-                    if (config.enableEmissiveAtlas) BerylliumAtlases.EMISSIVE_ATLAS.toFile(new File("emissive.png"));
-                    if (config.enableNormalAtlas) BerylliumAtlases.NORMAL_ATLAS.toFile(new File("normal.png"));
-                    if (config.enableMaterialAtlas) BerylliumAtlases.MATERIAL_ATLAS.toFile(new File("material.png"));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+            if (config.debugMode)
+                LOGGER.log(Level.INFO, "Uploading atlases");
 
-                if (config.debugMode)
-                    LOGGER.log(Level.INFO, "Uploading atlases");
-
-                BerylliumAtlases.ALBEDO_ATLAS.upload();
-                if (config.enableEmissiveAtlas) BerylliumAtlases.EMISSIVE_ATLAS.upload();
-                if (config.enableNormalAtlas) BerylliumAtlases.NORMAL_ATLAS.upload();
-                if (config.enableMaterialAtlas) BerylliumAtlases.MATERIAL_ATLAS.upload();
-            });
+            BerylliumAtlases.ALBEDO_ATLAS.upload();
+            if (config.enableEmissiveAtlas) BerylliumAtlases.EMISSIVE_ATLAS.upload();
+            if (config.enableNormalAtlas) BerylliumAtlases.NORMAL_ATLAS.upload();
+            if (config.enableMaterialAtlas) BerylliumAtlases.MATERIAL_ATLAS.upload();
         });
     }
 
-    public static void requestFaceBufferUpdate() {
+    public static void requestFaceBufferUpdateFromMainThread(AtomicBoolean isFinished) {
         BerylliumConfig config = BerylliumConfig.INSTANCE;
 
-        ModelBakingThread.postRunnable(() -> {
-            Gdx.app.postRunnable(() -> {
-                BerylliumAtlases.PerFaceUVBuffer = createOrUpdateFaceUVTBO(
-                        config,
-                        BerylliumAtlases.PerFaceUVBuffer
-                );
-            });
+        Gdx.app.postRunnable(() -> {
+            BerylliumAtlases.PerFaceUVBuffer = createOrUpdateFaceUVTBO(
+                    config,
+                    BerylliumAtlases.PerFaceUVBuffer
+            );
+            isFinished.set(true);
         });
     }
 
@@ -273,24 +270,14 @@ public class ModelBaker {
 
     }
 
-    public static void requestModelToBake(BerylliumModel model) {
-        ModelBakingThread.requestBaking(model);
-        requestAtlasUpdate();
-        requestFaceBufferUpdate();
-    }
-
     public static void requestModelsToBake(List<BerylliumModel> models) {
-        for (BerylliumModel model : models) {
-            ModelBakingThread.requestBaking(model);
-        }
-        requestAtlasUpdate();
-        requestFaceBufferUpdate();
+        ModelBakingThread.requestMassBake(models);
+//        requestAtlasUpdate();
+//        requestFaceBufferUpdate();
     }
 
     public static void requestAllModelsToBake() {
         requestModelsToBake(BerylliumModelLoader.getModels());
-        requestAtlasUpdate();
-        requestFaceBufferUpdate();
     }
 
     public static void bakeGroups(
@@ -368,7 +355,7 @@ public class ModelBaker {
         }
     }
 
-    public static void bake(BerylliumModel model) {
+    public static void bakeModelVertices(BerylliumModel model) {
         ObjectList<VertexGroup> groups = new ObjectArrayList<>();
         Object2ObjectMap<String, VertexGroup> groupMap = new Object2ObjectArrayMap<>();
 
@@ -376,7 +363,6 @@ public class ModelBaker {
                 model, groups, groupMap
         );
 
-        bakeTextures(model.getTextureMap());
         bakeGroups(
                 bakedModel,
                 groups, groupMap,
@@ -392,14 +378,15 @@ public class ModelBaker {
             }
             LOGGER.log(Level.INFO,
                     "Baked Model \"{}\", {} Group(s), {} Quad(s), {} Triangle(s), {}",
-                    model.getID(), groupCount, quadCount, quadCount * 2, quadCount != 1 ? "Vertices" : "Vertex"
+                    model.getName(), groupCount, quadCount, quadCount * 2, quadCount != 1 ? "Vertices" : "Vertex"
             );
         }
-        modelMap.put(model, bakedModel);
+        modelMap.put(model.getName(), bakedModel);
     }
 
     public static void collectAndBake() {
         ObjectList<BerylliumModel> collectedModels = new ObjectArrayList<>();
+        collectedModels.addAll(BerylliumModelLoader.getModels());
         EventCollectModels collectModelsEvent = new EventCollectModels(collectedModels);
         GameRegistries.COSMIC_EVENT_BUS.post(collectModelsEvent);
 
@@ -415,11 +402,23 @@ public class ModelBaker {
         ModelBaker.requestModelsToBake(collectedModels);
     }
 
-    public static BakedBerylliumModel get(BerylliumModel model) {
-        return modelMap.get(model);
+    public static BakedBerylliumModel get(String id) {
+        return modelMap.get(id);
     }
 
-    public static Map<BerylliumModel, BakedBerylliumModel> getModelMap() {
+    public static BakedBerylliumModel get(BerylliumModel model) {
+        return modelMap.get(model.getName());
+    }
+
+    public static boolean hasModel(String id) {
+        return modelMap.containsKey(id);
+    }
+
+    public static void deleteModel(String id) {
+        if (hasModel(id)) modelMap.remove(id);
+    }
+
+    public static Map<String, BakedBerylliumModel> getModelMap() {
         return Object2ObjectMaps.unmodifiable(modelMap);
     }
 

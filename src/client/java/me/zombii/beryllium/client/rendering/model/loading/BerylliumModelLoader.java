@@ -28,28 +28,28 @@ public class BerylliumModelLoader {
     private static final Logger LOGGER = LogManager.getLogger("Beryllium | ModelLoader");
 
     private static final ObjectList<BerylliumModel> loadedModels = new ObjectArrayList<>();
-    private static final Object2ObjectMap<Identifier, BerylliumModel> modelMap = new Object2ObjectArrayMap<>();
+    private static final Object2ObjectMap<String, BerylliumModel> modelMap = new Object2ObjectArrayMap<>();
 
-    public static BerylliumModel getModel(Identifier name) {
+    public static BerylliumModel getModel(String name) {
         return modelMap.get(name);
     }
 
-    public static boolean isRegistered(Identifier name) {
+    public static boolean isRegistered(String name) {
         return modelMap.containsKey(name);
     }
 
     public static boolean isRegistered(BerylliumModel model) {
-        return modelMap.containsKey(model.getID()) && modelMap.get(model.getID()) == model;
+        return modelMap.containsKey(model.getName()) && modelMap.get(model.getName()) == model;
     }
 
     public static List<BerylliumModel> getModels() {
         return ObjectLists.unmodifiable(loadedModels);
     }
 
-    public static Map<Identifier, BerylliumModel> getModelMap() {
+    public static Map<String, BerylliumModel> getModelMap() {
         return Object2ObjectMaps.unmodifiable(modelMap);
     }
-    public static BerylliumModel loadVanillaBlockModel(Identifier modelID, File file) throws IOException {
+    public static BerylliumModel loadVanillaBlockModel(String modelID, File file) throws IOException {
         FileInputStream fis = new FileInputStream(file);
         byte[] bytes = fis.readAllBytes();
         fis.close();
@@ -58,22 +58,22 @@ public class BerylliumModelLoader {
         return loadVanillaBlockModel(modelID, json);
     }
 
-    public static BerylliumModel loadVanillaBlockModel(Identifier modelID, FileHandle handle) throws IOException {
+    public static BerylliumModel loadVanillaBlockModel(String modelID, FileHandle handle) throws IOException {
         String json = handle.readString();
         return loadVanillaBlockModel(modelID, json);
     }
 
-    public static BerylliumModel loadVanillaBlockModel(Identifier modelID) {
-        String json = IndependentAssetLoader.loadAsset(modelID).getString();
+    public static BerylliumModel loadVanillaBlockModel(String modelID) {
+        String json = IndependentAssetLoader.loadAsset(Identifier.of(modelID)).getString();
         return loadVanillaBlockModel(modelID, json);
     }
 
-    public static BerylliumModel loadVanillaBlockModel(Identifier modelID, RawAssetLoader.RawFileHandle handle) throws IOException {
+    public static BerylliumModel loadVanillaBlockModel(String modelID, RawAssetLoader.RawFileHandle handle) throws IOException {
         String json = handle.getString();
         return loadVanillaBlockModel(modelID, json);
     }
 
-    public static BerylliumModel loadVanillaBlockModel(Identifier name, String json) {
+    public static BerylliumModel loadVanillaBlockModel(String name, String json) {
         if (modelMap.containsKey(name)) {
             return modelMap.get(name);
         }
@@ -84,7 +84,7 @@ public class BerylliumModelLoader {
         if (!value.isObject()) throw new IllegalArgumentException("Expected a json object as input, got a \"" + value.getType() + "\" for model \"" + name + "\"");
         BerylliumModel model = new BerylliumModel(name);
 
-        if (name.getName().contains("water"))
+        if (name.contains("water"))
             model.setRenderLayer(Identifier.of(BerylliumCommon.NAMESPACE, "translucent-block-render-layer"));
 
         JsonObject object = value.asObject();
@@ -96,10 +96,10 @@ public class BerylliumModelLoader {
         String parentModelName = object.getString("parent", null);
         BerylliumModel foundParentModel = null;
         if (parentModelName != null) {
-            BerylliumModel parentModel = BerylliumModelLoader.getModel(Identifier.of(parentModelName.trim()));
+            BerylliumModel parentModel = BerylliumModelLoader.getModel(parentModelName.trim());
             if (parentModel == null) {
                 try {
-                    parentModel = BerylliumModelLoader.loadVanillaBlockModel(Identifier.of(parentModelName.trim()), IndependentAssetLoader.loadAsset(Identifier.of(parentModelName.trim())));
+                    parentModel = BerylliumModelLoader.loadVanillaBlockModel(parentModelName.trim(), IndependentAssetLoader.loadAsset(Identifier.of(parentModelName.trim())));
                 } catch (IOException ignore) {}
             }
             if (parentModel == null) throw new IllegalStateException("Could not find the parent model \"" + parentModelName + "\" for model \"" + name + "\"");
@@ -296,7 +296,7 @@ public class BerylliumModelLoader {
             }
         }
 
-        Identifier modelName = newModel.getID();
+        String modelName = newModel.getName();
         if (modelMap.containsKey(modelName)) {
             if (!overwrite) throw new IllegalArgumentException("Tried to re-register a model that was already loaded!");
 
@@ -320,4 +320,13 @@ public class BerylliumModelLoader {
         loadedModels.add(newModel);
         return newModel;
     }
+
+    public static void unregister(String modelID) {
+        if (isRegistered(modelID)) {
+            BerylliumModel model = modelMap.get(modelID);
+            loadedModels.remove(model);
+            modelMap.remove(modelID, model);
+        }
+    }
+
 }

@@ -14,7 +14,7 @@ public class TintProvider {
 
     public static final IRegistry<TintFunction> TINT_FUNCTION_REGISTRY = new GenericRegistry<>(Identifier.of(BerylliumCommon.NAMESPACE, "tint_functions"));
 
-    public static final TintFunction DEFAULT_TINT_FUNCTION = (s, p, i) -> (short) -1;
+    public static final TintFunction DEFAULT_TINT_FUNCTION = (s, p, idx) -> (short) -1;
 
     public static short argb8888ToRgb565(int argb) {
         int r = (argb >> 16) & 0xFF;

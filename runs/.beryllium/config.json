@@ -2,5 +2,6 @@
   "debugMode": true,
   "enableEmissiveAtlas": true,
   "enableNormalAtlas": false,
-  "enableMaterialAtlas": false
+  "enableMaterialAtlas": false,
+  "enableBerylliumRendering": true
 }

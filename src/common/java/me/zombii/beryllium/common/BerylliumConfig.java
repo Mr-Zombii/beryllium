@@ -14,6 +14,7 @@ public class BerylliumConfig {
     public boolean enableEmissiveAtlas = false;
     public boolean enableNormalAtlas = false;
     public boolean enableMaterialAtlas = false;
+    public boolean enableBerylliumRendering = true;
 
     public BerylliumConfig() {}
 

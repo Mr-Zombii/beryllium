@@ -43,9 +43,11 @@ public class ChunkMesher {
     private static final short[] TMP_BLOCK_LIGHT = new short[6];
     private static final byte[] TMP_AO_VALUES = new byte[4 * 6];
 
-    public static void meshChunk(Chunk chunk, LayeredChunkMesh chunkMesh) {
+    public static void meshChunk(Chunk chunk) {
+        LayeredChunkMesh chunkMesh = (LayeredChunkMesh) chunk.getMeshGroup().getAllMeshData();
         for (int i = 0; i < RenderLayers.LAYER_ORDER.length; i++) {
             RenderLayer layer = RenderLayers.LAYER_ORDER[i];
+
             meshChunk(layer, chunk, chunkMesh.getLayers()[i]);
         }
     }
@@ -72,7 +74,7 @@ public class ChunkMesher {
                     if (self == null) continue;
                     if (self.hasEmptyModel()) continue;
 
-                    BerylliumModel model = BerylliumModelLoader.getModel(getModelId(self));
+                    BerylliumModel model = BerylliumModelLoader.getModel(self.modelName);
                     if (model.getRenderLayer() != layer) continue;
 
                     int visibleFaces = getVisibleFaces(self, model, x, y, z);
@@ -299,15 +301,11 @@ public class ChunkMesher {
         blockLight[5] = crossChunkAccessor.getBlockLight(tmp.set( 0,  0,  1), x, y, z);
     }
 
-    private static Identifier getModelId(BlockState state) {
-        return Identifier.of(state.modelName);
-    }
-
     private static boolean isOccluded(int d, int od, BlockState self, BerylliumModel selfModel, BlockState state) {
         if (state == null || state.hasEmptyModel()) return false;
         if (self.getBlock().equals(state.getBlock()) && self.cullsSelf()) return true;
 
-        BerylliumModel stateModel = BerylliumModelLoader.getModel(getModelId(state));
+        BerylliumModel stateModel = BerylliumModelLoader.getModel(state.modelName);
         if (stateModel.isTransparent() || selfModel.isTransparent()) return false;
         return selfModel.canAllCullInDirection(d) && stateModel.canAllCullInDirection(od);
     }

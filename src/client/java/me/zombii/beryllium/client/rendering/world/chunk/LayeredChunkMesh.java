@@ -23,23 +23,20 @@ public class LayeredChunkMesh {
     }
 
     public int scale = 1;
-    Chunk chunk;
     AtomicBoolean isFinished;
     AtomicBoolean scheduledForDisposal;
     AtomicBoolean canRenderOldMesh;
 
-    public LayeredChunkMesh(Chunk chunk, AtomicBoolean isFinished) {
-        this.chunk = chunk;
-        this.isFinished = isFinished;
+    public LayeredChunkMesh() {
+        this.isFinished = new AtomicBoolean(false);
         this.scheduledForDisposal = new AtomicBoolean(false);
         for (int i = 0; i < this.layers.length; i++) {
             this.layers[i] = new ChunkMesh(this);
         }
         this.canRenderOldMesh = new AtomicBoolean(false);
-    }
-
-    public Chunk getChunk() {
-        return chunk;
+        for (int i = 0; i < this.layers.length; i++) {
+            setLayer(i, new ChunkMesh(this));
+        }
     }
 
     public boolean isFinished() {
@@ -66,5 +63,15 @@ public class LayeredChunkMesh {
         for (ChunkMesh layer : this.layers) {
             if (layer != null) layer.dispose();
         }
+    }
+
+    Chunk c;
+
+    public void setChunk(Chunk c) {
+        this.c = c;
+    }
+
+    public Chunk getChunk() {
+        return c;
     }
 }

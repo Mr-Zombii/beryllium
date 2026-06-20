@@ -1,12 +1,19 @@
 package me.zombii.beryllium.client;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.utils.Json;
 import dev.puzzleshq.puzzleloader.cosmic.game.GameRegistries;
+import dev.puzzleshq.puzzleloader.cosmic.game.blockloader.loading.ISidedModelLoader;
 import dev.puzzleshq.puzzleloader.cosmic.game.util.IndependentAssetLoader;
 import dev.puzzleshq.puzzleloader.loader.launch.Piece;
 import dev.puzzleshq.puzzleloader.loader.mod.entrypoint.client.ClientModInit;
 import dev.puzzleshq.puzzleloader.loader.mod.entrypoint.client.ClientPostModInit;
-import finalforeach.cosmicreach.blocks.Block;
+import finalforeach.cosmicreach.blocks.BlockState;
+import finalforeach.cosmicreach.networking.server.ServerSingletons;
+import finalforeach.cosmicreach.rendering.blockmodels.BlockModel;
+import finalforeach.cosmicreach.rendering.blockmodels.BlockModelJson;
+import finalforeach.cosmicreach.rendering.blockmodels.DummyBlockModel;
+import finalforeach.cosmicreach.rendering.blockmodels.IBlockModelInstantiator;
 import finalforeach.cosmicreach.singletons.GameSingletons;
 import finalforeach.cosmicreach.util.Identifier;
 import finalforeach.cosmicreach.util.assets.GameAssetLoader;
@@ -14,22 +21,23 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import me.zombii.beryllium.client.events.EventCollectModels;
 import me.zombii.beryllium.client.events.EventCollectRenderLayers;
+import me.zombii.beryllium.client.loading.NewBlockModelInstantiator;
+import me.zombii.beryllium.client.loading.NewClientModelLoader;
 import me.zombii.beryllium.client.rendering.layers.RenderLayer;
 import me.zombii.beryllium.client.rendering.layers.RenderLayers;
-import me.zombii.beryllium.client.rendering.model.BerylliumModel;
+import me.zombii.beryllium.client.rendering.model.*;
 import me.zombii.beryllium.client.rendering.model.loading.baking.ModelBaker;
 import me.zombii.beryllium.client.rendering.model.loading.BerylliumModelLoader;
 import me.zombii.beryllium.client.rendering.model.loading.baking.ModelBakingThread;
-import me.zombii.beryllium.client.rendering.opengl.textures.atlas.GLAtlas;
 import me.zombii.beryllium.client.rendering.world.BerylliumMeshingThread;
 import me.zombii.beryllium.client.rendering.world.BerylliumZoneRenderer;
-import me.zombii.beryllium.client.rendering.world.chunk.ChunkMesher;
+import me.zombii.beryllium.client.rendering.world.threading.MeshGenThread;
+import me.zombii.beryllium.client.rendering.world.threading.NewZoneRenderer;
 import me.zombii.beryllium.common.BerylliumCommon;
 import me.zombii.beryllium.common.BerylliumConfig;
 import net.neoforged.bus.api.SubscribeEvent;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,9 +62,10 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
 
     @Override
     public void onClientInit() {
+        ISidedModelLoader.CONTEXTUAL_INSTANCE.set(new NewClientModelLoader());
+
         BerylliumAtlases.initAtlases();
         ModelBakingThread.start();
-        BerylliumMeshingThread.THREAD.start();
 
         IndependentAssetLoader.registerLoadingMethod(BufferedImage.class, (handle) -> {
             try {
@@ -70,7 +79,6 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
         });
 
         Gdx.app.postRunnable(RenderLayers::collectAndCompile);
-        ModelBaker.collectAndBake();
     }
 
     @SubscribeEvent
@@ -79,13 +87,13 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
             System.out.println("Found: " + source.getFile());
         }
 
-        GameAssetLoader.forEachAsset("models/blocks", ".json", (p, f) -> {
-            try {
-                event.registerForBaking(BerylliumModelLoader.loadVanillaBlockModel(Identifier.of(p.trim()), f));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+//        GameAssetLoader.forEachAsset("models/blocks", ".json", (p, f) -> {
+//            try {
+//                event.registerForBaking(BerylliumModelLoader.loadVanillaBlockModel(p.trim(), f));
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        });
 
         for (BerylliumModel interceptedModel : INTERCEPTED_MODELS) {
             event.registerForBaking(interceptedModel);
@@ -110,7 +118,13 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
 
     @Override
     public void onClientPostInit() {
-        GameSingletons.zoneRenderer = new BerylliumZoneRenderer();
+        if (BerylliumConfig.INSTANCE.enableBerylliumRendering) {
+            BerylliumMeshingThread.THREAD.start();
+            GameSingletons.zoneRenderer = new BerylliumZoneRenderer();
+//            GameSingletons.zoneRenderer = new NewZoneRenderer();
+//            GameSingletons.meshGenThread = new MeshGenThread();
+            GameSingletons.blockModelInstantiator = new NewBlockModelInstantiator();
+        };
 //        register(Block.getById("base:grass"), (state, pos, tintIdx) -> {
 //            int r = (int) ((pos.localX / 16f) * 255);
 //            int g = (int) ((pos.localY / 16f) * 255);

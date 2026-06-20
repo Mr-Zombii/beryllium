@@ -49,6 +49,9 @@ public class Tessallator {
         this.indices.position(0);
     }
 
+    public static final byte[] EMPTY_AO = new byte[4 * 6];
+    public static final short[] EMPTY_SHORTS = new short[6];
+
     public void addQuad(
             BakedFace face,
             short skyLightLevel,
@@ -71,12 +74,14 @@ public class Tessallator {
 
         float[] verts = face.verts();
 
+        byte[] newAoLevels = face.doAO() ? aoLevels : EMPTY_AO;
+
         addQuad(
                 verts[0] + x, verts[1] + y, verts[2] + z,
                 verts[3] + x, verts[4] + y, verts[5] + z,
                 verts[6] + x, verts[7] + y, verts[8] + z,
                 verts[9] + x, verts[10] + y, verts[11] + z,
-                skyLightLevel, blockLightLevel, aoLevels,
+                skyLightLevel, blockLightLevel, newAoLevels,
                 faceTint, aoIndex,
                 face.uvRotation(),
                 (short) face.faceUvIndex(),

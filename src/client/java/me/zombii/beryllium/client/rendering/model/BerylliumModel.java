@@ -22,12 +22,12 @@ public class BerylliumModel implements Iterable<PartGroup>, HJsonSerializable {
     private final ObjectList<PartGroup> groups = new ObjectArrayList<>();
     private final Object2ObjectMap<String, PartGroup> groupMap = new Object2ObjectArrayMap<>();
 
-    private final Identifier id;
+    private final String id;
     private Identifier renderLayerId;
     private final AtomicBoolean isTransparent = new AtomicBoolean(false);
 
     public BerylliumModel(
-            Identifier id
+            String id
     ) {
         this.id = id;
         setRenderLayer(null);
@@ -86,6 +86,9 @@ public class BerylliumModel implements Iterable<PartGroup>, HJsonSerializable {
     }
 
     public TextureEntry getTexture(String name) {
+        if (name.equals("slab_top") && !textureMap.containsKey("slab_top")) return getTexture("top");
+        if (name.equals("slab_bottom") && !textureMap.containsKey("slab_bottom")) return getTexture("bottom");
+        if (name.equals("slab_side") && !textureMap.containsKey("slab_side")) return getTexture("side");
         if (!textureMap.containsKey(name)) return textureMap.get("all");
         return textureMap.get(name);
     }
@@ -110,7 +113,7 @@ public class BerylliumModel implements Iterable<PartGroup>, HJsonSerializable {
         return Object2ObjectMaps.unmodifiable(textureMap);
     }
 
-    public Identifier getID() {
+    public String getName() {
         return id;
     }
 

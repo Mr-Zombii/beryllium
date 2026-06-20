@@ -47,6 +47,7 @@ public class BerylliumMesh {
     private volatile long dumpIndSize = 0;
 
     public void dump(Tessallator tessallator, boolean resetPos) {
+        empty = false;
         if (resetPos) {
             this.vertexBuffer.position(0);
             this.indexBuffer.position(0);
@@ -136,7 +137,7 @@ public class BerylliumMesh {
 
     private int glBudget = 0;
 
-    public void bind() {
+    public void updateDirty() {
         if (dirty) {
             if (!initialized || budget > glBudget) {
                 initGL();
@@ -154,7 +155,9 @@ public class BerylliumMesh {
             initGL();
             glBudget = budget;
         }
+    }
 
+    public void bind() {
         GL30.glBindVertexArray(this.vao);
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.ebo);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vbo);
@@ -280,6 +283,7 @@ public class BerylliumMesh {
     private boolean isDisposed;
 
     public void dispose() {
+        if (isDisposed) return;
         isDisposed = true;
         disposeJavaBuffers();
         disposeGLBuffers();
@@ -319,10 +323,17 @@ public class BerylliumMesh {
         return initialized;
     }
 
+    boolean empty = false;
+
     public void clear() {
+        empty = true;
         vertexBuffer.clear();
         indexBuffer.clear();
         indexBuffer.limit(0);
         vertexBuffer.limit(0);
+    }
+
+    public boolean isEmpty() {
+        return empty;
     }
 }

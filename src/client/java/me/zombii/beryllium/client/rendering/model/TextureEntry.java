@@ -24,6 +24,17 @@ public class TextureEntry implements HJsonSerializable {
         this.name = Objects.requireNonNull(name, "Texture name must not be null!");
     }
 
+    public TextureEntry(TextureEntry value) {
+        this(value.name);
+        this.albedoTexturePath = value.albedoTexturePath;
+        this.emissiveTexturePath = value.emissiveTexturePath;
+        this.normalMapTexturePath = value.normalMapTexturePath;
+        this.roughnessMapTexturePath = value.roughnessMapTexturePath;
+        this.metalnessMapTexturePath = value.metalnessMapTexturePath;
+        this.aoMapTexturePath = value.aoMapTexturePath;
+        this.depthMapTexturePath = value.depthMapTexturePath;
+    }
+
     public TextureEntry setAlbedoTexturePath(Identifier albedoTexturePath) {
         if (albedoTexturePath == null) {
             this.albedoTexturePath = BerylliumClient.MISSING_TEXTURE_PATH;

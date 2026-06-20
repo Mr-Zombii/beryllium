@@ -6,7 +6,9 @@ public class ChunkMesh extends BerylliumMesh {
 
     private final LayeredChunkMesh parent;
 
-    public ChunkMesh(LayeredChunkMesh parent) {
+    public ChunkMesh(
+            LayeredChunkMesh parent
+    ) {
         super(128, true);
         this.parent = parent;
     }
@@ -14,4 +16,5 @@ public class ChunkMesh extends BerylliumMesh {
     public LayeredChunkMesh getParent() {
         return parent;
     }
+
 }

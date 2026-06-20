@@ -3,13 +3,13 @@ package me.zombii.beryllium.client.rendering.world;
 import finalforeach.cosmicreach.world.Chunk;
 import me.zombii.beryllium.client.rendering.world.chunk.ChunkMesher;
 import me.zombii.beryllium.client.rendering.world.chunk.LayeredChunkMesh;
+import me.zombii.beryllium.client.rendering.world.threading.NewMeshGroup;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Set;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BerylliumMeshingThread implements Runnable {
@@ -23,57 +23,52 @@ public class BerylliumMeshingThread implements Runnable {
 
     private static final AtomicBoolean running = new AtomicBoolean(true);
     private static final Queue<Runnable> normalRunnableQueue = new ConcurrentLinkedQueue<>();
-    private static final Queue<Runnable> immediateRunnableQueue = new ConcurrentLinkedQueue<>();
-    private static final Map<Chunk, LayeredChunkMesh> workingList = new ConcurrentHashMap<>();
+    private static final Set<Chunk> workingList = new CopyOnWriteArraySet<>();
 
     public static void setRunning(boolean running) {
         BerylliumMeshingThread.running.set(running);
     }
 
-    public static LayeredChunkMesh queueChunk(Chunk chunk, boolean immediate) {
-        LayeredChunkMesh chunkMesh = new LayeredChunkMesh(chunk, new AtomicBoolean(false));
-        return queueChunk(chunkMesh, immediate);
-    }
-
     public static void clear() {
         normalRunnableQueue.clear();
-        immediateRunnableQueue.clear();
     }
 
-    public static LayeredChunkMesh queueChunk(LayeredChunkMesh chunkMesh, boolean immediate) {
-        if (workingList.containsKey(chunkMesh.getChunk())) {
-            return workingList.get(chunkMesh.getChunk());
+    public static boolean queueChunk(Chunk chunk) {
+        if (chunk.getMeshGroup() == null) {
+            chunk.initMeshGroup(NewMeshGroup::new);
         }
-        workingList.put(chunkMesh.getChunk(), chunkMesh);
+
+        if (((LayeredChunkMesh)chunk.getMeshGroup().getAllMeshData()).isScheduledForDisposal()) return false;
+
+        if (!workingList.add(chunk)) {
+            System.out.println("Tried queuing alr queued chunk " + chunk);
+            return false;
+        }
+        System.out.println("Queued chunk " + chunk);
         Runnable r = () -> {
-            chunkMesh.setFinished(false);
-            ChunkMesher.meshChunk(chunkMesh.getChunk(), chunkMesh);
-            chunkMesh.setFinished(true);
-            workingList.remove(chunkMesh.getChunk());
+            LayeredChunkMesh mesh = (LayeredChunkMesh) chunk.getMeshGroup().getAllMeshData();
+            mesh.setFinished(false);
+            ChunkMesher.meshChunk(chunk);
+            mesh.setFinished(true);
+            workingList.remove(chunk);
         };
-        if (immediate) immediateRunnableQueue.add(r); else normalRunnableQueue.add(r);
-        return chunkMesh;
+        normalRunnableQueue.add(r);
+        return true;
     }
 
     @Override
     public void run() {
         while (running.get()) {
-            if (normalRunnableQueue.isEmpty() || immediateRunnableQueue.isEmpty()) {
+            if (normalRunnableQueue.isEmpty()) {
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(4);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
                 continue;
             }
-            if (!normalRunnableQueue.isEmpty()) {
-                Runnable chunkRunnable = normalRunnableQueue.poll();
-                chunkRunnable.run();
-            }
-            if (!immediateRunnableQueue.isEmpty()) {
-                Runnable immediateRunnable = immediateRunnableQueue.poll();
-                immediateRunnable.run();
-            }
+            Runnable chunkRunnable = normalRunnableQueue.poll();
+            chunkRunnable.run();
         }
     }
 }

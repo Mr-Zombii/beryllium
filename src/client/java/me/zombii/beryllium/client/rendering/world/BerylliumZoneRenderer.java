@@ -17,12 +17,13 @@ import me.zombii.beryllium.client.rendering.opengl.shader.BerylliumShaderProgram
 import me.zombii.beryllium.client.rendering.world.chunk.ChunkMesh;
 import me.zombii.beryllium.client.rendering.world.chunk.ChunkMesher;
 import me.zombii.beryllium.client.rendering.world.chunk.LayeredChunkMesh;
+import me.zombii.beryllium.client.rendering.world.threading.NewMeshGroup;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
 public class BerylliumZoneRenderer implements IZoneRenderer {
 
-    private final Object2ObjectMap<Chunk, LayeredChunkMesh> meshes = Object2ObjectMaps.synchronize(new Object2ObjectLinkedOpenHashMap<>());
+    private final ObjectSet<Chunk> chunks = ObjectSets.synchronize(new ObjectOpenHashSet<>());
 
     public BerylliumZoneRenderer() {
         ChunkMesher.init();
@@ -30,16 +31,14 @@ public class BerylliumZoneRenderer implements IZoneRenderer {
 
     @Override
     public void dispose() {
-        for (LayeredChunkMesh value : meshes.values()) {
-            for (ChunkMesh layer : value.getLayers()) {
-                if (layer != null) layer.dispose();
-            }
+        for (Chunk chunk : chunks) {
+            chunk.dispose();
         }
-        meshes.clear();
+        chunks.clear();
     }
 
     private final Matrix4 matrix4 = new Matrix4();
-    private final ObjectList<LayeredChunkMesh> snapshotMeshLayerList = new ObjectArrayList<>();
+    private final ObjectList<Chunk> snapshotMeshLayerList = new ObjectArrayList<>();
     private ObjectList<ChunkMesh>[] multiLayerMeshList;
 
     int sunDirectionLoc = -1;
@@ -63,38 +62,31 @@ public class BerylliumZoneRenderer implements IZoneRenderer {
         GL11.glDepthFunc(GL11.GL_LESS);
         GL11.glCullFace(GL11.GL_BACK);
 
-        ObjectCollection<LayeredChunkMesh> layeredChunkMeshes = meshes.values();
-
-        snapshotMeshLayerList.clear();
-        try {
-            snapshotMeshLayerList.addAll(layeredChunkMeshes);
-        } catch (Exception ignore) {}
         for (ObjectList<ChunkMesh> chunkMeshes : multiLayerMeshList) {
             chunkMeshes.clear();
         }
-        for (LayeredChunkMesh layeredChunkMesh : snapshotMeshLayerList) {
-            if (layeredChunkMesh == null) continue;
+        snapshotMeshLayerList.clear();
+        snapshotMeshLayerList.addAll(chunks);
 
+        snapshotMeshLayerList.sort((a, b) -> {
+            float aDst = Vector3.dst2(
+                    a.blockX, a.blockY, a.blockZ,
+                    camera.position.x, camera.position.y, camera.position.z
+            );
+            float bDst = Vector3.dst2(
+                    b.blockX, b.blockY, b.blockZ,
+                    camera.position.x, camera.position.y, camera.position.z
+            );
+            return Float.compare(aDst, bDst);
+        });
+
+        for (Chunk c : snapshotMeshLayerList) {
+            if (c == null || c.getMeshGroup() == null) continue;
+
+            ((LayeredChunkMesh)c.getMeshGroup().getAllMeshData()).setChunk(c);
             for (int i = 0; i < RenderLayers.LAYER_ORDER.length; i++) {
-                multiLayerMeshList[i].add(layeredChunkMesh.getLayer(i));
+                multiLayerMeshList[i].add(((LayeredChunkMesh)c.getMeshGroup().getAllMeshData()).getLayer(i));
             }
-        }
-
-        for (ObjectList<ChunkMesh> chunkMeshes : multiLayerMeshList) {
-            chunkMeshes.sort((a, b) -> {
-                Chunk aChunk = a.getParent().getChunk();
-                Chunk bChunk = b.getParent().getChunk();
-
-                float aDst = Vector3.dst2(
-                        aChunk.blockX, aChunk.blockY, aChunk.blockZ,
-                        camera.position.x, camera.position.y, camera.position.z
-                );
-                float bDst = Vector3.dst2(
-                        bChunk.blockX, bChunk.blockY, bChunk.blockZ,
-                        camera.position.x, camera.position.y, camera.position.z
-                );
-                return Float.compare(aDst, bDst);
-            });
         }
 
         for (int i = 0; i < RenderLayers.LAYER_ORDER.length; i++) {
@@ -121,7 +113,10 @@ public class BerylliumZoneRenderer implements IZoneRenderer {
             if (camPosLoc != -1) GL20.glUniform3f(camPosLoc, camera.position.x, camera.position.y, camera.position.z);
 
             for (ChunkMesh chunkMesh : meshObjectList) {
-                if (!chunkMesh.getParent().canRenderOldMesh() && !chunkMesh.getParent().isFinished()) continue;
+                if (!chunkMesh.getParent().canRenderOldMesh() && !chunkMesh.getParent().isFinished()) {
+                    continue;
+                }
+                if (chunkMesh.isDirty() && chunkMesh.getParent().isFinished()) chunkMesh.updateDirty();
 
                 Chunk chunk = chunkMesh.getParent().getChunk();
 
@@ -150,26 +145,20 @@ public class BerylliumZoneRenderer implements IZoneRenderer {
 
     @Override
     public void removeChunk(Chunk chunk) {
-        LayeredChunkMesh c = meshes.remove(chunk);
-        if (c == null) return;
-        c.scheduleForDisposal();
-        Gdx.app.postRunnable(c::dispose);
+        chunks.remove(chunk);
+        if (chunk.getMeshGroup() == null) return;
+        Gdx.app.postRunnable(chunk::dispose);
     }
 
-    private void queueOrCreate(Chunk chunk, boolean immediate) {
-        LayeredChunkMesh mesh = meshes.get(chunk);
-        if (mesh != null && !mesh.isScheduledForDisposal()) {
-            BerylliumMeshingThread.queueChunk(meshes.get(chunk), immediate);
-        } else {
-            meshes.put(chunk, BerylliumMeshingThread.queueChunk(chunk, immediate));
-        }
+    @Override
+    public void onChunkFlaggedForRemeshing(Chunk chunk) {
+        chunks.add(chunk);
+        BerylliumMeshingThread.queueChunk(chunk);
     }
-
-    @Override public void onChunkFlaggedForRemeshing(Chunk chunk) {
-        queueOrCreate(chunk, true);
-    }
-    @Override public void addChunk(Chunk chunk) {
-        queueOrCreate(chunk, false);
+    @Override
+    public void addChunk(Chunk chunk) {
+        chunks.add(chunk);
+        BerylliumMeshingThread.queueChunk(chunk);
     }
     @Override
     public void onChunkMeshed(Chunk chunk) {

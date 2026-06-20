@@ -5,7 +5,10 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "MixinBlockLoader",
-    "MixinItemGameEntity"
+    "MixinBlockState",
+    "MixinDummyBlockModel",
+    "MixinItemBlockModel",
+    "MixinGameSingletons"
   ],
   "client": [
   ],

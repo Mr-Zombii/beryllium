@@ -11,9 +11,9 @@ uniform sampler2D u_normalAtlas;
 uniform sampler2D u_materialAtlas;
 #endif
 
-uniform vec3 u_sunDirection;
-uniform vec3 u_ambientWorldColor;
-uniform vec3 u_ambientSkyColor;
+uniform vec3 u_sunDirection = vec3(0, 1, 0);
+uniform vec3 u_ambientWorldColor = vec3(1, 1, 1);
+uniform vec3 u_ambientSkyColor = vec3(1, 1, 1);
 uniform vec3 u_cameraPos;
 
 in float v_bakedAoValue;
