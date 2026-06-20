@@ -7,6 +7,7 @@ import dev.puzzleshq.puzzleloader.cosmic.game.GameRegistries;
 import finalforeach.cosmicreach.util.Identifier;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import me.zombii.beryllium.client.BerylliumClientRegistries;
 import me.zombii.beryllium.client.events.EventCollectRenderLayers;
 import me.zombii.beryllium.common.BerylliumCommon;
 import me.zombii.beryllium.common.BerylliumConfig;
@@ -19,7 +20,6 @@ import java.util.Comparator;
 
 public class RenderLayers {
 
-    public static final IRegistry<RenderLayer> LAYER_REGISTRY = new GenericRegistry<>(Identifier.of(BerylliumCommon.NAMESPACE, "RENDER_LAYERS"));
     public static RenderLayer[] LAYER_ORDER;
     private static final Logger LOGGER = LogManager.getLogger("Beryllium | RenderLayers");
 
@@ -34,7 +34,7 @@ public class RenderLayers {
             LOGGER.log(Level.INFO, "Collected {} RenderLayer(s) for registration", collectedRenderLayers.size());
 
         for (RenderLayer renderLayer : collectedRenderLayers) {
-            LAYER_REGISTRY.store(renderLayer.getId(), renderLayer);
+            BerylliumClientRegistries.RENDER_LAYER_REGISTRY.store(renderLayer.getId(), renderLayer);
             Gdx.app.postRunnable(() -> {
                 if (debugMode)
                     LOGGER.log(Level.INFO,
@@ -52,7 +52,7 @@ public class RenderLayers {
                 LOGGER.log(Level.INFO, "Compiled all {} render layers, freezing layer registry.", collectedRenderLayers.size());
         });
 
-        LAYER_REGISTRY.freeze();
+        BerylliumClientRegistries.RENDER_LAYER_REGISTRY.freeze();
     }
 
 }

@@ -3,6 +3,7 @@ package me.zombii.beryllium.client.rendering.model;
 import dev.puzzleshq.puzzleloader.cosmic.game.util.HJsonSerializable;
 import finalforeach.cosmicreach.util.Identifier;
 import it.unimi.dsi.fastutil.objects.*;
+import me.zombii.beryllium.client.BerylliumClientRegistries;
 import me.zombii.beryllium.client.rendering.layers.RenderLayer;
 import me.zombii.beryllium.client.rendering.layers.RenderLayers;
 import me.zombii.beryllium.common.BerylliumCommon;
@@ -54,7 +55,7 @@ public class BerylliumModel implements Iterable<PartGroup>, HJsonSerializable {
     }
 
     public RenderLayer getRenderLayer() {
-        return RenderLayers.LAYER_REGISTRY.get(renderLayerId);
+        return BerylliumClientRegistries.RENDER_LAYER_REGISTRY.get(renderLayerId);
     }
 
     public PartGroup getOrCreateGroup(String name) {

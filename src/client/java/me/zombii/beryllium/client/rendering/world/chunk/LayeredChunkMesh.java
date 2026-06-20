@@ -1,13 +1,13 @@
 package me.zombii.beryllium.client.rendering.world.chunk;
 
 import finalforeach.cosmicreach.world.Chunk;
-import me.zombii.beryllium.client.rendering.layers.RenderLayers;
+import me.zombii.beryllium.client.BerylliumClientRegistries;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LayeredChunkMesh {
 
-    private final ChunkMesh[] layers = new ChunkMesh[RenderLayers.LAYER_REGISTRY.names().size()];
+    private final ChunkMesh[] layers = new ChunkMesh[BerylliumClientRegistries.RENDER_LAYER_REGISTRY.names().size()];
 
     public ChunkMesh getLayer(int idx) {
         return layers[idx];
