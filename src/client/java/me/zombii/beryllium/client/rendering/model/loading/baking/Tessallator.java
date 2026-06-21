@@ -14,7 +14,6 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 
 public class Tessallator {
-
     /*
     *   float 32
     *   x, y, z
@@ -51,9 +50,11 @@ public class Tessallator {
 
     public static final byte[] EMPTY_AO = new byte[4 * 6];
     public static final short[] EMPTY_SHORTS = new short[6];
+    public static final short[] EMPTY_SKY_LIGHT = new short[6];
 
     static {
         Arrays.fill(EMPTY_AO, (byte) 3);
+        Arrays.fill(EMPTY_SKY_LIGHT, (short) 15);
     }
 
     public void addQuad(

@@ -55,7 +55,7 @@ public class MixinItemBlockModel {
         beryllium$mesh = new BerylliumMesh(6, true);
         model.addVertices(
                 beryllium$tess,
-                Tessallator.EMPTY_SHORTS, Tessallator.EMPTY_SHORTS,
+                Tessallator.EMPTY_SKY_LIGHT, Tessallator.EMPTY_SHORTS,
                 Tessallator.EMPTY_AO, BakedFace.ALL_FACES_SHOWING,
                 (d) -> (short) -1, 0, 0, 0
         );
