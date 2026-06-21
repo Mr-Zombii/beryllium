@@ -1,8 +1,6 @@
 package me.zombii.beryllium.client.rendering.opengl.buffers;
 
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL31;
 
 import java.nio.ByteBuffer;

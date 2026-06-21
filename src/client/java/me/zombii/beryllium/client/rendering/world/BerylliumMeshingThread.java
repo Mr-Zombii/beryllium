@@ -5,11 +5,10 @@ import me.zombii.beryllium.client.rendering.world.chunk.ChunkMesher;
 import me.zombii.beryllium.client.rendering.world.chunk.LayeredChunkMesh;
 import me.zombii.beryllium.client.rendering.world.threading.NewMeshGroup;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BerylliumMeshingThread implements Runnable {

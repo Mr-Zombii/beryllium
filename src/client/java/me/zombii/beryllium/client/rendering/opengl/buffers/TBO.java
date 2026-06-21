@@ -1,6 +1,7 @@
 package me.zombii.beryllium.client.rendering.opengl.buffers;
 
 import org.lwjgl.opengl.*;
+
 import java.nio.ByteBuffer;
 
 public class TBO {

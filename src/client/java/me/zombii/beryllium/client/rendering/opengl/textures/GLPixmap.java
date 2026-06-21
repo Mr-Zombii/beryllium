@@ -1,6 +1,9 @@
 package me.zombii.beryllium.client.rendering.opengl.textures;
 
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL20;
 
 import java.awt.image.BufferedImage;
 

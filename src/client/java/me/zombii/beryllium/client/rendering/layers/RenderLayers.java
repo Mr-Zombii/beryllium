@@ -1,15 +1,11 @@
 package me.zombii.beryllium.client.rendering.layers;
 
 import com.badlogic.gdx.Gdx;
-import dev.puzzleshq.puzzleloader.cosmic.core.registries.GenericRegistry;
-import dev.puzzleshq.puzzleloader.cosmic.core.registries.IRegistry;
 import dev.puzzleshq.puzzleloader.cosmic.game.GameRegistries;
-import finalforeach.cosmicreach.util.Identifier;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import me.zombii.beryllium.client.BerylliumClientRegistries;
 import me.zombii.beryllium.client.events.EventCollectRenderLayers;
-import me.zombii.beryllium.common.BerylliumCommon;
 import me.zombii.beryllium.common.BerylliumConfig;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;

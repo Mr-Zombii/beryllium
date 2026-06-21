@@ -1,20 +1,15 @@
 package me.zombii.beryllium.client.rendering.world.threading;
 
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.PauseableThread;
-import finalforeach.cosmicreach.rendering.*;
-import finalforeach.cosmicreach.rendering.meshes.MeshData;
+import finalforeach.cosmicreach.rendering.IChunkMeshGroup;
+import finalforeach.cosmicreach.rendering.IWorldRenderingMeshGenThread;
+import finalforeach.cosmicreach.rendering.IZoneRenderer;
 import finalforeach.cosmicreach.util.Threads;
 import finalforeach.cosmicreach.world.Chunk;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import me.zombii.beryllium.client.rendering.world.chunk.ChunkMesher;
 import me.zombii.beryllium.client.rendering.world.chunk.LayeredChunkMesh;
-
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 public class MeshGenThread implements IWorldRenderingMeshGenThread, Runnable {

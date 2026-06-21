@@ -5,7 +5,10 @@ import com.badlogic.gdx.math.Matrix4;
 import me.zombii.beryllium.client.BerylliumAtlases;
 import me.zombii.beryllium.client.rendering.opengl.shader.BerylliumShaderProgram;
 import me.zombii.beryllium.common.BerylliumConfig;
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;

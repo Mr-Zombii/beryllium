@@ -3,17 +3,12 @@ package me.zombii.beryllium.client.rendering.util;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import finalforeach.cosmicreach.entities.player.Player;
-import finalforeach.cosmicreach.gamestates.InGame;
 import finalforeach.cosmicreach.rendering.TextureBuffer;
 import finalforeach.cosmicreach.rendering.shaders.GameShader;
-import finalforeach.cosmicreach.settings.GraphicsSettings;
 import finalforeach.cosmicreach.util.Identifier;
 import finalforeach.cosmicreach.util.assets.GameTexture;
-import finalforeach.cosmicreach.world.Sky;
 
 public class NullCRShader extends GameShader {
 

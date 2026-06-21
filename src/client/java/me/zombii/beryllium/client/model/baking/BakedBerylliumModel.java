@@ -4,9 +4,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
-import me.zombii.beryllium.client.rendering.tessellation.Tessallator;
 import me.zombii.beryllium.client.model.BerylliumModel;
 import me.zombii.beryllium.client.model.baking.parts.VertexGroup;
+import me.zombii.beryllium.client.rendering.tessellation.Tessallator;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Iterator;

@@ -7,8 +7,8 @@
     "MixinBlockLoader",
     "MixinBlockState",
     "MixinDummyBlockModel",
-    "MixinItemBlockModel",
-    "MixinGameSingletons"
+    "MixinGameSingletons",
+    "MixinItemBlockModel"
   ],
   "client": [
   ],

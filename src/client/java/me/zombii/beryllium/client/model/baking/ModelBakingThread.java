@@ -2,8 +2,13 @@ package me.zombii.beryllium.client.model.baking;
 
 import me.zombii.beryllium.client.model.BerylliumModel;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ModelBakingThread implements Runnable {

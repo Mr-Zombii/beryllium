@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
 import me.zombii.beryllium.client.rendering.opengl.textures.GLPixmap;
 import me.zombii.beryllium.client.rendering.opengl.textures.PixelMap;
-import me.zombii.beryllium.common.BerylliumConfig;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
