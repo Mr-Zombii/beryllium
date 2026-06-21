@@ -1,11 +1,14 @@
-package me.zombii.beryllium.client.rendering.model;
+package me.zombii.beryllium.client.model;
 
 import dev.puzzleshq.puzzleloader.cosmic.game.util.HJsonSerializable;
 import finalforeach.cosmicreach.util.Identifier;
 import it.unimi.dsi.fastutil.objects.*;
 import me.zombii.beryllium.client.BerylliumClientRegistries;
 import me.zombii.beryllium.client.rendering.layers.RenderLayer;
-import me.zombii.beryllium.client.rendering.layers.RenderLayers;
+import me.zombii.beryllium.client.model.parts.Part;
+import me.zombii.beryllium.client.model.parts.PartFace;
+import me.zombii.beryllium.client.model.parts.PartGroup;
+import me.zombii.beryllium.client.model.parts.TextureEntry;
 import me.zombii.beryllium.common.BerylliumCommon;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;

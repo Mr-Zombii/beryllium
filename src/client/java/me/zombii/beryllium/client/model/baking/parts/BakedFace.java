@@ -1,12 +1,10 @@
-package me.zombii.beryllium.client.rendering.model.loading.baking;
+package me.zombii.beryllium.client.model.baking.parts;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import dev.puzzleshq.puzzleloader.cosmic.game.util.QuadUvUtil;
-import me.zombii.beryllium.client.BerylliumAtlases;
-import me.zombii.beryllium.client.rendering.model.PartFace;
-
-import java.util.Arrays;
+import me.zombii.beryllium.client.model.baking.BakedBerylliumModel;
+import me.zombii.beryllium.client.model.baking.ModelBaker;
+import me.zombii.beryllium.client.model.parts.PartFace;
 
 public record BakedFace(
         BakedBerylliumModel model,

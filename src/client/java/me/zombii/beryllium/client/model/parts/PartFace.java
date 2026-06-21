@@ -1,4 +1,4 @@
-package me.zombii.beryllium.client.rendering.model;
+package me.zombii.beryllium.client.model.parts;
 
 import dev.puzzleshq.puzzleloader.cosmic.game.util.HJsonSerializable;
 import finalforeach.cosmicreach.util.constants.Direction;
@@ -6,7 +6,6 @@ import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 public class PartFace implements HJsonSerializable {

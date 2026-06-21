@@ -1,8 +1,10 @@
-package me.zombii.beryllium.client.rendering.model.loading.baking;
+package me.zombii.beryllium.client.model.baking.parts;
 
 import com.badlogic.gdx.math.Vector3;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import me.zombii.beryllium.client.model.baking.BakedBerylliumModel;
+import me.zombii.beryllium.client.rendering.tessellation.Tessallator;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;

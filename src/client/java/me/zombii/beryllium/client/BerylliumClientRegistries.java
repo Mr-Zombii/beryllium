@@ -4,8 +4,6 @@ import dev.puzzleshq.puzzleloader.cosmic.core.registries.GenericRegistry;
 import dev.puzzleshq.puzzleloader.cosmic.core.registries.IRegistry;
 import finalforeach.cosmicreach.util.Identifier;
 import me.zombii.beryllium.client.rendering.layers.RenderLayer;
-import me.zombii.beryllium.client.rendering.model.BerylliumModel;
-import me.zombii.beryllium.client.rendering.model.loading.baking.BakedBerylliumModel;
 import me.zombii.beryllium.common.BerylliumCommon;
 
 public class BerylliumClientRegistries {

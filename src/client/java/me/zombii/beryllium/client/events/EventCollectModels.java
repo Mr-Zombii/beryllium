@@ -1,6 +1,6 @@
 package me.zombii.beryllium.client.events;
 
-import me.zombii.beryllium.client.rendering.model.BerylliumModel;
+import me.zombii.beryllium.client.model.BerylliumModel;
 import net.neoforged.bus.api.Event;
 
 import java.util.List;

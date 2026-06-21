@@ -1,4 +1,4 @@
-package me.zombii.beryllium.client.rendering.model.loading.baking;
+package me.zombii.beryllium.client.model.baking;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Matrix4;
@@ -11,8 +11,16 @@ import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.objects.*;
 import me.zombii.beryllium.client.BerylliumAtlases;
 import me.zombii.beryllium.client.events.EventCollectModels;
+import me.zombii.beryllium.client.model.BerylliumModel;
 import me.zombii.beryllium.client.rendering.model.*;
-import me.zombii.beryllium.client.rendering.model.loading.BerylliumModelLoader;
+import me.zombii.beryllium.client.model.loading.BerylliumModelLoader;
+import me.zombii.beryllium.client.model.baking.parts.BakedFace;
+import me.zombii.beryllium.client.model.baking.parts.BaseQuad;
+import me.zombii.beryllium.client.model.baking.parts.VertexGroup;
+import me.zombii.beryllium.client.model.parts.Part;
+import me.zombii.beryllium.client.model.parts.PartFace;
+import me.zombii.beryllium.client.model.parts.PartGroup;
+import me.zombii.beryllium.client.model.parts.TextureEntry;
 import me.zombii.beryllium.client.rendering.opengl.buffers.TBO;
 import me.zombii.beryllium.client.rendering.opengl.textures.PixelMap;
 import me.zombii.beryllium.client.rendering.opengl.textures.atlas.GLAtlas;

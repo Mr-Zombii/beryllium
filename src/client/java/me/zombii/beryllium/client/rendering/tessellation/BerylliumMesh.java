@@ -1,11 +1,8 @@
-package me.zombii.beryllium.client.rendering;
+package me.zombii.beryllium.client.rendering.tessellation;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Matrix4;
 import me.zombii.beryllium.client.BerylliumAtlases;
-import me.zombii.beryllium.client.rendering.layers.RenderLayer;
-import me.zombii.beryllium.client.rendering.model.loading.BerylliumModelLoader;
-import me.zombii.beryllium.client.rendering.model.loading.baking.Tessallator;
 import me.zombii.beryllium.client.rendering.opengl.shader.BerylliumShaderProgram;
 import me.zombii.beryllium.common.BerylliumConfig;
 import org.lwjgl.opengl.*;

@@ -2,25 +2,21 @@ package me.zombii.beryllium.client.rendering.world;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import finalforeach.cosmicreach.rendering.IZoneRenderer;
 import finalforeach.cosmicreach.world.Chunk;
 import finalforeach.cosmicreach.world.Region;
-import finalforeach.cosmicreach.world.Sky;
 import finalforeach.cosmicreach.world.Zone;
 import it.unimi.dsi.fastutil.objects.*;
-import me.zombii.beryllium.client.rendering.BerylliumMeshUniformMaterial;
+import me.zombii.beryllium.client.rendering.tessellation.BerylliumMeshUniformMaterial;
 import me.zombii.beryllium.client.rendering.layers.RenderLayer;
 import me.zombii.beryllium.client.rendering.layers.RenderLayers;
 import me.zombii.beryllium.client.rendering.opengl.shader.BerylliumShaderProgram;
 import me.zombii.beryllium.client.rendering.world.chunk.ChunkMesh;
 import me.zombii.beryllium.client.rendering.world.chunk.ChunkMesher;
 import me.zombii.beryllium.client.rendering.world.chunk.LayeredChunkMesh;
-import me.zombii.beryllium.client.rendering.world.threading.NewMeshGroup;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL20;
 
 public class BerylliumZoneRenderer implements IZoneRenderer {
 

@@ -1,4 +1,4 @@
-package me.zombii.beryllium.client.rendering;
+package me.zombii.beryllium.client.rendering.tessellation;
 
 import dev.puzzleshq.puzzleloader.cosmic.core.registries.GenericRegistry;
 import dev.puzzleshq.puzzleloader.cosmic.core.registries.IRegistry;
@@ -7,8 +7,6 @@ import finalforeach.cosmicreach.blocks.BlockPosition;
 import finalforeach.cosmicreach.blocks.BlockState;
 import finalforeach.cosmicreach.util.Identifier;
 import me.zombii.beryllium.common.BerylliumCommon;
-
-import java.awt.*;
 
 public class TintProvider {
 

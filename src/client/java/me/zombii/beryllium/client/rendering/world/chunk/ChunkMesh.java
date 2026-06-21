@@ -1,7 +1,7 @@
 package me.zombii.beryllium.client.rendering.world.chunk;
 
-import me.zombii.beryllium.client.rendering.BerylliumMesh;
-import me.zombii.beryllium.client.rendering.model.loading.baking.Tessallator;
+import me.zombii.beryllium.client.rendering.tessellation.BerylliumMesh;
+import me.zombii.beryllium.client.rendering.tessellation.Tessallator;
 
 public class ChunkMesh extends BerylliumMesh {
 

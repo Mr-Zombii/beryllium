@@ -1,4 +1,4 @@
-package me.zombii.beryllium.client.rendering.model.loading.baking;
+package me.zombii.beryllium.client.model.baking.parts;
 
 import finalforeach.cosmicreach.util.constants.Direction;
 

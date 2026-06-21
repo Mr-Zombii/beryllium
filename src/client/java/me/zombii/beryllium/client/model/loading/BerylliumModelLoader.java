@@ -1,4 +1,4 @@
-package me.zombii.beryllium.client.rendering.model.loading;
+package me.zombii.beryllium.client.model.loading;
 
 import com.badlogic.gdx.files.FileHandle;
 import dev.puzzleshq.puzzleloader.cosmic.game.util.IndependentAssetLoader;
@@ -6,7 +6,11 @@ import dev.puzzleshq.puzzleloader.loader.util.RawAssetLoader;
 import finalforeach.cosmicreach.util.Identifier;
 import finalforeach.cosmicreach.util.constants.Direction;
 import it.unimi.dsi.fastutil.objects.*;
-import me.zombii.beryllium.client.rendering.model.*;
+import me.zombii.beryllium.client.model.BerylliumModel;
+import me.zombii.beryllium.client.model.parts.Part;
+import me.zombii.beryllium.client.model.parts.PartFace;
+import me.zombii.beryllium.client.model.parts.PartGroup;
+import me.zombii.beryllium.client.model.parts.TextureEntry;
 import me.zombii.beryllium.common.BerylliumCommon;
 import me.zombii.beryllium.common.BerylliumConfig;
 import org.apache.logging.log4j.Level;

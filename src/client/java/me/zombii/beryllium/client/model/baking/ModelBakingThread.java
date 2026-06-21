@@ -1,11 +1,10 @@
-package me.zombii.beryllium.client.rendering.model.loading.baking;
+package me.zombii.beryllium.client.model.baking;
 
-import me.zombii.beryllium.client.rendering.model.BerylliumModel;
+import me.zombii.beryllium.client.model.BerylliumModel;
 
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class ModelBakingThread implements Runnable {
 

@@ -1,11 +1,12 @@
-package me.zombii.beryllium.client.rendering.model.loading.baking;
+package me.zombii.beryllium.client.rendering.tessellation;
 
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import me.zombii.beryllium.client.BerylliumAtlases;
-import me.zombii.beryllium.client.rendering.model.BerylliumModel;
-import me.zombii.beryllium.client.rendering.model.TextureEntry;
+import me.zombii.beryllium.client.model.BerylliumModel;
+import me.zombii.beryllium.client.model.baking.parts.BakedFace;
+import me.zombii.beryllium.client.model.baking.parts.BaseQuad;
+import me.zombii.beryllium.client.model.parts.TextureEntry;
 import me.zombii.beryllium.common.BerylliumConfig;
 import org.lwjgl.system.MemoryUtil;
 

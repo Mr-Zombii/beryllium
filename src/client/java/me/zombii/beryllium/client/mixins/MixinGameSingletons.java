@@ -2,7 +2,7 @@ package me.zombii.beryllium.client.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import finalforeach.cosmicreach.singletons.GameSingletons;
-import me.zombii.beryllium.client.rendering.model.loading.baking.ModelBakingThread;
+import me.zombii.beryllium.client.model.baking.ModelBakingThread;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 

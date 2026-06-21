@@ -1,4 +1,4 @@
-package me.zombii.beryllium.client.rendering.model;
+package me.zombii.beryllium.client.model.parts;
 
 import dev.puzzleshq.puzzleloader.cosmic.game.util.HJsonSerializable;
 import finalforeach.cosmicreach.util.Identifier;

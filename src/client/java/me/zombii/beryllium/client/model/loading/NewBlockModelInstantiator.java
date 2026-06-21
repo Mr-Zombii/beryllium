@@ -1,11 +1,14 @@
-package me.zombii.beryllium.client.loading;
+package me.zombii.beryllium.client.model.loading;
 
 import dev.puzzleshq.puzzleloader.cosmic.game.blockloader.loading.ISidedModelLoader;
 import finalforeach.cosmicreach.blocks.BlockState;
 import finalforeach.cosmicreach.rendering.blockmodels.BlockModel;
 import finalforeach.cosmicreach.rendering.blockmodels.IBlockModelInstantiator;
-import me.zombii.beryllium.client.rendering.model.*;
-import me.zombii.beryllium.client.rendering.model.loading.BerylliumModelLoader;
+import me.zombii.beryllium.client.model.BerylliumModel;
+import me.zombii.beryllium.client.model.parts.Part;
+import me.zombii.beryllium.client.model.parts.PartFace;
+import me.zombii.beryllium.client.model.parts.PartGroup;
+import me.zombii.beryllium.client.model.parts.TextureEntry;
 
 public class NewBlockModelInstantiator implements IBlockModelInstantiator {
 

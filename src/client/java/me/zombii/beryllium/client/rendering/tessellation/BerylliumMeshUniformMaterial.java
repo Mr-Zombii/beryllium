@@ -1,4 +1,4 @@
-package me.zombii.beryllium.client.rendering;
+package me.zombii.beryllium.client.rendering.tessellation;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;

@@ -1,18 +1,17 @@
-package me.zombii.beryllium.client.rendering.model.loading.baking;
+package me.zombii.beryllium.client.model.baking;
 
-import it.unimi.dsi.fastutil.floats.FloatList;
-import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
-import me.zombii.beryllium.client.rendering.model.BerylliumModel;
+import me.zombii.beryllium.client.rendering.tessellation.Tessallator;
+import me.zombii.beryllium.client.model.BerylliumModel;
+import me.zombii.beryllium.client.model.baking.parts.VertexGroup;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class BakedBerylliumModel implements Iterable<VertexGroup> {
 

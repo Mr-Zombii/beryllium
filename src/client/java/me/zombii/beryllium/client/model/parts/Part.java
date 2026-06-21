@@ -1,8 +1,9 @@
-package me.zombii.beryllium.client.rendering.model;
+package me.zombii.beryllium.client.model.parts;
 
 import com.badlogic.gdx.math.Vector3;
 import dev.puzzleshq.puzzleloader.cosmic.game.util.HJsonSerializable;
 import finalforeach.cosmicreach.util.constants.Direction;
+import me.zombii.beryllium.client.model.BerylliumModel;
 import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;

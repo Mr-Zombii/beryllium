@@ -1,4 +1,4 @@
-package me.zombii.beryllium.client.loading;
+package me.zombii.beryllium.client.model.loading;
 
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonReader;
@@ -11,7 +11,6 @@ import dev.puzzleshq.puzzleloader.loader.util.ReflectionUtil;
 import finalforeach.cosmicreach.rendering.blockmodels.BlockModel;
 import finalforeach.cosmicreach.rendering.blockmodels.BlockModelJson;
 import finalforeach.cosmicreach.util.Identifier;
-import me.zombii.beryllium.client.rendering.model.loading.BerylliumModelLoader;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
