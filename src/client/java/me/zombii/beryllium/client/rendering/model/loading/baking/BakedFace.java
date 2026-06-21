@@ -60,6 +60,21 @@ public record BakedFace(
         );
     }
 
+    public void transform(Vector3 tmp, Matrix4 mat) {
+        for (int i = 0; i < verts.length; i += 3) {
+            float x = verts[i];
+            float y = verts[i + 1];
+            float z = verts[i + 2];
+
+            tmp.set(x, y, z);
+            tmp.mul(mat);
+
+            verts[i] = tmp.x;
+            verts[i + 1] = tmp.y;
+            verts[i + 2] = tmp.z;
+        }
+    }
+
     public static final int NEG_X_SHOWING = 0b0000001;
     public static final int POS_X_SHOWING = 0b0000010;
     public static final int NEG_Y_SHOWING = 0b0000100;

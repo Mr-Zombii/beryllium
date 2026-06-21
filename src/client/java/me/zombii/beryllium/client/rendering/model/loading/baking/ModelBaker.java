@@ -304,7 +304,7 @@ public class ModelBaker {
     }
 
     private static final float sixteenth = 1/16f;
-    private static final ThreadLocal<Vector3> localTmp = new ThreadLocal<>() {
+    private static final ThreadLocal<Vector3> sizeTmp = new ThreadLocal<>() {
         @Override
         protected Vector3 initialValue() {
             return new Vector3();
@@ -323,20 +323,22 @@ public class ModelBaker {
             Vector3 rotation = part.getRotation();
             Vector3 pivot = part.getPivot();
             Vector3 size = part.getSize();
+            Vector3 pos = part.getPos();
             float scale = part.getScale();
 
-            Vector3 tmp = localTmp.get();
+            Vector3 tmp = sizeTmp.get();
+            tmp.set(pivot);
+            tmp.scl(sixteenth);
+
+            matRot.idt();
+            matRot.translate(tmp.x, tmp.y, tmp.z);
+            matRot.rotate(Vector3.Z, rotation.z);
+            matRot.rotate(Vector3.Y, rotation.y);
+            matRot.rotate(Vector3.X, rotation.x);
+            matRot.translate(-tmp.x, -tmp.y, -tmp.z);
+
             tmp.set(size);
             tmp.scl(scale + 1);
-
-//            matRot.idt();
-//            matRot.translate(pivot);
-//            matRot.rotate(Vector3.Z, rotation.z);
-//            matRot.rotate(Vector3.Y, rotation.y);
-//            matRot.rotate(Vector3.X, rotation.x);
-//            matRot.translate(-pivot.x, -pivot.y, -pivot.z);
-
-            Vector3 pos = part.getPos();
 
             matTrns.idt();
             matTrns.translate(
@@ -352,16 +354,16 @@ public class ModelBaker {
             matTrns.scl(tmp.x, tmp.y, tmp.z);
             matTrns.scl(sixteenth);
 
-//            matTrns.mul(matRot);
-
             BaseQuad quad = BaseQuad.FACES[direction];
 
-            group.getFacesByDirection(face.isCulled() ? direction : -1)
-                    .add(BakedFace.bake(
-                            group.getModel(),
-                            quad, face,
-                            matTrns
-                    ));
+            BakedFace newFace = BakedFace.bake(
+                    group.getModel(),
+                    quad, face
+            );
+            newFace.transform(tmp, matTrns);
+            newFace.transform(tmp, matRot);
+
+            group.getFacesByDirection(face.isCulled() ? direction : -1).add(newFace);
         }
     }
 
