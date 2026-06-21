@@ -32,17 +32,29 @@ public class BerylliumMeshUniformMaterial {
         if (camPosLoc == -1)
             camPosLoc = program.getUniformLocation("u_cameraPos");
 
-        if (sunDirectionLoc != -1 && bindSky) {
-            Sky.currentSky.getSunDirection(tmp);
-            GL20.glUniform3f(sunDirectionLoc, tmp.x, tmp.y, tmp.z);
-        }
-        if (ambientWorldColorLoc != -1 && bindSky) {
-            Color ambientWorldColor = Sky.currentSky.currentAmbientColor;
-            GL20.glUniform3f(ambientWorldColorLoc, ambientWorldColor.r, ambientWorldColor.g, ambientWorldColor.b);
-        }
-        if (ambientSkyColorLoc != -1 && bindSky) {
-            Color ambientSkyColor = Sky.currentSky.currentSkyColor;
-            GL20.glUniform3f(ambientSkyColorLoc, ambientSkyColor.r, ambientSkyColor.g, ambientSkyColor.b);
+        if (bindSky) {
+            if (sunDirectionLoc != -1) {
+                Sky.currentSky.getSunDirection(tmp);
+                GL20.glUniform3f(sunDirectionLoc, tmp.x, tmp.y, tmp.z);
+            }
+            if (ambientWorldColorLoc != -1) {
+                Color ambientWorldColor = Sky.currentSky.currentAmbientColor;
+                GL20.glUniform3f(ambientWorldColorLoc, ambientWorldColor.r, ambientWorldColor.g, ambientWorldColor.b);
+            }
+            if (ambientSkyColorLoc != -1) {
+                Color ambientSkyColor = Sky.currentSky.currentSkyColor;
+                GL20.glUniform3f(ambientSkyColorLoc, ambientSkyColor.r, ambientSkyColor.g, ambientSkyColor.b);
+            }
+        } else {
+            if (sunDirectionLoc != -1) {
+                GL20.glUniform3f(sunDirectionLoc, 0, 1, 0);
+            }
+            if (ambientWorldColorLoc != -1) {
+                GL20.glUniform3f(ambientWorldColorLoc, 1, 1, 1);
+            }
+            if (ambientSkyColorLoc != -1) {
+                GL20.glUniform3f(ambientSkyColorLoc, 1, 1, 1);
+            }
         }
         if (camPosLoc != -1) GL20.glUniform3f(camPosLoc, camera.position.x, camera.position.y, camera.position.z);
     }

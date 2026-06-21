@@ -45,6 +45,9 @@ public class ChunkMesher {
 
     public static void meshChunk(Chunk chunk) {
         LayeredChunkMesh chunkMesh = (LayeredChunkMesh) chunk.getMeshGroup().getAllMeshData();
+        if (chunk.region == null) return;
+        crossChunkAccessor.init(chunk.region.zone, chunk);
+
         for (int i = 0; i < RenderLayers.LAYER_ORDER.length; i++) {
             RenderLayer layer = RenderLayers.LAYER_ORDER[i];
 
@@ -52,7 +55,7 @@ public class ChunkMesher {
         }
     }
 
-    public static void meshChunk(RenderLayer layer, Chunk chunk, ChunkMesh mesh) {
+    private static void meshChunk(RenderLayer layer, Chunk chunk, ChunkMesh mesh) {
         if (mesh == null) return;
         if (mesh.isDisposed()) return;
         globalTessallator.reset();
@@ -60,10 +63,6 @@ public class ChunkMesher {
 
 //        int levelOfDetail = 0;
 //        int blockSize = 1 << levelOfDetail;
-
-        if (chunk.region == null) return;
-        Zone zone = chunk.getZone();
-        crossChunkAccessor.init(zone, chunk);
 
         for (int x = 0; x < 16; x += 1) {
             for (int y = 0; y < 16; y += 1) {
@@ -75,7 +74,7 @@ public class ChunkMesher {
                     if (self.hasEmptyModel()) continue;
 
                     BerylliumModel model = BerylliumModelLoader.getModel(self.modelName);
-                    if (model.getRenderLayer() != layer) continue;
+                    if (!model.getRenderLayer().getId().equals(layer.getId())) continue;
 
                     int visibleFaces = getVisibleFaces(self, model, x, y, z);
                     getSkyLight(TMP_SKY_LIGHT, x, y, z);
@@ -122,7 +121,29 @@ public class ChunkMesher {
         mesh.dump(globalTessallator, true);
     }
 
+    private static final int[] cullingMasks = {
+            BakedFace.NEG_X_SHOWING,
+            BakedFace.POS_X_SHOWING,
+            BakedFace.NEG_Y_SHOWING,
+            BakedFace.POS_Y_SHOWING,
+            BakedFace.NEG_Z_SHOWING,
+            BakedFace.POS_Z_SHOWING
+    };
+
+    private static final int[] rotatedMasks = new int[6];
+
     private static int getVisibleFaces(BlockState self, BerylliumModel model, int x, int y, int z) {
+        float xAxisRot = self.rotation[0]; // Affects Y and Z faces
+        float yAxisRot = self.rotation[1]; // Affects X and Z faces
+        float zAxisRot = self.rotation[2]; // Affects X and Y faces
+
+        // if rotations are not perfectly 90deg, disable culling on affected face.
+        boolean doCullXFaces = (zAxisRot % 90 == 0) && (yAxisRot % 90 == 0);
+        boolean doCullYFaces = (zAxisRot % 90 == 0) && (xAxisRot % 90 == 0);
+        boolean doCullZFaces = (yAxisRot % 90 == 0) && (xAxisRot % 90 == 0);
+
+        rotateMasks(xAxisRot, yAxisRot, zAxisRot);
+
         int visibilityMask = BakedFace.NO_CULL_FACES;
 
         BlockState nx = crossChunkAccessor.getBlockState(tmp.set(-1,  0,  0), x, y, z);
@@ -132,14 +153,125 @@ public class ChunkMesher {
         BlockState nz = crossChunkAccessor.getBlockState(tmp.set( 0,  0, -1), x, y, z);
         BlockState pz = crossChunkAccessor.getBlockState(tmp.set( 0,  0,  1), x, y, z);
 
-        visibilityMask |= isOccluded(0,1, self, model, nx) ? 0 : BakedFace.NEG_X_SHOWING;
-        visibilityMask |= isOccluded(1,0, self, model, px) ? 0 : BakedFace.POS_X_SHOWING;
-        visibilityMask |= isOccluded(2,3, self, model, ny) ? 0 : BakedFace.NEG_Y_SHOWING;
-        visibilityMask |= isOccluded(3,2, self, model, py) ? 0 : BakedFace.POS_Y_SHOWING;
-        visibilityMask |= isOccluded(4,5, self, model, nz) ? 0 : BakedFace.NEG_Z_SHOWING;
-        visibilityMask |= isOccluded(5,4, self, model, pz) ? 0 : BakedFace.POS_Z_SHOWING;
+        visibilityMask |= doCullXFaces ? (isOccluded(0,1, self, model, nx) ? 0 : rotatedMasks[0]) : BakedFace.NEG_X_SHOWING;
+        visibilityMask |= doCullXFaces ? (isOccluded(1,0, self, model, px) ? 0 : rotatedMasks[1]) : BakedFace.POS_X_SHOWING;
+        visibilityMask |= doCullYFaces ? (isOccluded(2,3, self, model, ny) ? 0 : rotatedMasks[2]) : BakedFace.NEG_Y_SHOWING;
+        visibilityMask |= doCullYFaces ? (isOccluded(3,2, self, model, py) ? 0 : rotatedMasks[3]) : BakedFace.POS_Y_SHOWING;
+        visibilityMask |= doCullZFaces ? (isOccluded(4,5, self, model, nz) ? 0 : rotatedMasks[4]) : BakedFace.NEG_Z_SHOWING;
+        visibilityMask |= doCullZFaces ? (isOccluded(5,4, self, model, pz) ? 0 : rotatedMasks[5]) : BakedFace.POS_Z_SHOWING;
 
         return visibilityMask;
+    }
+
+    private static void rotateMasks(float xAxisRot, float yAxisRot, float zAxisRot) {
+        int zRotCount = (int) Math.floor(zAxisRot / 90); // change X and Y
+        int yRotCount = (int) Math.floor(yAxisRot / 90); // change X and Z
+        int xRotCount = (int) Math.floor(xAxisRot / 90); // change Y and Z
+
+        System.arraycopy(cullingMasks, 0, rotatedMasks, 0, 6);
+        rotate(2, zRotCount);
+        rotate(1, yRotCount);
+        rotate(0, xRotCount);
+    }
+
+    private static final int DIR_NEG_X = 0;
+    private static final int DIR_POS_X = 1;
+    private static final int DIR_NEG_Y = 2;
+    private static final int DIR_POS_Y = 3;
+    private static final int DIR_NEG_Z = 4;
+    private static final int DIR_POS_Z = 5;
+
+    private static void rotate(int axis, int count) {
+        switch (axis) {
+            // Z-AXIS
+            case 2 -> {
+                int ny = rotatedMasks[DIR_NEG_Y];
+                int py = rotatedMasks[DIR_POS_Y];
+                int nx = rotatedMasks[DIR_NEG_X];
+                int px = rotatedMasks[DIR_POS_X];
+
+                switch (count) {
+                    case 1 -> {
+                        rotatedMasks[DIR_POS_Y] = nx;
+                        rotatedMasks[DIR_NEG_Y] = px;
+                        rotatedMasks[DIR_POS_X] = py;
+                        rotatedMasks[DIR_NEG_X] = ny;
+                    }
+                    case 2 -> {
+                        rotatedMasks[DIR_POS_Y] = ny;
+                        rotatedMasks[DIR_NEG_Y] = py;
+                        rotatedMasks[DIR_POS_X] = nx;
+                        rotatedMasks[DIR_NEG_X] = px;
+                    }
+                    case 3 -> {
+                        rotatedMasks[DIR_POS_Y] = px;
+                        rotatedMasks[DIR_NEG_Y] = nx;
+                        rotatedMasks[DIR_POS_X] = ny;
+                        rotatedMasks[DIR_NEG_X] = py;
+                    }
+                    default -> {}
+                }
+            }
+            // Y-AXIS
+            case 1 -> {
+                int nx = rotatedMasks[DIR_NEG_X];
+                int px = rotatedMasks[DIR_POS_X];
+                int nz = rotatedMasks[DIR_NEG_Z];
+                int pz = rotatedMasks[DIR_POS_Z];
+
+                switch (count) {
+                    case 1 -> {
+                        rotatedMasks[DIR_POS_X] = nz;
+                        rotatedMasks[DIR_NEG_X] = pz;
+                        rotatedMasks[DIR_POS_Z] = px;
+                        rotatedMasks[DIR_NEG_Z] = nx;
+                    }
+                    case 2 -> {
+                        rotatedMasks[DIR_POS_X] = nx;
+                        rotatedMasks[DIR_NEG_X] = px;
+                        rotatedMasks[DIR_POS_Z] = nz;
+                        rotatedMasks[DIR_NEG_Z] = pz;
+                    }
+                    case 3 -> {
+                        rotatedMasks[DIR_POS_X] = pz;
+                        rotatedMasks[DIR_NEG_X] = nz;
+                        rotatedMasks[DIR_POS_Z] = nx;
+                        rotatedMasks[DIR_NEG_Z] = px;
+                    }
+                    default -> {}
+                }
+            }
+            // X-AXIS
+            case 0 -> {
+                int ny = rotatedMasks[DIR_NEG_Y];
+                int py = rotatedMasks[DIR_POS_Y];
+                int nz = rotatedMasks[DIR_NEG_Z];
+                int pz = rotatedMasks[DIR_POS_Z];
+
+                switch (count) {
+                    case 1 -> {
+                        rotatedMasks[DIR_POS_Y] = nz;
+                        rotatedMasks[DIR_NEG_Y] = pz;
+                        rotatedMasks[DIR_POS_Z] = py;
+                        rotatedMasks[DIR_NEG_Z] = ny;
+                    }
+                    case 2 -> {
+                        rotatedMasks[DIR_POS_Y] = ny;
+                        rotatedMasks[DIR_NEG_Y] = py;
+                        rotatedMasks[DIR_POS_Z] = nz;
+                        rotatedMasks[DIR_NEG_Z] = pz;
+                    }
+                    case 3 -> {
+                        rotatedMasks[DIR_POS_Y] = pz;
+                        rotatedMasks[DIR_NEG_Y] = nz;
+                        rotatedMasks[DIR_POS_Z] = ny;
+                        rotatedMasks[DIR_NEG_Z] = py;
+                    }
+                    default -> {}
+                }
+            }
+            default -> throw new IllegalArgumentException("Invalid axis: " + axis);
+        }
     }
 
     static final int CORNER_NX_NZ = 0;
@@ -303,10 +435,11 @@ public class ChunkMesher {
 
     private static boolean isOccluded(int d, int od, BlockState self, BerylliumModel selfModel, BlockState state) {
         if (state == null || state.hasEmptyModel()) return false;
-        if (self.getBlock().equals(state.getBlock()) && self.cullsSelf()) return true;
-
         BerylliumModel stateModel = BerylliumModelLoader.getModel(state.modelName);
+        if (stateModel.getName().equals(selfModel.getName()) && self.cullsSelf()) return true;
+
         if (stateModel.isTransparent() || selfModel.isTransparent()) return false;
+        if (!state.isOpaque || !self.isOpaque) return false;
         return selfModel.canAllCullInDirection(d) && stateModel.canAllCullInDirection(od);
     }
 

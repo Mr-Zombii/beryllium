@@ -304,6 +304,12 @@ public class ModelBaker {
     }
 
     private static final float sixteenth = 1/16f;
+    private static final ThreadLocal<Vector3> localTmp = new ThreadLocal<>() {
+        @Override
+        protected Vector3 initialValue() {
+            return new Vector3();
+        }
+    };
 
     public static void bakePart(
             Part part,
@@ -318,6 +324,10 @@ public class ModelBaker {
             Vector3 pivot = part.getPivot();
             Vector3 size = part.getSize();
             float scale = part.getScale();
+
+            Vector3 tmp = localTmp.get();
+            tmp.set(size);
+            tmp.scl(scale + 1);
 
 //            matRot.idt();
 //            matRot.translate(pivot);
@@ -339,7 +349,7 @@ public class ModelBaker {
                     (size.y * sixteenth) / 2f,
                     (size.z * sixteenth) / 2f
             );
-            matTrns.scl(size.x + scale, size.y + scale, size.z + scale);
+            matTrns.scl(tmp.x, tmp.y, tmp.z);
             matTrns.scl(sixteenth);
 
 //            matTrns.mul(matRot);

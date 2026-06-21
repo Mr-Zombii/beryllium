@@ -31,6 +31,7 @@ public class BerylliumMeshingThread implements Runnable {
 
     public static void clear() {
         normalRunnableQueue.clear();
+        workingList.clear();
     }
 
     public static boolean queueChunk(Chunk chunk) {
@@ -41,10 +42,8 @@ public class BerylliumMeshingThread implements Runnable {
         if (((LayeredChunkMesh)chunk.getMeshGroup().getAllMeshData()).isScheduledForDisposal()) return false;
 
         if (!workingList.add(chunk)) {
-            System.out.println("Tried queuing alr queued chunk " + chunk);
             return false;
         }
-        System.out.println("Queued chunk " + chunk);
         Runnable r = () -> {
             LayeredChunkMesh mesh = (LayeredChunkMesh) chunk.getMeshGroup().getAllMeshData();
             mesh.setFinished(false);

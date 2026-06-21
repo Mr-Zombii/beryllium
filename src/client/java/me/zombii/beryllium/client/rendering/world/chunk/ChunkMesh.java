@@ -1,6 +1,7 @@
 package me.zombii.beryllium.client.rendering.world.chunk;
 
 import me.zombii.beryllium.client.rendering.BerylliumMesh;
+import me.zombii.beryllium.client.rendering.model.loading.baking.Tessallator;
 
 public class ChunkMesh extends BerylliumMesh {
 
@@ -17,4 +18,8 @@ public class ChunkMesh extends BerylliumMesh {
         return parent;
     }
 
+    @Override
+    public void dump(Tessallator tessallator, boolean resetPos) {
+        super.dump(tessallator, resetPos);
+    }
 }

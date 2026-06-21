@@ -9,7 +9,7 @@ import dev.puzzleshq.puzzleloader.cosmic.game.blockloader.loading.ISidedModelLoa
 import dev.puzzleshq.puzzleloader.cosmic.game.util.IndependentAssetLoader;
 import dev.puzzleshq.puzzleloader.loader.util.ReflectionUtil;
 import finalforeach.cosmicreach.rendering.blockmodels.BlockModel;
-import finalforeach.cosmicreach.rendering.blockmodels.DummyBlockModel;
+import finalforeach.cosmicreach.rendering.blockmodels.BlockModelJson;
 import finalforeach.cosmicreach.util.Identifier;
 import me.zombii.beryllium.client.rendering.model.loading.BerylliumModelLoader;
 
@@ -100,9 +100,16 @@ public class NewClientModelLoader implements ISidedModelLoader {
     }
 
     private static BlockModel fromString(String modelName, String modelJson) {
+//        try {
+//            return (BlockModel) ReflectionUtil.getMethod(DummyBlockModel.class, "getInstanceFromJsonStr", new Class[]{String.class, String.class, float[].class})
+//                    .invoke(null, modelName, modelJson, DEFAULT_ROTATION);
+//        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+//            throw new RuntimeException(e);
+//        }
         try {
-            return (BlockModel) ReflectionUtil.getMethod(DummyBlockModel.class, "getInstanceFromJsonStr", new Class[]{String.class, String.class, float[].class})
-                    .invoke(null, modelName, modelJson, DEFAULT_ROTATION);
+            BlockModelJson model = (BlockModelJson) ReflectionUtil.getMethod(BlockModelJson.class, "fromJson", new Class[]{String.class, int.class, int.class, int.class})
+                    .invoke(null, modelJson, 0, 0, 0);
+            return model;
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException(e);
         }

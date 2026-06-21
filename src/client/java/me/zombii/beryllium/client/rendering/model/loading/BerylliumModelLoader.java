@@ -199,6 +199,7 @@ public class BerylliumModelLoader {
                         localBounds.get(4).asFloat() - localBounds.get(1).asFloat(),
                         localBounds.get(5).asFloat() - localBounds.get(2).asFloat()
                 );
+                part.setScale(cuboidObject.getFloat("inflate", 0));
                 JsonValue faceValues = cuboidObject.get("faces");
                 if (faceValues == null) return;
                 if (!faceValues.isObject()) throw new IllegalArgumentException(

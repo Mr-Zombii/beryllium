@@ -16,9 +16,9 @@ import java.nio.ByteOrder;
 
 public class BerylliumMesh {
 
-    int vao;
-    int vbo;
-    int ebo;
+    int vao = -1;
+    int vbo = -1;
+    int ebo = -1;
 
     ByteBuffer vertexBuffer;
     ByteBuffer indexBuffer;
@@ -47,7 +47,6 @@ public class BerylliumMesh {
     private volatile long dumpIndSize = 0;
 
     public void dump(Tessallator tessallator, boolean resetPos) {
-        empty = false;
         if (resetPos) {
             this.vertexBuffer.position(0);
             this.indexBuffer.position(0);
@@ -76,6 +75,7 @@ public class BerylliumMesh {
         vertexBuffer.flip();
         indexBuffer.flip();
 
+        empty = false;
         dirty = true;
     }
 
@@ -193,18 +193,11 @@ public class BerylliumMesh {
 
     boolean initUniforms = true;
 
-    public void render(Camera camera, RenderLayer layer, Matrix4 modelMatrix, boolean bindShader) {
-        bind();
 
+    public void render(Camera camera, BerylliumShaderProgram program, Matrix4 modelMatrix) {
         if (indexBuffer.limit() == 0) {
-            unbind();
             return;
         }
-
-        boolean useDepthBuffer = layer.usesDepthBuffer();
-
-        BerylliumShaderProgram program = layer.getProgram();
-        if (bindShader) program.bind();
 
         if (initUniforms) {
             projMatLoc = program.getUniformLocation("u_projMat");
@@ -219,12 +212,6 @@ public class BerylliumMesh {
             normalAtlasLoc = program.getUniformLocation("u_normalAtlas");
             initUniforms = false;
         }
-
-        boolean wasEnabled = GL11.glIsEnabled(GL11.GL_DEPTH_TEST);
-        if (useDepthBuffer) {
-            if (!wasEnabled) GL11.glEnable(GL11.GL_DEPTH_TEST);
-        }
-        else if (wasEnabled) GL11.glDisable(GL11.GL_DEPTH_TEST);
 
         int unit = 0;
         int albedoAtlas = -1;
@@ -274,6 +261,15 @@ public class BerylliumMesh {
             BerylliumAtlases.NORMAL_ATLAS.unbind();
             BerylliumAtlases.NormalUVBuffer.unbind();
         }
+    }
+    public void render(Camera camera, BerylliumShaderProgram program, boolean useDepthBuffer, Matrix4 modelMatrix) {
+        boolean wasEnabled = GL11.glIsEnabled(GL11.GL_DEPTH_TEST);
+        if (useDepthBuffer) {
+            if (!wasEnabled) GL11.glEnable(GL11.GL_DEPTH_TEST);
+        }
+        else if (wasEnabled) GL11.glDisable(GL11.GL_DEPTH_TEST);
+
+        render(camera, program, modelMatrix);
 
         if (wasEnabled) {
             if (!useDepthBuffer) GL11.glEnable(GL11.GL_DEPTH_TEST);
@@ -335,5 +331,17 @@ public class BerylliumMesh {
 
     public boolean isEmpty() {
         return empty;
+    }
+
+    public int getVao() {
+        return vao;
+    }
+
+    public int getVbo() {
+        return vbo;
+    }
+
+    public int getEbo() {
+        return ebo;
     }
 }

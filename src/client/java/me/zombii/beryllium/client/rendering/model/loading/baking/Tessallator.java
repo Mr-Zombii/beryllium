@@ -11,7 +11,7 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.function.Function;
+import java.util.Arrays;
 
 public class Tessallator {
 
@@ -52,6 +52,10 @@ public class Tessallator {
     public static final byte[] EMPTY_AO = new byte[4 * 6];
     public static final short[] EMPTY_SHORTS = new short[6];
 
+    static {
+        Arrays.fill(EMPTY_AO, (byte) 3);
+    }
+
     public void addQuad(
             BakedFace face,
             short skyLightLevel,
@@ -73,7 +77,6 @@ public class Tessallator {
         short materialIdx = 0;
 
         float[] verts = face.verts();
-
         byte[] newAoLevels = face.doAO() ? aoLevels : EMPTY_AO;
 
         addQuad(

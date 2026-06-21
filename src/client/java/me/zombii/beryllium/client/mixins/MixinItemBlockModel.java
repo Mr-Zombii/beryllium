@@ -19,6 +19,7 @@ import me.zombii.beryllium.client.rendering.model.loading.baking.Tessallator;
 import me.zombii.beryllium.client.rendering.opengl.shader.BerylliumShaderProgram;
 import me.zombii.beryllium.client.rendering.util.NullCRShader;
 import me.zombii.beryllium.client.rendering.util.NullMesh;
+import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -78,8 +79,10 @@ public class MixinItemBlockModel {
         BerylliumShaderProgram program = beryllium$renderLayer.getProgram();
         program.bind();
 
+        GL11.glDepthMask(false);
         this.beryllium$material.bind(program, camera);
-        beryllium$mesh.render(camera, beryllium$renderLayer, modelMat, false);
+        beryllium$mesh.render(camera, beryllium$renderLayer.getProgram(), modelMat);
+        GL11.glDepthMask(true);
     }
 
     @Inject(method = "dispose", at = @At("TAIL"))
