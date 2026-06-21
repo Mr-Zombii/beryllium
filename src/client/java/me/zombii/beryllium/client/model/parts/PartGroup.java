@@ -27,7 +27,7 @@ public class PartGroup implements Iterable<Part>, HJsonSerializable {
     private String parentName;
     private final BerylliumModel model;
 
-    protected PartGroup(BerylliumModel model, String name) {
+    public PartGroup(BerylliumModel model, String name) {
         this.name = name;
         this.model = model;
     }
