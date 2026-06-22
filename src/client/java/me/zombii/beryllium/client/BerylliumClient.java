@@ -50,23 +50,25 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
 
     @Override
     public void onClientInit() {
-        ISidedModelLoader.CONTEXTUAL_INSTANCE.set(new NewClientModelLoader());
+        if (BerylliumConfig.INSTANCE.enableBerylliumRendering) {
+            ISidedModelLoader.CONTEXTUAL_INSTANCE.set(new NewClientModelLoader());
 
-        BerylliumAtlases.initAtlases();
-        ModelBakingThread.start();
+            BerylliumAtlases.initAtlases();
+            ModelBakingThread.start();
 
-        IndependentAssetLoader.registerLoadingMethod(BufferedImage.class, (handle) -> {
-            try {
-                InputStream stream = handle.read();
-                BufferedImage image = ImageIO.read(stream);
-                stream.close();
-                return image;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+            IndependentAssetLoader.registerLoadingMethod(BufferedImage.class, (handle) -> {
+                try {
+                    InputStream stream = handle.read();
+                    BufferedImage image = ImageIO.read(stream);
+                    stream.close();
+                    return image;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
 
-        Gdx.app.postRunnable(RenderLayers::collectAndCompile);
+            Gdx.app.postRunnable(RenderLayers::collectAndCompile);
+        }
     }
 
     @SubscribeEvent

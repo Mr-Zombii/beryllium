@@ -19,6 +19,7 @@ import me.zombii.beryllium.client.rendering.tessellation.BerylliumMeshUniformMat
 import me.zombii.beryllium.client.rendering.tessellation.Tessallator;
 import me.zombii.beryllium.client.rendering.util.NullCRShader;
 import me.zombii.beryllium.client.rendering.util.NullMesh;
+import me.zombii.beryllium.common.BerylliumConfig;
 import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -49,6 +50,9 @@ public class MixinItemBlockModel {
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void onConstruct(BlockState blockState, CallbackInfo ci) {
+        if (!BerylliumConfig.INSTANCE.enableBerylliumRendering) {
+            return;
+        }
         BakedBerylliumModel model = ModelBaker.get(blockState.modelName);
         beryllium$renderLayer = model.getModel().getRenderLayer();
 
@@ -75,6 +79,9 @@ public class MixinItemBlockModel {
             boolean useAmbientLighting, boolean applyFog, ItemStack itemStack,
             Color slotColor, CallbackInfo ci
     ) {
+        if (!BerylliumConfig.INSTANCE.enableBerylliumRendering) {
+            return;
+        }
         if (beryllium$mesh.isDirty()) beryllium$mesh.updateDirty();
         BerylliumShaderProgram program = beryllium$renderLayer.getProgram();
         program.bind();
@@ -87,6 +94,9 @@ public class MixinItemBlockModel {
 
     @Inject(method = "dispose", at = @At("TAIL"))
     private void onDispose(CallbackInfo ci) {
+        if (!BerylliumConfig.INSTANCE.enableBerylliumRendering) {
+            return;
+        }
         beryllium$mesh.dispose();
     }
 
