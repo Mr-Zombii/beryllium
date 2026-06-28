@@ -225,51 +225,45 @@ public class Tessallator {
             short normalIdx, short materialIdx,
             int cornerID
     ) {
-        short packedLight = (short) ((blockLightLevel << 4) | skyLightLevel);
-
-        int packedData = 0;
-        packedData |= (cornerID & 0b11);
-        packedData |= (uvRotation & 0b11) << 2;
-        packedData |= (aoLevel & 0b11) << 4;
-        packedData |= (packedLight & 0xFFFF) << 6;
-
-        int packedData2 = 0;
-        packedData2 |= vertexTint << 16;
-        packedData2 |= faceUVIdx;
-
         short Xi = Float.floatToFloat16(x);
         short Yi = Float.floatToFloat16(y);
         short Zi = Float.floatToFloat16(z);
 
-        short nXi = Float.floatToFloat16(nX);
-        short nYi = Float.floatToFloat16(nY);
-        short nZi = Float.floatToFloat16(nZ);
+        byte nXi = (byte) Math.round(0 * 127f);
+        byte nYi = (byte) Math.round(0 * 127f);
+        byte nZi = (byte) Math.round(1 * 127f);
 
-        vertices.putShort(Xi);
-        vertices.putShort(Yi);
-        vertices.putShort(Zi);
+        long packedA =
+                ((((long) Xi) & 0xFFFF) << 48)
+                | ((((long) Yi) & 0xFFFF) << 32)
+                | ((((long) Zi) & 0xFFFF) << 16)
+                | ((((long) nXi) & 0xFF) << 8)
+                | (((long) nYi) & 0xFF)
+        ;
+        long packedB =
+                ((((long)nZi) & 0xFF) << 56)
+                | ((((long) cornerID) & 0b11) << 54)
+                | ((((long) uvRotation) & 0b11) << 52)
+                | ((((long) aoLevel) & 0b11) << 50)
+                | ((((long) blockLightLevel) & 0xFFF) << 38)
+                | ((((long) skyLightLevel) & 0xF) << 34)
+                | ((((long) vertexTint) & 0xFFFF) << 18)
+                | ((((long) faceUVIdx) & 0xFFFF) << 2)
+        ;
 
-        vertices.putShort(nXi);
-        vertices.putShort(nYi);
-        vertices.putShort(nZi);
+        long packedC =
+                ((((long)albedoIdx) & 0xFFFF) << 48)
+                | ((((long) emissiveIdx) & 0xFFFF) << 32)
+                | ((((long) normalIdx) & 0xFFFF) << 16)
+                | (((long) materialIdx) & 0xFFFF)
+        ;
 
-        vertices.putInt(packedData);
-        vertices.putInt(packedData2);
-        vertices.putShort(albedoIdx);
-
-        BerylliumConfig config = BerylliumConfig.INSTANCE;
-
-        if (config.enableEmissiveAtlas) vertices.putShort(emissiveIdx);
-        if (config.enableNormalAtlas) vertices.putShort(normalIdx);
-        if (config.enableMaterialAtlas) vertices.putShort(materialIdx);
-
+        vertices.putLong(packedA);
+        vertices.putLong(packedB);
+        vertices.putLong(packedC);
     }
 
-    public static int VERTEX_SIZE = 22
-            + ((BerylliumConfig.INSTANCE.enableEmissiveAtlas) ? 2 : 0)
-            + ((BerylliumConfig.INSTANCE.enableNormalAtlas) ? 2 : 0)
-            + ((BerylliumConfig.INSTANCE.enableMaterialAtlas) ? 2 : 0)
-            ;
+    public static int VERTEX_SIZE = 24;
 
     public void dispose() {
         MemoryUtil.memFree(this.vertices);

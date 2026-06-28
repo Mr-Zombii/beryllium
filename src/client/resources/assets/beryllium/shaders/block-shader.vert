@@ -1,4 +1,4 @@
-#version 330 core
+#version 420 core
 
 uniform mat4 u_projMat;
 uniform mat4 u_viewMat;
@@ -7,26 +7,24 @@ uniform mat4 u_modelMat;
 uniform usamplerBuffer u_faceUVBuffer;
 uniform usamplerBuffer u_albedoUVBuffer;
 
-layout (location = 0) in vec3 a_position;
-layout (location = 1) in vec3 a_normal;
-layout (location = 2) in uint a_packed;
-layout (location = 3) in uint a_packedIndices;
-layout (location = 4) in uint a_albedoIdx;
+layout (location = 0) in uvec2 a_packedA;
+layout (location = 1) in uvec2 a_packedB;
+layout (location = 2) in uvec2 a_packedC;
 
-#ifdef HAS_EMISSIVE_ATLAS
-uniform usamplerBuffer u_emissiveUVBuffer;
-layout (location = 5) in uint a_emissiveIdx;
-#endif
+vec3 position = vec3(unpackHalf2x16(a_packedA.y), unpackHalf2x16(a_packedA.x >> 16u).x).yxz;
+vec3 normals = unpackSnorm4x8(((a_packedA.x & 0xFFFFu) << 8u) | ((a_packedB.y >> 24u) & 0xFFu)).zyx;
+int CORNER_ID = int(a_packedB.y >> 22u) & 0x3;
+int UV_ROTATION = int(a_packedB.y >> 20u) & 0x3;
+int AO_LEVEL = int(a_packedB.y >> 18u) & 0x3;
 
-#ifdef HAS_NORMAL_ATLAS
-uniform usamplerBuffer u_normalUVBuffer;
-layout (location = 6) in uint a_normalIdx;
-#endif
+int BLOCK_LIGHT_LEVELS_PACKED = int(a_packedB.y >> 2u) & 0xFFFF;
+int VERTEX_TINT_PACKED = int(((a_packedB.y & 0x3u) << 14u) | ((a_packedB.x >> 18u) & 0x3FFFu));
 
-#ifdef HAS_MATERIAL_ATLAS
-uniform usamplerBuffer u_materialUVBuffer;
-layout (location = 7) in uint a_materialIdx;
-#endif
+int FACE_UV_IDX = int((a_packedB.x >> 2u) & 0xFFFFu);
+int ALBEDO_UV_IDX = int(a_packedC.y >> 16u) & 0xFFFF;
+int EMISSIVE_UV_IDX = int(a_packedC.y) & 0xFFFF;
+int NORMAL_UV_IDX = int(a_packedC.x >> 16u) & 0xFFFF;
+int MATERIAL_UV_IDX = int(a_packedC.x) & 0xFFFF;
 
 out float v_bakedAoValue;
 out vec4 v_blockLightColor;
@@ -36,27 +34,27 @@ out vec3 v_vertexPosition;
 out vec2 v_albedoUV;
 
 #ifdef HAS_EMISSIVE_ATLAS
+uniform usamplerBuffer u_emissiveUVBuffer;
 out vec2 v_emissiveUV;
 #endif
+
 #ifdef HAS_NORMAL_ATLAS
+uniform usamplerBuffer u_normalUVBuffer;
 out vec2 v_normalUV;
+#endif
+
+#ifdef HAS_MATERIAL_ATLAS
+uniform usamplerBuffer u_materialUVBuffer;
+out vec2 v_materialUV;
 #endif
 
 out vec4 v_tintColor;
 out vec3 v_worldPos;
 
-int CORNER_ID = int(a_packed & 3u);
-int UV_ROTATION = int(a_packed >> 2u) & 3;
-int AO_LEVEL_PACKED = int(a_packed >> 4u) & 3;
-int LIGHT_COLOR_PACKED = int(a_packed >> 6u) & 0xFFFF;
-
-uint TINT_COLOR_PACKED = (a_packedIndices >> 16u) & 0xFFFFu;
-int FACE_UV_IDX = int(a_packedIndices & 0xFFFFu);
-
 vec4 getTintColor(void) {
-    uint r_bits = (TINT_COLOR_PACKED >> 11u) & 0x1Fu;
-    uint g_bits = (TINT_COLOR_PACKED >> 5u) & 0x3Fu;
-    uint b_bits = TINT_COLOR_PACKED & 0x1Fu;
+    uint r_bits = (VERTEX_TINT_PACKED >> 11u) & 0x1Fu;
+    uint g_bits = (VERTEX_TINT_PACKED >> 5u) & 0x3Fu;
+    uint b_bits = VERTEX_TINT_PACKED & 0x1Fu;
 
     vec3 rgb = vec3(
         float(r_bits) / 31,
@@ -68,20 +66,20 @@ vec4 getTintColor(void) {
 }
 
 vec4 getBlockLightColor(void) {
-    int lightR = (LIGHT_COLOR_PACKED & 0xF000) >> 12;
+    int lightR = (BLOCK_LIGHT_LEVELS_PACKED & 0xF000) >> 12;
     lightR = (lightR << 4 | lightR);
-    int lightG = (LIGHT_COLOR_PACKED & 0x0F00) >> 8;
+    int lightG = (BLOCK_LIGHT_LEVELS_PACKED & 0x0F00) >> 8;
     lightG = (lightG << 4 | lightG);
-    int lightB = (LIGHT_COLOR_PACKED & 0x00F0) >> 4;
+    int lightB = (BLOCK_LIGHT_LEVELS_PACKED & 0x00F0) >> 4;
     lightB = (lightB << 4 | lightB);
-    int lightA = (LIGHT_COLOR_PACKED & 0x000F);
+    int lightA = (BLOCK_LIGHT_LEVELS_PACKED & 0x000F);
     lightA = (lightA << 4 | lightA);
 
     return vec4(float(lightR) / 255.0, float(lightG) / 255.0, float(lightB) / 255.0, float(lightA) / 255.0);
 }
 
 float getBakedAOValue(void) {
-    return (float(AO_LEVEL_PACKED) / 4) + .25f;
+    return (float(AO_LEVEL) / 4) + .25f;
 //    switch (AO_LEVEL_PACKED) {
 //        case 1: return 0.25;
 //        case 2: return 0.50;
@@ -147,17 +145,17 @@ vec2 getUV(uvec2 offs) {
     return uv;
 }
 
-vec2 getAlbedoUV(void) { return getUV(texelFetch(u_albedoUVBuffer, int(a_albedoIdx)).xy); }
+vec2 getAlbedoUV(void) { return getUV(texelFetch(u_albedoUVBuffer, ALBEDO_UV_IDX).xy); }
 #ifdef HAS_EMISSIVE_ATLAS
-vec2 getEmissiveUV(void) { return getUV(texelFetch(u_emissiveUVBuffer, int(a_emissiveIdx)).xy); }
+vec2 getEmissiveUV(void) { return getUV(texelFetch(u_emissiveUVBuffer, EMISSIVE_UV_IDX).xy); }
 #endif
 #ifdef HAS_NORMAL_ATLAS
-vec2 getNormalUV(void) { return getUV(texelFetch(u_normalUVBuffer, int(a_normalIdx)).xy); }
+vec2 getNormalUV(void) { return getUV(texelFetch(u_normalUVBuffer, NORMAL_UV_IDX).xy); }
 #endif
 
 void main(void) {
-    v_vertexPosition = a_position;
-    v_vertexNormal = a_normal;
+    v_vertexPosition = position;
+    v_vertexNormal = normals;
     v_bakedAoValue = getBakedAOValue();
     v_blockLightColor = getBlockLightColor();
     v_albedoUV = getAlbedoUV();
@@ -168,8 +166,8 @@ void main(void) {
     #ifdef HAS_NORMAL_ATLAS
     v_normalUV = getNormalUV();
     #endif
-    v_worldPos = (u_modelMat * vec4(a_position, 1.0)).xyz;
+    v_worldPos = (u_modelMat * vec4(position, 1.0)).xyz;
 
 //    gl_Position = (u_projMat * u_viewMat) * vec4(a_position, 1.0);
-    gl_Position = (u_projMat * u_viewMat * u_modelMat) * vec4(a_position, 1.0);
+    gl_Position = (u_projMat * u_viewMat * u_modelMat) * vec4(position, 1.0);
 }

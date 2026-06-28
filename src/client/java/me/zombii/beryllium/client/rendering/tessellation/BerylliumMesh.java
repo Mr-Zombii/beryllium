@@ -98,33 +98,12 @@ public class BerylliumMesh {
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, (long) budget * Tessallator.VERTEX_SIZE * 4, this.usage);
         GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, this.vertexBuffer);
 
-        GL20.glVertexAttribPointer(0, 3, GL30.GL_HALF_FLOAT, false, Tessallator.VERTEX_SIZE, 0);
+        GL30.glVertexAttribIPointer(0, 2, GL30.GL_UNSIGNED_INT, Tessallator.VERTEX_SIZE, 0);
         GL20.glEnableVertexAttribArray(0);
-        GL20.glVertexAttribPointer(1, 3, GL30.GL_HALF_FLOAT, false, Tessallator.VERTEX_SIZE, 6);
+        GL30.glVertexAttribIPointer(1, 2, GL30.GL_UNSIGNED_INT, Tessallator.VERTEX_SIZE, 8);
         GL20.glEnableVertexAttribArray(1);
-        GL30.glVertexAttribIPointer(2, 1, GL15.GL_UNSIGNED_INT, Tessallator.VERTEX_SIZE, 12);
+        GL30.glVertexAttribIPointer(2, 2, GL30.GL_UNSIGNED_INT, Tessallator.VERTEX_SIZE, 16);
         GL20.glEnableVertexAttribArray(2);
-        GL30.glVertexAttribIPointer(3, 1, GL15.GL_UNSIGNED_INT, Tessallator.VERTEX_SIZE, 16);
-        GL20.glEnableVertexAttribArray(3);
-        GL30.glVertexAttribIPointer(4, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, 20);
-        GL20.glEnableVertexAttribArray(4);
-
-        int ptr = 22;
-
-        if (cachedConfig.enableEmissiveAtlas) {
-            GL30.glVertexAttribIPointer(5, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, ptr);
-            GL20.glEnableVertexAttribArray(5);
-            ptr += 2;
-        }
-        if (cachedConfig.enableNormalAtlas) {
-            GL30.glVertexAttribIPointer(6, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, ptr);
-            GL20.glEnableVertexAttribArray(6);
-            ptr += 2;
-        }
-        if (cachedConfig.enableMaterialAtlas) {
-            GL30.glVertexAttribIPointer(7, 1, GL15.GL_UNSIGNED_SHORT, Tessallator.VERTEX_SIZE, ptr);
-            GL20.glEnableVertexAttribArray(7);
-        }
 
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.ebo);
         GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, (long) budget * 6 * 4, this.usage);

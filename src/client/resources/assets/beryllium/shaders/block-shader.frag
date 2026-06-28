@@ -1,4 +1,4 @@
-#version 330 core
+#version 420 core
 
 uniform sampler2D u_albedoAtlas;
 #ifdef HAS_EMISSIVE_ATLAS
