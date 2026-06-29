@@ -14,9 +14,9 @@ jigsawAccess {
     addManipulators(file("$projectDir/src/common/resources/${p_id}.manipulator"))
 }
 
-jigsawInject {
-    setModJson(file("$projectDir/src/common/resources/puzzle.mod.json"))
-}
+//jigsawInject {
+//    setModJson(file("$projectDir/src/common/resources/puzzle.mod.json"))
+//}
 
 repositories {
     mavenCentral()
