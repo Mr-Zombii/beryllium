@@ -15,6 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class BerylliumMesh {
+    protected static final long startTime = System.currentTimeMillis();
 
     int vao = -1;
     int vbo = -1;
@@ -104,6 +105,8 @@ public class BerylliumMesh {
         GL20.glEnableVertexAttribArray(1);
         GL30.glVertexAttribIPointer(2, 2, GL30.GL_UNSIGNED_INT, Tessallator.VERTEX_SIZE, 16);
         GL20.glEnableVertexAttribArray(2);
+        GL30.glVertexAttribIPointer(3, 2, GL30.GL_UNSIGNED_INT, Tessallator.VERTEX_SIZE, 24);
+        GL20.glEnableVertexAttribArray(3);
 
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.ebo);
         GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, (long) budget * 6 * 4, this.usage);
@@ -216,6 +219,8 @@ public class BerylliumMesh {
         program.bindUniformMat(projMatLoc, false, camera.projection);
         program.bindUniformMat(viewMatLoc, false, camera.view);
         program.bindUniformMat(modelMatLoc, false, modelMatrix);
+
+        program.bindUniformFloat("u_time", (float)(System.currentTimeMillis() - startTime) / 1000.0F);
 
         if (albedoAtlasLoc != -1) GL20.glUniform1i(albedoAtlasLoc, albedoAtlas);
         if (albedoUVBufferLoc != -1) GL20.glUniform1i(albedoUVBufferLoc, albedoBuffer);

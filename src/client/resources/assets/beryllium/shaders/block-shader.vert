@@ -10,6 +10,7 @@ uniform usamplerBuffer u_albedoUVBuffer;
 layout (location = 0) in uvec2 a_packedA;
 layout (location = 1) in uvec2 a_packedB;
 layout (location = 2) in uvec2 a_packedC;
+layout (location = 3) in uvec2 a_animData;
 
 vec3 position = vec3(unpackHalf2x16(a_packedA.y), unpackHalf2x16(a_packedA.x >> 16u).x).yxz;
 vec3 normals = unpackSnorm4x8(((a_packedA.x & 0xFFFFu) << 8u) | ((a_packedB.y >> 24u) & 0xFFu)).zyx;
@@ -26,16 +27,28 @@ int EMISSIVE_UV_IDX = int(a_packedC.y) & 0xFFFF;
 int NORMAL_UV_IDX = int(a_packedC.x >> 16u) & 0xFFFF;
 int MATERIAL_UV_IDX = int(a_packedC.x) & 0xFFFF;
 
+vec2 frame_duration = unpackSnorm2x16(a_animData.x);
+
+int ALBEDO_FRAME_COUNT = int(a_animData.y >> 16u);
+float ALBEDO_FRAME_DURATION = frame_duration.y;
+
+int EMISSIVE_FRAME_COUNT = int(a_animData.y & 0xFFFFu);
+float EMISSIVE_FRAME_DURATION = frame_duration.x;
+
 out float v_bakedAoValue;
 out vec4 v_blockLightColor;
 out float v_skyLight;
 out vec3 v_vertexNormal;
 out vec3 v_vertexPosition;
 out vec2 v_albedoUV;
+flat out int v_albedoFrameCount;
+flat out float v_albedoFrameDuration;
 
 #ifdef HAS_EMISSIVE_ATLAS
 uniform usamplerBuffer u_emissiveUVBuffer;
 out vec2 v_emissiveUV;
+flat out int v_emissiveFrameCount;
+flat out float v_emissiveFrameDuration;
 #endif
 
 #ifdef HAS_NORMAL_ATLAS
@@ -159,9 +172,14 @@ void main(void) {
     v_bakedAoValue = getBakedAOValue();
     v_blockLightColor = getBlockLightColor();
     v_albedoUV = getAlbedoUV();
+    v_albedoFrameCount = ALBEDO_FRAME_COUNT;
+    v_albedoFrameDuration = ALBEDO_FRAME_DURATION;
+
     v_tintColor = getTintColor();
     #ifdef HAS_EMISSIVE_ATLAS
     v_emissiveUV = getEmissiveUV();
+    v_emissiveFrameCount = EMISSIVE_FRAME_COUNT;
+    v_emissiveFrameDuration = EMISSIVE_FRAME_DURATION;
     #endif
     #ifdef HAS_NORMAL_ATLAS
     v_normalUV = getNormalUV();

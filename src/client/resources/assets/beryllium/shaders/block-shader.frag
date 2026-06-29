@@ -15,21 +15,104 @@ uniform vec3 u_sunDirection = vec3(0, 1, 0);
 uniform vec3 u_ambientWorldColor = vec3(1, 1, 1);
 uniform vec3 u_ambientSkyColor = vec3(1, 1, 1);
 uniform vec3 u_cameraPos;
+uniform float u_time;
+uniform float u_fogDensity;
+uniform float u_renderDistanceInChunks;
+uniform vec3 u_playerLightColor;
 
 in float v_bakedAoValue;
 in vec4 v_blockLightColor;
 in vec3 v_vertexNormal;
 in vec3 v_vertexPosition;
 in vec2 v_albedoUV;
+flat in int v_albedoFrameCount;
+flat in float v_albedoFrameDuration;
+
 in vec4 v_tintColor;
 #ifdef HAS_EMISSIVE_ATLAS
 in vec2 v_emissiveUV;
+flat in int v_emissiveFrameCount;
+flat in float v_emissiveFrameDuration;
 #endif
 #ifdef HAS_NORMAL_ATLAS
 in vec2 v_normalUV;
 #endif
 in vec3 v_worldPos;
+
 out vec4 fragColor;
+
+vec3 getPlayerLight(vec3 currentColor, vec3 worldPos, vec3 cameraPos) {
+    float dist = distance(worldPos, cameraPos);
+
+    // minimum amount of light surrounding the camera with a small radius
+    float radius = 8.0;
+    float minLightAmount = 0.25;
+
+    float lightFactor = clamp(1.0 - (dist / radius), 0.0, 1.0);
+    // Smooth falloff
+    lightFactor = lightFactor * lightFactor;
+
+    vec3 lightDir = vec3(1.0);
+    float l = length(u_playerLightColor);
+    if (l > 0.0) {
+        lightDir = u_playerLightColor / l;
+    }
+
+    float brightness = max(u_playerLightColor.r, max(u_playerLightColor.g, u_playerLightColor.b));
+    vec3 lightColor = mix(vec3(1.0), lightDir, pow(brightness, 0.1));
+
+    vec3 playerLight = lightColor * lightFactor * minLightAmount;
+
+    return max(currentColor, playerLight);
+}
+
+vec3 getFogColor(vec3 fogBaseColor, vec3 blocklight, float fogDensity, vec3 worldPos, vec3 cameraPosition)
+{
+    float worldDistance = length(worldPos - cameraPosition);
+
+    float blocklightFactor = exp(-pow(worldDistance * fogDensity/2, 0.4));
+    return mix(fogBaseColor, max(fogBaseColor, blocklight.rgb), blocklightFactor);
+}
+
+vec3 applyFog(vec3 fogBaseColor, vec3 inputColor, float fogDensity, vec3 worldPos, vec3 cameraPosition)
+{
+    if(fogDensity == 0)
+    {
+        return inputColor;
+    }
+
+    float fogDistance = length(worldPos.xz - cameraPosition.xz) + 0.5*length(worldPos.y - cameraPosition.y);
+    float fadeOutDistance = length(worldPos.xz - cameraPosition.xz);
+    float fadeOutMaxDistance = (u_renderDistanceInChunks - 1) * 16;
+    float fadeOutFactor = clamp((fadeOutMaxDistance - fadeOutDistance)/256.0, 0.01, 1.0);
+    fogDistance *= 1 / fadeOutFactor;
+
+    vec3 worldDirection = normalize(worldPos - cameraPosition);
+
+    // Higher areas are less affected by fog.
+    float higherDot = 0;//dot(worldDirection, vec3(0, 1, 0));
+    float higherDistanceFactor = (higherDot + 1) / 2;
+    higherDistanceFactor = pow(higherDistanceFactor, 0.75) * 0.04 / fogDensity;
+    fogDistance = (fogDistance * (1-clamp(higherDistanceFactor, 0, 1)));
+
+    float fogSpread = 1;
+
+    float fogFactor = 1 - exp(-pow(fogDistance * fogDensity, fogSpread));
+    fogFactor = clamp(fogFactor, 0.0, 1.0);
+
+    float noonFactor = abs(dot(u_sunDirection, vec3(0, 1, 0)));
+    float fogDirectionFactor = fogFactor * (1+dot(u_sunDirection, worldDirection))/2.0;
+    fogDirectionFactor = clamp(fogDirectionFactor + ((higherDot + 0.5) / 2.0), 0.0, 1.0);
+    fogDirectionFactor = 1 - ((1 - noonFactor) * (1 - fogDirectionFactor));
+
+    // Higher areas are less affected by fog.
+    float higherFactor = max(dot(worldDirection, vec3(0, 1, 0)), 0);
+    higherFactor = pow(higherFactor, 0.75);
+    fogFactor = (fogFactor * (1-higherFactor*0.5));
+
+    vec3 fogColor = fogBaseColor * fogDirectionFactor;
+    return mix(inputColor.rgb, fogColor, fogFactor);
+}
 
 vec4 tintColor(vec4 c) {
     float threshold = 0.01;
@@ -48,15 +131,30 @@ vec4 tintColor(vec4 c) {
 #define USE_BLOCK_LIGHT 1
 #define USE_SKY_LIGHT 1
 
-void renderMode0(void) {
-//    vec4 newNormal = normalize(texture(u_normalAtlas, v_normalUV) * 2 - 1);
-//    newNormal.w = 1;
+// Block texture animation
+vec2 applyAnimation(vec2 texUV, sampler2D texAtlas, int frameCount, float frameDuration) {
+    vec2 newUV = texUV;
 
-    //    fragColor = vec4(1, 1, 1, 1);
-    //    fragColor = vec4((v_vertexNormal + 1.0) * 0.5, 1);
-    //    fragColor = vec4(v_albedoUV, 0, 1);
+    if (frameCount >= 2)
+    {
+        float tileWidth = 16.0 / textureSize(texAtlas, 0).x;
+        // I don't know why the *4.0 is needed here
+        // There must be some jank somewhere that causes this
+        // - Nik
+        float animTime = mod(floor(u_time * 4.0 / frameDuration), frameCount);
+        animTime *= tileWidth;
+        newUV.x += animTime;
+        newUV.y += floor(newUV.x);
+    }
+
+    return newUV;
+}
+
+void main(void) {
     #if USE_NORMAL_AS_ALBEDO == 0
-    vec4 albedoColor = tintColor(texture(u_albedoAtlas, v_albedoUV));
+    vec2 albedoUV = applyAnimation(v_albedoUV, u_albedoAtlas, v_albedoFrameCount, v_albedoFrameDuration);
+    vec4 albedoColor = tintColor(texture(u_albedoAtlas, albedoUV));
+//    albedoColor = vec4(v_albedoFrameDuration, 0.0, 0.0, 1.0);
     #else
     vec4 albedoColor = vec4((v_vertexNormal + 1.0) * 0.5, 1);
     #endif
@@ -81,53 +179,21 @@ void renderMode0(void) {
         vec3 t = 30.0/(1.0 + exp(-15.0 * it)) - 15;
         vec3 lightTint = max(t / 15, skyLight * ambientBlockColor);
     #endif
+    lightTint = getPlayerLight(lightTint, v_worldPos, u_cameraPos);
 
     fragColor = vec4(albedoColor.rgb * lightTint, albedoColor.a);
 
     #ifdef HAS_EMISSIVE_ATLAS
+    vec2 emissiveUV = applyAnimation(v_emissiveUV, u_emissiveAtlas, v_emissiveFrameCount, v_emissiveFrameDuration);
     vec4 emissiveColor = tintColor(texture(u_emissiveAtlas, v_emissiveUV));
     fragColor.rgb = max(fragColor.rgb, emissiveColor.rgb * emissiveColor.a);
     #endif
 
+    fragColor.rgb *= v_bakedAoValue;
+
+    vec3 fogColor = u_ambientSkyColor;
+    fogColor = getFogColor(fogColor, v_blockLightColor.rgb, u_fogDensity, v_worldPos, u_cameraPos);
+    fragColor.rgb = applyFog(fogColor, fragColor.rgb, u_fogDensity, v_worldPos, u_cameraPos);
+
     fragColor.rgb = max(fragColor.rgb, albedoColor.rgb * u_ambientWorldColor);
-//    fragColor.rgb = max(fragColor.rgb, albedoColor.rgb * u_ambientWorldColor);
-
-//    fragColor.rgb *= v_bakedAoValue;
-//    fragColor.rgb = max(fragColor.rgb, albedoColor.rgb);
-}
-
-void renderMode1(void) {
-    fragColor.rgba = vec4(vec3(v_blockLightColor.a), 1);
-    fragColor.rgba *= vec4(vec3(v_bakedAoValue), 1);
-}
-
-void renderMode2(void) {
-    fragColor = vec4((v_vertexNormal + 1.0) * 0.5, 1);
-}
-
-void renderMode3(void) {
-    fragColor.rgba = vec4(vec3(v_bakedAoValue), 1);
-}
-
-#define RENDER_MODE 0
-
-void main(void) {
-    switch (RENDER_MODE) {
-        case 0: {
-            renderMode0();
-            return;
-        }
-        case 1: {
-            renderMode1();
-            return;
-        }
-        case 2: {
-            renderMode2();
-            return;
-        }
-        case 3: {
-            renderMode3();
-            return;
-        }
-    }
 }

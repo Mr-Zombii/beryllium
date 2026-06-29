@@ -7,6 +7,7 @@ import me.zombii.beryllium.client.model.BerylliumModel;
 import me.zombii.beryllium.client.model.baking.parts.BakedFace;
 import me.zombii.beryllium.client.model.baking.parts.BaseQuad;
 import me.zombii.beryllium.client.model.parts.TextureEntry;
+import me.zombii.beryllium.client.rendering.opengl.textures.atlas.GLAtlas;
 import me.zombii.beryllium.common.BerylliumConfig;
 import org.lwjgl.system.MemoryUtil;
 
@@ -70,10 +71,21 @@ public class Tessallator {
         BerylliumModel model = face.model().getModel();
 
         TextureEntry entry = model.getTexture(face.textureID());
-        short albedoIdx = (short) BerylliumAtlases.ALBEDO_ATLAS.get(entry.getAlbedoTexturePath().toString()).getTBOIndex();
+
+        GLAtlas.SubTexture albedoSubTex = BerylliumAtlases.ALBEDO_ATLAS.get(entry.getAlbedoTexturePath().toString());
+        short albedoIdx = (short) albedoSubTex.getTBOIndex();
+        short albedoFrameCount = (short) albedoSubTex.getFrameCount();
+        short albedoFrameDuration = Float.floatToFloat16(albedoSubTex.getFrameDuration());
+
         short emissiveIdx = 0;
+        short emissiveFrameCount = 1;
+        short emissiveFrameDuration = 0;
         if (BerylliumConfig.INSTANCE.enableEmissiveAtlas) {
-            emissiveIdx = (short) BerylliumAtlases.EMISSIVE_ATLAS.get(entry.getEmissiveTexturePath().toString()).getTBOIndex();
+            GLAtlas.SubTexture emissiveSubTex = BerylliumAtlases.EMISSIVE_ATLAS.get(entry.getEmissiveTexturePath().toString());
+
+            emissiveIdx = (short) emissiveSubTex.getTBOIndex();
+            emissiveFrameCount = (short) emissiveSubTex.getFrameCount();
+            emissiveFrameDuration = Float.floatToFloat16(emissiveSubTex.getFrameDuration());
         }
         short normalIdx = 0;
         short materialIdx = 0;
@@ -90,8 +102,8 @@ public class Tessallator {
                 faceTint, aoIndex,
                 face.uvRotation(),
                 (short) face.faceUvIndex(),
-                albedoIdx,
-                emissiveIdx,
+                albedoIdx, albedoFrameCount, albedoFrameDuration,
+                emissiveIdx, emissiveFrameCount, emissiveFrameDuration,
                 normalIdx,
                 materialIdx
         );
@@ -123,8 +135,8 @@ public class Tessallator {
                 faceTint, aoIndex,
                 uvRotation,
                 faceUVIdx,
-                albedoIdx,
-                emissiveIdx,
+                albedoIdx, (short) 1, (short) 0, // Doesn't seem like this is used, so just dummy values here for now
+                emissiveIdx, (short) 1, (short) 0,
                 normalIdx,
                 materialIdx
         );
@@ -141,8 +153,8 @@ public class Tessallator {
             int aoIndex,
             int uvRotation,
             short faceUVIdx,
-            short albedoIdx,
-            short emissiveIdx,
+            short albedoIdx, short albedoFrameCount, short albedoFrameDuration,
+            short emissiveIdx, short emissiveFrameCount, short emissiveFrameDuration,
             short normalIdx,
             short materialIdx
     ) {
@@ -198,15 +210,39 @@ public class Tessallator {
         boolean flipQuad = c00ao + c11ao > c01ao + c10ao;
 
         if (flipQuad) {
-            addVertex(c01x, c01y, c01z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c01ao, faceTint, faceUVIdx, albedoIdx, emissiveIdx, normalIdx, materialIdx, 1);
-            addVertex(c11x, c11y, c11z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c11ao, faceTint, faceUVIdx, albedoIdx, emissiveIdx, normalIdx, materialIdx, 3);
-            addVertex(c00x, c00y, c00z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c00ao, faceTint, faceUVIdx, albedoIdx, emissiveIdx, normalIdx, materialIdx, 0);
-            addVertex(c10x, c10y, c10z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c10ao, faceTint, faceUVIdx, albedoIdx, emissiveIdx, normalIdx, materialIdx, 2);
+            addVertex(c01x, c01y, c01z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c01ao, faceTint, faceUVIdx,
+                    albedoIdx, albedoFrameCount, albedoFrameDuration,
+                    emissiveIdx, emissiveFrameCount, emissiveFrameDuration,
+                    normalIdx, materialIdx, 1);
+            addVertex(c11x, c11y, c11z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c11ao, faceTint, faceUVIdx,
+                    albedoIdx, albedoFrameCount, albedoFrameDuration,
+                    emissiveIdx, emissiveFrameCount, emissiveFrameDuration,
+                    normalIdx, materialIdx, 3);
+            addVertex(c00x, c00y, c00z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c00ao, faceTint, faceUVIdx,
+                    albedoIdx, albedoFrameCount, albedoFrameDuration,
+                    emissiveIdx, emissiveFrameCount, emissiveFrameDuration,
+                    normalIdx, materialIdx, 0);
+            addVertex(c10x, c10y, c10z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c10ao, faceTint, faceUVIdx,
+                    albedoIdx, albedoFrameCount, albedoFrameDuration,
+                    emissiveIdx, emissiveFrameCount, emissiveFrameDuration,
+                    normalIdx, materialIdx, 2);
         } else {
-            addVertex(c00x, c00y, c00z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c00ao, faceTint, faceUVIdx, albedoIdx, emissiveIdx, normalIdx, materialIdx, 0);
-            addVertex(c01x, c01y, c01z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c01ao, faceTint, faceUVIdx, albedoIdx, emissiveIdx, normalIdx, materialIdx, 1);
-            addVertex(c10x, c10y, c10z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c10ao, faceTint, faceUVIdx, albedoIdx, emissiveIdx, normalIdx, materialIdx, 2);
-            addVertex(c11x, c11y, c11z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c11ao, faceTint, faceUVIdx, albedoIdx, emissiveIdx, normalIdx, materialIdx, 3);
+            addVertex(c00x, c00y, c00z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c00ao, faceTint, faceUVIdx,
+                    albedoIdx, albedoFrameCount, albedoFrameDuration,
+                    emissiveIdx, emissiveFrameCount, emissiveFrameDuration,
+                    normalIdx, materialIdx, 0);
+            addVertex(c01x, c01y, c01z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c01ao, faceTint, faceUVIdx,
+                    albedoIdx, albedoFrameCount, albedoFrameDuration,
+                    emissiveIdx, emissiveFrameCount, emissiveFrameDuration,
+                    normalIdx, materialIdx, 1);
+            addVertex(c10x, c10y, c10z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c10ao, faceTint, faceUVIdx,
+                    albedoIdx, albedoFrameCount, albedoFrameDuration,
+                    emissiveIdx, emissiveFrameCount, emissiveFrameDuration,
+                    normalIdx, materialIdx, 2);
+            addVertex(c11x, c11y, c11z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c11ao, faceTint, faceUVIdx,
+                    albedoIdx, albedoFrameCount, albedoFrameDuration,
+                    emissiveIdx, emissiveFrameCount, emissiveFrameDuration,
+                    normalIdx, materialIdx, 3);
         }
         for (int index : BaseQuad.INDICES) {
             this.indices.putInt(index + indexCount);
@@ -221,7 +257,8 @@ public class Tessallator {
             short skyLightLevel, short blockLightLevel,
             byte uvRotation, byte aoLevel,
             short vertexTint, short faceUVIdx,
-            short albedoIdx, short emissiveIdx,
+            short albedoIdx, short albedoFrameCount, short albedoFrameDuration,
+            short emissiveIdx, short emissiveFrameCount, short emissiveFrameDuration,
             short normalIdx, short materialIdx,
             int cornerID
     ) {
@@ -229,9 +266,9 @@ public class Tessallator {
         short Yi = Float.floatToFloat16(y);
         short Zi = Float.floatToFloat16(z);
 
-        byte nXi = (byte) Math.round(0 * 127f);
-        byte nYi = (byte) Math.round(0 * 127f);
-        byte nZi = (byte) Math.round(1 * 127f);
+        byte nXi = (byte) (nX * 127f);
+        byte nYi = (byte) (nY * 127f);
+        byte nZi = (byte) (nZ * 127f);
 
         long packedA =
                 ((((long) Xi) & 0xFFFF) << 48)
@@ -258,12 +295,24 @@ public class Tessallator {
                 | (((long) materialIdx) & 0xFFFF)
         ;
 
+        // Texture animation data
+
+        // Base game only uses albedo animations
+        // But emissive animations could also be useful
+        long animData =
+                ((((long)albedoFrameCount) & 0xFFFF) << 48)
+                | ((((long)emissiveFrameCount) & 0xFFFF) << 32)
+                | ((((long)albedoFrameDuration) & 0xFFFF) << 16)
+                | (((long)emissiveFrameDuration) & 0xFFFF)
+        ;
+
         vertices.putLong(packedA);
         vertices.putLong(packedB);
         vertices.putLong(packedC);
+        vertices.putLong(animData);
     }
 
-    public static int VERTEX_SIZE = 24;
+    public static int VERTEX_SIZE = 32;
 
     public void dispose() {
         MemoryUtil.memFree(this.vertices);

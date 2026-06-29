@@ -1,11 +1,14 @@
 package me.zombii.beryllium.client.model.baking;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Json;
 import dev.puzzleshq.puzzleloader.cosmic.game.GameRegistries;
 import dev.puzzleshq.puzzleloader.cosmic.game.util.IndependentAssetLoader;
 import finalforeach.cosmicreach.util.Identifier;
+import finalforeach.cosmicreach.util.assets.GameAssetLoader;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.objects.*;
@@ -47,6 +50,32 @@ public class ModelBaker {
 
     private static final Logger LOGGER = LogManager.getLogger("Beryllium | ModelBaker");
 
+    // Loads animation metadata for a texture if it exists
+    private static TextureAnimationMetadata loadAnimationMetadata(Identifier texID) {
+        FileHandle metadataFile = GameAssetLoader.loadAsset(texID.toString() + ".json", false);
+        if (metadataFile != null && metadataFile.exists()) {
+            try {
+                Json json = new Json();
+                TextureAnimationMetadata metadata = (TextureAnimationMetadata)json.fromJson(TextureAnimationMetadata.class, metadataFile);
+
+                if (metadata == null) return new TextureAnimationMetadata();
+
+                if (BerylliumConfig.INSTANCE.debugMode) {
+                    LOGGER.log(Level.INFO,
+                            "Loaded animation metadata for texture \"{}\".\nFrame count: {}\nFrame duration: {}",
+                            texID, metadata.frameCount, metadata.frameDuration
+                    );
+                }
+
+                return metadata;
+            } catch (Exception e) {
+                LOGGER.error(e.getMessage());
+            }
+        }
+
+        return new TextureAnimationMetadata();
+    }
+
     public static void bakeTextures(Map<String, TextureEntry> textureMap) {
         GLAtlas albedoAtlas = BerylliumAtlases.ALBEDO_ATLAS;
         GLAtlas emissionAtlas = BerylliumAtlases.EMISSIVE_ATLAS;
@@ -59,13 +88,18 @@ public class ModelBaker {
             Identifier albedoTexturePath = value.getAlbedoTexturePath();
 
             BufferedImage albedoImage = IndependentAssetLoader.loadResource(albedoTexturePath, BufferedImage.class);
-            albedoAtlas.add(albedoTexturePath.toString(), PixelMap.fromBufferedImage(albedoImage)).draw();
+
+            TextureAnimationMetadata albedoMetadata = loadAnimationMetadata(albedoTexturePath);
+            albedoAtlas.add(albedoTexturePath.toString(), PixelMap.fromBufferedImage(albedoImage),
+                    albedoMetadata.frameCount, albedoMetadata.frameDuration).draw();
 
             if (config.enableEmissiveAtlas) {
                 Identifier emissiveTexturePath = value.getEmissiveTexturePath();
 
                 BufferedImage emissiveImage = IndependentAssetLoader.loadResource(emissiveTexturePath, BufferedImage.class);
-                emissionAtlas.add(emissiveTexturePath.toString(), PixelMap.fromBufferedImage(emissiveImage)).draw();
+                TextureAnimationMetadata emissiveMetadata = loadAnimationMetadata(emissiveTexturePath);
+                emissionAtlas.add(emissiveTexturePath.toString(), PixelMap.fromBufferedImage(emissiveImage),
+                        emissiveMetadata.frameCount, emissiveMetadata.frameDuration).draw();
             }
 
             if (config.enableNormalAtlas) {
@@ -457,5 +491,13 @@ public class ModelBaker {
         UV_TABLE.put(hash, idx);
 
         return idx;
+    }
+
+    private static class TextureAnimationMetadata {
+        public int frameCount = 1;
+        public float frameDuration = 0.2F;
+
+        private TextureAnimationMetadata() {
+        }
     }
 }

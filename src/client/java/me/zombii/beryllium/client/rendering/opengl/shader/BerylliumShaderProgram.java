@@ -1,6 +1,8 @@
 package me.zombii.beryllium.client.rendering.opengl.shader;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector3;
 import dev.puzzleshq.puzzleloader.cosmic.game.util.IndependentAssetLoader;
 import finalforeach.cosmicreach.util.Identifier;
 import org.lwjgl.opengl.GL11;
@@ -108,6 +110,27 @@ public class BerylliumShaderProgram {
         if (loc == -1) return false;
         GL20.glUniformMatrix4fv(loc, transpose, matrix4.val);
         return transpose;
+    }
+
+    public void bindUniformFloat(String name, float value) {
+        int loc = getUniformLocation(name);
+
+        if (loc == -1) return;
+        GL20.glUniform1f(loc, value);
+    }
+
+    public void bindUniform3f(String name, Vector3 value){
+        int loc = getUniformLocation(name);
+
+        if (loc == -1) return;
+        GL20.glUniform3f(loc, value.x, value.y, value.z);
+    }
+
+    public void bindUniform3f(String name, Color value){
+        int loc = getUniformLocation(name);
+
+        if (loc == -1) return;
+        GL20.glUniform3f(loc, value.r, value.g, value.b);
     }
 
 }

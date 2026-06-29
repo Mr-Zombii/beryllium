@@ -123,10 +123,14 @@ public class GLAtlas extends GLPixmap {
     }
 
     public SubTexture add(String name, PixelMap pixelMap) {
+        return add(name, pixelMap, 1, 0.2f);
+    }
+
+    public SubTexture add(String name, PixelMap pixelMap, int frameCount, float frameDuration) {
         SubTexture existing = get(name);
         if (existing != null) return existing;
 
-        SubTexture texture = new SubTexture(this, name, pixelMap, 0, 0);
+        SubTexture texture = new SubTexture(this, name, pixelMap, 0, 0, frameCount, frameDuration);
         add(texture);
         this.textureMap.put(name, texture);
         return texture;
@@ -178,9 +182,11 @@ public class GLAtlas extends GLPixmap {
         private final int height;
         private final String name;
         private int idx = 0;
+        private final int frameCount;
+        private final float frameDuration;
 
         public SubTexture(
-                GLAtlas atlas, String name, PixelMap pixmap, int x, int y
+                GLAtlas atlas, String name, PixelMap pixmap, int x, int y, int frameCount, float frameDuration
         ) {
             this.atlas = atlas;
             this.name = name;
@@ -189,6 +195,16 @@ public class GLAtlas extends GLPixmap {
             this.height = pixmap.getHeight();
             this.x = x;
             this.y = y;
+            this.frameCount = frameCount;
+            this.frameDuration = frameDuration;
+        }
+
+        public int getFrameCount() {
+            return frameCount;
+        }
+
+        public float getFrameDuration() {
+            return frameDuration;
         }
 
         public void setTBOIndex(int idx) {
