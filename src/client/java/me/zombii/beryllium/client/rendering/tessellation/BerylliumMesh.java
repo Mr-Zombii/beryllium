@@ -105,8 +105,6 @@ public class BerylliumMesh {
         GL20.glEnableVertexAttribArray(1);
         GL30.glVertexAttribIPointer(2, 2, GL30.GL_UNSIGNED_INT, Tessallator.VERTEX_SIZE, 16);
         GL20.glEnableVertexAttribArray(2);
-        GL30.glVertexAttribIPointer(3, 2, GL30.GL_UNSIGNED_INT, Tessallator.VERTEX_SIZE, 24);
-        GL20.glEnableVertexAttribArray(3);
 
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.ebo);
         GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, (long) budget * 6 * 4, this.usage);

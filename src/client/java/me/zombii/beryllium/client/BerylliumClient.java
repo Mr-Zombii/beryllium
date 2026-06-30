@@ -33,6 +33,8 @@ import java.net.URL;
 
 public class BerylliumClient implements ClientModInit, ClientPostModInit {
 
+    public static final int ATLAS_SIZE = 1024;
+
     public static final Identifier MISSING_TEXTURE_PATH = Identifier.of(BerylliumCommon.NAMESPACE, "textures/missing/missing-texture.png");
     public static final Identifier MISSING_TEXTURE_EMISSIVE_PATH = Identifier.of(BerylliumCommon.NAMESPACE, "textures/missing/missing-texture-emissive.png");
 

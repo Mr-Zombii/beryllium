@@ -22,14 +22,14 @@ public class BerylliumAtlases {
     public static void initAtlases() {
         BerylliumConfig config = BerylliumConfig.INSTANCE;
 
-        ALBEDO_ATLAS = new GLAtlas(Identifier.of(BerylliumCommon.NAMESPACE, "albedo-atlas"), 1024, 1024);
+        ALBEDO_ATLAS = new GLAtlas(Identifier.of(BerylliumCommon.NAMESPACE, "albedo-atlas"), BerylliumClient.ATLAS_SIZE, BerylliumClient.ATLAS_SIZE);
 
         if (config.enableEmissiveAtlas)
-            BerylliumAtlases.EMISSIVE_ATLAS = new GLAtlas(Identifier.of(BerylliumCommon.NAMESPACE, "albedo-atlas"), 1024, 1024);
+            BerylliumAtlases.EMISSIVE_ATLAS = new GLAtlas(Identifier.of(BerylliumCommon.NAMESPACE, "albedo-atlas"), BerylliumClient.ATLAS_SIZE, BerylliumClient.ATLAS_SIZE);
         if (config.enableNormalAtlas)
-            BerylliumAtlases.NORMAL_ATLAS = new GLAtlas(Identifier.of(BerylliumCommon.NAMESPACE, "normal-atlas"), 1024, 1024);
+            BerylliumAtlases.NORMAL_ATLAS = new GLAtlas(Identifier.of(BerylliumCommon.NAMESPACE, "normal-atlas"), BerylliumClient.ATLAS_SIZE, BerylliumClient.ATLAS_SIZE);
         if (config.enableMaterialAtlas)
-            BerylliumAtlases.MATERIAL_ATLAS = new GLAtlas(Identifier.of(BerylliumCommon.NAMESPACE, "material-atlas"), 1024, 1024);
+            BerylliumAtlases.MATERIAL_ATLAS = new GLAtlas(Identifier.of(BerylliumCommon.NAMESPACE, "material-atlas"), BerylliumClient.ATLAS_SIZE, BerylliumClient.ATLAS_SIZE);
     }
 
 }

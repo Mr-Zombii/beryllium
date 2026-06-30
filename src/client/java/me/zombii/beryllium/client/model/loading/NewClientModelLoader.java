@@ -1,8 +1,5 @@
 package me.zombii.beryllium.client.model.loading;
 
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonReader;
-import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonWriter;
 import dev.puzzleshq.puzzleloader.cosmic.game.blockloader.generation.model.BlockModelGenerator;
 import dev.puzzleshq.puzzleloader.cosmic.game.blockloader.loading.ISidedModelLoader;
@@ -11,6 +8,7 @@ import dev.puzzleshq.puzzleloader.loader.util.ReflectionUtil;
 import finalforeach.cosmicreach.rendering.blockmodels.BlockModel;
 import finalforeach.cosmicreach.rendering.blockmodels.BlockModelJson;
 import finalforeach.cosmicreach.util.Identifier;
+import me.zombii.beryllium.common.BerylliumCommon;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
@@ -18,20 +16,17 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class NewClientModelLoader implements ISidedModelLoader {
 
-    public static final Json JSON = new Json();
-    private static final JsonReader READER = new JsonReader();
-    public static final JsonValue.PrettyPrintSettings SETTINGS = new JsonValue.PrettyPrintSettings();
     public static final float[] DEFAULT_ROTATION = new float[3];
 
     public static final Map<String, BlockModel> CACHE = new ConcurrentHashMap<>();
 
 
     static {
-        SETTINGS.outputType = JsonWriter.OutputType.json;
+        BerylliumCommon.SETTINGS.outputType = JsonWriter.OutputType.json;
     }
 
     private static String fixGdxJson(String json) {
-        return READER.parse(json).prettyPrint(SETTINGS);
+        return BerylliumCommon.READER.parse(json).prettyPrint(BerylliumCommon.SETTINGS);
     }
 
     @Override

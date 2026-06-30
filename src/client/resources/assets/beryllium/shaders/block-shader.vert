@@ -3,14 +3,14 @@
 uniform mat4 u_projMat;
 uniform mat4 u_viewMat;
 uniform mat4 u_modelMat;
+uniform float u_time;
 
-uniform usamplerBuffer u_faceUVBuffer;
-uniform usamplerBuffer u_albedoUVBuffer;
+layout (binding = 0) uniform usamplerBuffer u_faceUVBuffer;
+layout (binding = 1) uniform usamplerBuffer u_albedoUVBuffer;
 
 layout (location = 0) in uvec2 a_packedA;
 layout (location = 1) in uvec2 a_packedB;
 layout (location = 2) in uvec2 a_packedC;
-layout (location = 3) in uvec2 a_animData;
 
 vec3 position = vec3(unpackHalf2x16(a_packedA.y), unpackHalf2x16(a_packedA.x >> 16u).x).yxz;
 vec3 normals = unpackSnorm4x8(((a_packedA.x & 0xFFFFu) << 8u) | ((a_packedB.y >> 24u) & 0xFFu)).zyx;
@@ -27,37 +27,25 @@ int EMISSIVE_UV_IDX = int(a_packedC.y) & 0xFFFF;
 int NORMAL_UV_IDX = int(a_packedC.x >> 16u) & 0xFFFF;
 int MATERIAL_UV_IDX = int(a_packedC.x) & 0xFFFF;
 
-vec2 frame_duration = unpackSnorm2x16(a_animData.x);
-
-int ALBEDO_FRAME_COUNT = int(a_animData.y >> 16u);
-float ALBEDO_FRAME_DURATION = frame_duration.y;
-
-int EMISSIVE_FRAME_COUNT = int(a_animData.y & 0xFFFFu);
-float EMISSIVE_FRAME_DURATION = frame_duration.x;
-
 out float v_bakedAoValue;
 out vec4 v_blockLightColor;
 out float v_skyLight;
 out vec3 v_vertexNormal;
 out vec3 v_vertexPosition;
 out vec2 v_albedoUV;
-flat out int v_albedoFrameCount;
-flat out float v_albedoFrameDuration;
 
 #ifdef HAS_EMISSIVE_ATLAS
-uniform usamplerBuffer u_emissiveUVBuffer;
+layout (binding = 2) uniform usamplerBuffer u_emissiveUVBuffer;
 out vec2 v_emissiveUV;
-flat out int v_emissiveFrameCount;
-flat out float v_emissiveFrameDuration;
 #endif
 
 #ifdef HAS_NORMAL_ATLAS
-uniform usamplerBuffer u_normalUVBuffer;
+layout (binding = 3) uniform usamplerBuffer u_normalUVBuffer;
 out vec2 v_normalUV;
 #endif
 
 #ifdef HAS_MATERIAL_ATLAS
-uniform usamplerBuffer u_materialUVBuffer;
+layout (binding = 4) uniform usamplerBuffer u_materialUVBuffer;
 out vec2 v_materialUV;
 #endif
 
@@ -158,12 +146,47 @@ vec2 getUV(uvec2 offs) {
     return uv;
 }
 
-vec2 getAlbedoUV(void) { return getUV(texelFetch(u_albedoUVBuffer, ALBEDO_UV_IDX).xy); }
+vec2 applyAnimation(vec2 texUV, int frameCount, float frameDuration) {
+    vec2 newUV = texUV;
+
+    if (frameCount >= 2)
+    {
+        float tileWidth = 16.0 / ATLAS_SIZE;
+        // I don't know why the *4.0 is needed here
+        // There must be some jank somewhere that causes this
+        // - Nik
+
+        // I fixed this by moving it to the vertex shader &
+        // moving all the data into the uv buffer's for the atlases
+        // so its decoupled from the model data
+        // - Zombii
+        float animTime = mod(floor(u_time / frameDuration), frameCount);
+        animTime *= tileWidth;
+        newUV.x += animTime;
+        newUV.y += floor(newUV.x);
+    }
+
+    return newUV;
+}
+
+vec2 getAlbedoUV(void) {
+    uvec4 data = texelFetch(u_albedoUVBuffer, ALBEDO_UV_IDX);
+    float frameDuration = unpackHalf2x16(data.w).x;
+    vec2 uv = getUV(data.xy);
+    return applyAnimation(uv, int(data.z), frameDuration);
+}
 #ifdef HAS_EMISSIVE_ATLAS
-vec2 getEmissiveUV(void) { return getUV(texelFetch(u_emissiveUVBuffer, EMISSIVE_UV_IDX).xy); }
+vec2 getEmissiveUV(void) {
+    uvec4 data = texelFetch(u_emissiveUVBuffer, EMISSIVE_UV_IDX);
+    float frameDuration = unpackHalf2x16(data.w).x;
+    vec2 uv = getUV(data.xy);
+    return applyAnimation(uv, int(data.z), frameDuration);
+}
 #endif
 #ifdef HAS_NORMAL_ATLAS
-vec2 getNormalUV(void) { return getUV(texelFetch(u_normalUVBuffer, NORMAL_UV_IDX).xy); }
+vec2 getNormalUV(void) {
+    return getUV(texelFetch(u_normalUVBuffer, NORMAL_UV_IDX).xy);
+}
 #endif
 
 void main(void) {
@@ -172,14 +195,10 @@ void main(void) {
     v_bakedAoValue = getBakedAOValue();
     v_blockLightColor = getBlockLightColor();
     v_albedoUV = getAlbedoUV();
-    v_albedoFrameCount = ALBEDO_FRAME_COUNT;
-    v_albedoFrameDuration = ALBEDO_FRAME_DURATION;
 
     v_tintColor = getTintColor();
     #ifdef HAS_EMISSIVE_ATLAS
     v_emissiveUV = getEmissiveUV();
-    v_emissiveFrameCount = EMISSIVE_FRAME_COUNT;
-    v_emissiveFrameDuration = EMISSIVE_FRAME_DURATION;
     #endif
     #ifdef HAS_NORMAL_ATLAS
     v_normalUV = getNormalUV();

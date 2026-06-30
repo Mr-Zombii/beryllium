@@ -1,21 +1,20 @@
 #version 420 core
 
-uniform sampler2D u_albedoAtlas;
+layout (binding = 2) uniform sampler2D u_albedoAtlas;
 #ifdef HAS_EMISSIVE_ATLAS
-uniform sampler2D u_emissiveAtlas;
+layout (binding = 3) uniform sampler2D u_emissiveAtlas;
 #endif
 #ifdef HAS_NORMAL_ATLAS
-uniform sampler2D u_normalAtlas;
+layout (binding = 4) uniform sampler2D u_normalAtlas;
 #endif
 #ifdef HAS_MATERIAL_ATLAS
-uniform sampler2D u_materialAtlas;
+layout (binding = 5) uniform sampler2D u_materialAtlas;
 #endif
 
 uniform vec3 u_sunDirection = vec3(0, 1, 0);
 uniform vec3 u_ambientWorldColor = vec3(1, 1, 1);
 uniform vec3 u_ambientSkyColor = vec3(1, 1, 1);
 uniform vec3 u_cameraPos;
-uniform float u_time;
 uniform float u_fogDensity;
 uniform float u_renderDistanceInChunks;
 uniform vec3 u_playerLightColor;
@@ -25,14 +24,10 @@ in vec4 v_blockLightColor;
 in vec3 v_vertexNormal;
 in vec3 v_vertexPosition;
 in vec2 v_albedoUV;
-flat in int v_albedoFrameCount;
-flat in float v_albedoFrameDuration;
 
 in vec4 v_tintColor;
 #ifdef HAS_EMISSIVE_ATLAS
 in vec2 v_emissiveUV;
-flat in int v_emissiveFrameCount;
-flat in float v_emissiveFrameDuration;
 #endif
 #ifdef HAS_NORMAL_ATLAS
 in vec2 v_normalUV;
@@ -131,29 +126,9 @@ vec4 tintColor(vec4 c) {
 #define USE_BLOCK_LIGHT 1
 #define USE_SKY_LIGHT 1
 
-// Block texture animation
-vec2 applyAnimation(vec2 texUV, sampler2D texAtlas, int frameCount, float frameDuration) {
-    vec2 newUV = texUV;
-
-    if (frameCount >= 2)
-    {
-        float tileWidth = 16.0 / textureSize(texAtlas, 0).x;
-        // I don't know why the *4.0 is needed here
-        // There must be some jank somewhere that causes this
-        // - Nik
-        float animTime = mod(floor(u_time * 4.0 / frameDuration), frameCount);
-        animTime *= tileWidth;
-        newUV.x += animTime;
-        newUV.y += floor(newUV.x);
-    }
-
-    return newUV;
-}
-
 void main(void) {
     #if USE_NORMAL_AS_ALBEDO == 0
-    vec2 albedoUV = applyAnimation(v_albedoUV, u_albedoAtlas, v_albedoFrameCount, v_albedoFrameDuration);
-    vec4 albedoColor = tintColor(texture(u_albedoAtlas, albedoUV));
+    vec4 albedoColor = tintColor(texture(u_albedoAtlas, v_albedoUV));
 //    albedoColor = vec4(v_albedoFrameDuration, 0.0, 0.0, 1.0);
     #else
     vec4 albedoColor = vec4((v_vertexNormal + 1.0) * 0.5, 1);
@@ -184,7 +159,6 @@ void main(void) {
     fragColor = vec4(albedoColor.rgb * lightTint, albedoColor.a);
 
     #ifdef HAS_EMISSIVE_ATLAS
-    vec2 emissiveUV = applyAnimation(v_emissiveUV, u_emissiveAtlas, v_emissiveFrameCount, v_emissiveFrameDuration);
     vec4 emissiveColor = tintColor(texture(u_emissiveAtlas, v_emissiveUV));
     fragColor.rgb = max(fragColor.rgb, emissiveColor.rgb * emissiveColor.a);
     #endif

@@ -295,24 +295,12 @@ public class Tessallator {
                 | (((long) materialIdx) & 0xFFFF)
         ;
 
-        // Texture animation data
-
-        // Base game only uses albedo animations
-        // But emissive animations could also be useful
-        long animData =
-                ((((long)albedoFrameCount) & 0xFFFF) << 48)
-                | ((((long)emissiveFrameCount) & 0xFFFF) << 32)
-                | ((((long)albedoFrameDuration) & 0xFFFF) << 16)
-                | (((long)emissiveFrameDuration) & 0xFFFF)
-        ;
-
         vertices.putLong(packedA);
         vertices.putLong(packedB);
         vertices.putLong(packedC);
-        vertices.putLong(animData);
     }
 
-    public static int VERTEX_SIZE = 32;
+    public static int VERTEX_SIZE = 24;
 
     public void dispose() {
         MemoryUtil.memFree(this.vertices);

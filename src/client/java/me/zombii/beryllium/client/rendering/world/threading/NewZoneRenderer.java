@@ -1,25 +1,22 @@
 package me.zombii.beryllium.client.rendering.world.threading;
 
 import com.badlogic.gdx.graphics.Camera;
+import finalforeach.cosmicreach.rendering.IWorldRenderingMeshGenThread;
 import finalforeach.cosmicreach.rendering.IZoneRenderer;
+import finalforeach.cosmicreach.singletons.GameSingletons;
 import finalforeach.cosmicreach.world.Chunk;
 import finalforeach.cosmicreach.world.Region;
 import finalforeach.cosmicreach.world.Zone;
 
 public class NewZoneRenderer implements IZoneRenderer {
-    @Override
-    public void dispose() {
 
+    @Override
+    public void prepare(Zone zone, Camera worldCamera) {
+        GameSingletons.meshGenThread.meshChunks(this);
     }
 
     @Override
     public void render(Zone var1, Camera var2) {
-
-    }
-
-    @Override
-    public void prepare(Zone zone, Camera worldCamera) {
-
     }
 
     @Override
@@ -39,7 +36,12 @@ public class NewZoneRenderer implements IZoneRenderer {
 
     @Override
     public void onChunkFlaggedForRemeshing(Chunk chunk) {
-
+        if (chunk.isGenerated()) {
+            IWorldRenderingMeshGenThread meshGenThread = GameSingletons.meshGenThread;
+            synchronized (meshGenThread.getAddChunkLock()) {
+                meshGenThread.addChunk(chunk);
+            }
+        }
     }
 
     @Override
@@ -56,5 +58,10 @@ public class NewZoneRenderer implements IZoneRenderer {
     public void onChunkMeshed(Chunk chunk) {
 
     }
-    
+
+    @Override
+    public void dispose() {
+
+    }
+
 }

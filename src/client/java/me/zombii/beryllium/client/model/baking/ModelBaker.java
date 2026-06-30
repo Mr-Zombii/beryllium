@@ -26,6 +26,7 @@ import me.zombii.beryllium.client.model.parts.TextureEntry;
 import me.zombii.beryllium.client.rendering.opengl.buffers.TBO;
 import me.zombii.beryllium.client.rendering.opengl.textures.PixelMap;
 import me.zombii.beryllium.client.rendering.opengl.textures.atlas.GLAtlas;
+import me.zombii.beryllium.common.BerylliumCommon;
 import me.zombii.beryllium.common.BerylliumConfig;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -55,10 +56,8 @@ public class ModelBaker {
         FileHandle metadataFile = GameAssetLoader.loadAsset(texID.toString() + ".json", false);
         if (metadataFile != null && metadataFile.exists()) {
             try {
-                Json json = new Json();
-                TextureAnimationMetadata metadata = (TextureAnimationMetadata)json.fromJson(TextureAnimationMetadata.class, metadataFile);
-
-                if (metadata == null) return new TextureAnimationMetadata();
+                TextureAnimationMetadata metadata = BerylliumCommon.JSON.fromJson(TextureAnimationMetadata.class, metadataFile);
+                if (metadata == null) return TextureAnimationMetadata.EMPTY;
 
                 if (BerylliumConfig.INSTANCE.debugMode) {
                     LOGGER.log(Level.INFO,
@@ -73,7 +72,7 @@ public class ModelBaker {
             }
         }
 
-        return new TextureAnimationMetadata();
+        return TextureAnimationMetadata.EMPTY;
     }
 
     public static void bakeTextures(Map<String, TextureEntry> textureMap) {
@@ -239,13 +238,13 @@ public class ModelBaker {
     }
 
     private static final int elementSize = 4 * 4;
-    private static final int atlasElementSize = 4 * 4;
+    private static final int atlasElementSize = 8;
     private static final float[] uvs = new float[4];
 
     private static TBO createOrUpdateTBO(BerylliumConfig config, GLAtlas atlas, TBO tbo) {
         if (tbo == null) {
             if (config.debugMode) LOGGER.log(Level.INFO, "Creating \"{}\"'s TBO", atlas.getID());
-            tbo = new TBO(atlas.getSubtextureCount() * atlasElementSize, GL30.GL_RG16UI, true);
+            tbo = new TBO(atlas.getSubtextureCount() * atlasElementSize, GL30.GL_RGBA16UI, true);
         }
         if (config.debugMode) LOGGER.log(Level.INFO, "Updating \"{}\"'s TBO", atlas.getID());
         uploadData(atlas, tbo);
@@ -266,8 +265,12 @@ public class ModelBaker {
 
             for (int i = 0; i < texCount; i++) {
                 GLAtlas.SubTexture tex = texs.get(i);
+
+                // x, y, frame count, frame duration
                 buffer.putShort((short) tex.getX());
                 buffer.putShort((short) tex.getY());
+                buffer.putShort((short) tex.getFrameCount());
+                buffer.putShort(Float.floatToFloat16(tex.getFrameDuration()));
                 tex.setTBOIndex(i);
             }
             buffer.flip();
@@ -494,10 +497,21 @@ public class ModelBaker {
     }
 
     private static class TextureAnimationMetadata {
-        public int frameCount = 1;
-        public float frameDuration = 0.2F;
+        public static final TextureAnimationMetadata EMPTY = new TextureAnimationMetadata();
+
+        private int frameCount = 1;
+        private float frameDuration = 0.2F;
 
         private TextureAnimationMetadata() {
         }
+
+        public int getFrameCount() {
+            return frameCount;
+        }
+
+        public float getFrameDuration() {
+            return frameDuration;
+        }
+
     }
 }

@@ -1,6 +1,7 @@
 package me.zombii.beryllium.client.rendering.layers;
 
 import finalforeach.cosmicreach.util.Identifier;
+import me.zombii.beryllium.client.BerylliumClient;
 import me.zombii.beryllium.client.rendering.opengl.shader.BerylliumShaderProgram;
 import me.zombii.beryllium.common.BerylliumConfig;
 
@@ -35,6 +36,7 @@ public class RenderLayer {
             prependCode += "#define HAS_NORMAL_ATLAS\n";
         if (config.enableMaterialAtlas)
             prependCode += "#define HAS_MATERIAL_ATLAS\n";
+        prependCode += "#define ATLAS_SIZE " + BerylliumClient.ATLAS_SIZE;
 
         this.program = new BerylliumShaderProgram(
                 prependCode,
