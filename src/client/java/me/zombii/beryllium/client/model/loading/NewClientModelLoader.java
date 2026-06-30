@@ -8,7 +8,7 @@ import dev.puzzleshq.puzzleloader.loader.util.ReflectionUtil;
 import finalforeach.cosmicreach.rendering.blockmodels.BlockModel;
 import finalforeach.cosmicreach.rendering.blockmodels.BlockModelJson;
 import finalforeach.cosmicreach.util.Identifier;
-import me.zombii.beryllium.client.exceptions.ModelException;
+import me.zombii.beryllium.client.model.vanilla.BasicBlockModel;
 import me.zombii.beryllium.common.BerylliumCommon;
 
 import java.lang.reflect.InvocationTargetException;
@@ -40,6 +40,8 @@ public class NewClientModelLoader implements ISidedModelLoader {
         loadModel(modelGenerator, coverAllRotations, false);
     }
 
+    private final float[] rotTemp = new float[3];
+
     @Override
     public void loadModel(BlockModelGenerator modelGenerator, boolean coverAllRotations, boolean override) {
         if (!override && CACHE.containsKey(modelGenerator.getName())) return;
@@ -48,7 +50,21 @@ public class NewClientModelLoader implements ISidedModelLoader {
         String modelName = modelGenerator.getName();
         String modelJson = modelGenerator.toJson().toString();
         BerylliumModelLoader.loadVanillaBlockModel(modelName, modelJson);
-        CACHE.put(modelName, fromString(modelName, modelJson));
+
+        if (coverAllRotations) {
+            for (int x = 0; x < 360; x += 90) {
+                for (int y = 0; y < 360; y += 90) {
+                    for (int z = 0; z < 360; z += 90) {
+                        this.rotTemp[0] = x;
+                        this.rotTemp[1] = y;
+                        this.rotTemp[2] = z;
+                        CACHE.put(modelName, fromString(modelName, rotTemp, modelJson, override));
+                    }
+                }
+            }
+        } else {
+            CACHE.put(modelName, fromString(modelName, DEFAULT_ROTATION, modelJson, override));
+        }
     }
 
     @Override
@@ -64,7 +80,7 @@ public class NewClientModelLoader implements ISidedModelLoader {
         String modelName = modelGenerator.getName();
         String modelJson = modelGenerator.toJson().toString();
         BerylliumModelLoader.loadVanillaBlockModel(modelName, modelJson);
-        BlockModel model = fromString(modelName, modelJson);
+        BlockModel model = fromString(modelName, rotation, modelJson, override);
         CACHE.put(modelName, model);
         return model;
     }
@@ -77,7 +93,7 @@ public class NewClientModelLoader implements ISidedModelLoader {
         String json = IndependentAssetLoader.loadAsset(Identifier.of(modelName)).getString();
 
         BerylliumModelLoader.loadVanillaBlockModel(modelName, json);
-        BlockModel model = fromString(modelName, json);
+        BlockModel model = fromString(modelName, rotation, json, override);
         CACHE.put(modelName, model);
         return model;
     }
@@ -89,24 +105,25 @@ public class NewClientModelLoader implements ISidedModelLoader {
 
         String json = fixGdxJson(modelJson);
         BerylliumModelLoader.loadVanillaBlockModel(modelName, json);
-        BlockModel model = fromString(modelName, json);
+        BlockModel model = fromString(modelName, rotation, json, override);
         CACHE.put(modelName, model);
         return model;
     }
 
-    private static BlockModel fromString(String modelName, String modelJson) {
+    private static BlockModel fromString(String modelName, float[] rotation, String modelJson, boolean override) {
 //        try {
 //            return (BlockModel) ReflectionUtil.getMethod(DummyBlockModel.class, "getInstanceFromJsonStr", new Class[]{String.class, String.class, float[].class})
 //                    .invoke(null, modelName, modelJson, DEFAULT_ROTATION);
 //        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
 //            throw new RuntimeException(e);
 //        }
-        try {
-            BlockModelJson model = (BlockModelJson) ReflectionUtil.getMethod(BlockModelJson.class, "fromJson", new Class[]{String.class, int.class, int.class, int.class})
-                    .invoke(null, modelJson, 0, 0, 0);
-            return model;
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new ModelException(modelName, e);
-        }
+//        try {
+//            BlockModelJson model = (BlockModelJson) ReflectionUtil.getMethod(BlockModelJson.class, "fromJson", new Class[]{String.class, int.class, int.class, int.class})
+//                    .invoke(null, modelJson, 0, 0, 0);
+//            return model;
+//        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+//            throw new RuntimeException(e);
+//        }
+        return BasicBlockModel.fromJson(modelName, rotation, modelJson, override);
     }
 }

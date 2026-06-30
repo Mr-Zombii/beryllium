@@ -6,7 +6,6 @@
   "mixins": [
     "MixinBlockLoader",
     "MixinBlockState",
-    "MixinDummyBlockModel",
     "MixinGameSingletons",
     "MixinItemBlockModel"
   ],
