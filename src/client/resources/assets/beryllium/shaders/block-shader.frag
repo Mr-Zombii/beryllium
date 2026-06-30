@@ -1,14 +1,14 @@
 #version 420 core
 
-layout (binding = 2) uniform sampler2D u_albedoAtlas;
+layout (binding = 5) uniform sampler2D u_albedoAtlas;
 #ifdef HAS_EMISSIVE_ATLAS
-layout (binding = 3) uniform sampler2D u_emissiveAtlas;
+layout (binding = 6) uniform sampler2D u_emissiveAtlas;
 #endif
 #ifdef HAS_NORMAL_ATLAS
-layout (binding = 4) uniform sampler2D u_normalAtlas;
+layout (binding = 7) uniform sampler2D u_normalAtlas;
 #endif
 #ifdef HAS_MATERIAL_ATLAS
-layout (binding = 5) uniform sampler2D u_materialAtlas;
+layout (binding = 8) uniform sampler2D u_materialAtlas;
 #endif
 
 uniform vec3 u_sunDirection = vec3(0, 1, 0);
