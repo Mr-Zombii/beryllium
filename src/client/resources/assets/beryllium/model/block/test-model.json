@@ -3,19 +3,19 @@
   "id": "beryllium:model",
   "textures": {
     "root": {
-      "fileName": "beryllium:/textures/blocks/test.png",
-      "emissivefileName": "beryllium:/textures/blocks/test.png",
-      "aoMapFileName": "beryllium:/textures/blocks/test.png",
-      "normalMapFileName": "beryllium:/textures/blocks/test.png",
-      "roughnessMapFileName": "beryllium:/textures/blocks/test.png",
-      "metalnessMapFileName": "beryllium:/textures/blocks/test.png",
-      "depthMapFileName": "beryllium:/textures/blocks/test.png"
+      "texture": "beryllium:/textures/blocks/test.png",
+      "emissive": "beryllium:/textures/blocks/test.png",
+      "ao-map": "beryllium:/textures/blocks/test.png",
+      "normal-map": "beryllium:/textures/blocks/test.png",
+      "roughness-map": "beryllium:/textures/blocks/test.png",
+      "metalness-map": "beryllium:/textures/blocks/test.png",
+      "depth-map": "beryllium:/textures/blocks/test.png"
     },
     "texture-1": {
-      "fileName": "beryllium:/textures/blocks/test-1.png",
-      "emissivefileName": "beryllium:/textures/blocks/test-1.png",
-      "aoMapFileName": "beryllium:/textures/blocks/test-1.png",
-      "normalMapFileName": "beryllium:/textures/blocks/test-1.png"
+      "texture": "beryllium:/textures/blocks/test-1.png",
+      "emissive": "beryllium:/textures/blocks/test-1.png",
+      "ao-map": "beryllium:/textures/blocks/test-1.png",
+      "normal-map": "beryllium:/textures/blocks/test-1.png"
     },
     "texture-2": "beryllium:/textures/blocks/test.png",
     "texture-3": "beryllium:/textures/blocks/test.png"

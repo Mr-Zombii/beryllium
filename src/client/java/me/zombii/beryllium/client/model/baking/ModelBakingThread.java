@@ -29,7 +29,7 @@ public class ModelBakingThread implements Runnable {
                 if (count % 10 == 0) {
                     System.out.println("Baked " + count + "/" + models.size() + " texture maps.");
                 }
-                ModelBaker.bakeTextures(model.getTextureMap());
+                ModelBaker.bakeTextures(model);
             }
             System.out.println("Baked " + models.size() + "/" + models.size() + " texture maps.");
             ModelBaker.requestAtlasUpdateFromMainThread();

@@ -14,6 +14,7 @@ import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.objects.*;
 import me.zombii.beryllium.client.BerylliumAtlases;
 import me.zombii.beryllium.client.events.EventCollectModels;
+import me.zombii.beryllium.client.exceptions.ModelException;
 import me.zombii.beryllium.client.model.BerylliumModel;
 import me.zombii.beryllium.client.model.baking.parts.BakedFace;
 import me.zombii.beryllium.client.model.baking.parts.BaseQuad;
@@ -75,7 +76,9 @@ public class ModelBaker {
         return TextureAnimationMetadata.EMPTY;
     }
 
-    public static void bakeTextures(Map<String, TextureEntry> textureMap) {
+    public static void bakeTextures(BerylliumModel model) {
+        Map<String, TextureEntry> textureMap = model.getTextureMap();
+
         GLAtlas albedoAtlas = BerylliumAtlases.ALBEDO_ATLAS;
         GLAtlas emissionAtlas = BerylliumAtlases.EMISSIVE_ATLAS;
         GLAtlas normalAtlas = BerylliumAtlases.NORMAL_ATLAS;
@@ -123,7 +126,7 @@ public class ModelBaker {
                 int heights = aoImage.getHeight() + depthImage.getHeight() + metalnessImage.getHeight() + roughnessImage.getHeight();
 
                 if ((widths / 4 != aoImage.getWidth()) || (heights / 4 != aoImage.getHeight())) {
-                    throw new RuntimeException("Dimensions for aoImage, depthImage, metalnessImage, roughnessImage do not match each other!");
+                    throw new ModelException(model, "Dimensions for aoImage, depthImage, metalnessImage, roughnessImage do not match each other!");
                 }
 
                 PixelMap materialMap = new PixelMap(aoImage.getWidth(), aoImage.getHeight());

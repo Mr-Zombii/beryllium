@@ -8,6 +8,7 @@ import dev.puzzleshq.puzzleloader.loader.util.ReflectionUtil;
 import finalforeach.cosmicreach.rendering.blockmodels.BlockModel;
 import finalforeach.cosmicreach.rendering.blockmodels.BlockModelJson;
 import finalforeach.cosmicreach.util.Identifier;
+import me.zombii.beryllium.client.exceptions.ModelException;
 import me.zombii.beryllium.common.BerylliumCommon;
 
 import java.lang.reflect.InvocationTargetException;
@@ -105,7 +106,7 @@ public class NewClientModelLoader implements ISidedModelLoader {
                     .invoke(null, modelJson, 0, 0, 0);
             return model;
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new RuntimeException(e);
+            throw new ModelException(modelName, e);
         }
     }
 }

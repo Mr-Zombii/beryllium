@@ -6,6 +6,7 @@ import dev.puzzleshq.puzzleloader.loader.util.RawAssetLoader;
 import finalforeach.cosmicreach.util.Identifier;
 import finalforeach.cosmicreach.util.constants.Direction;
 import it.unimi.dsi.fastutil.objects.*;
+import me.zombii.beryllium.client.exceptions.ModelException;
 import me.zombii.beryllium.client.model.BerylliumModel;
 import me.zombii.beryllium.client.model.parts.Part;
 import me.zombii.beryllium.client.model.parts.PartFace;
@@ -85,7 +86,7 @@ public class BerylliumModelLoader {
         boolean debugMode = BerylliumConfig.INSTANCE.debugMode;
 
         JsonValue value = JsonValue.readHjson(json);
-        if (!value.isObject()) throw new IllegalArgumentException("Expected a json object as input, got a \"" + value.getType() + "\" for model \"" + name + "\"");
+        if (!value.isObject()) throw new ModelException(name, "Expected a json object as input, got type \"" + value.getType() + "\" instead");
         BerylliumModel model = new BerylliumModel(name);
 
         if (name.contains("water"))
@@ -106,15 +107,15 @@ public class BerylliumModelLoader {
                     parentModel = BerylliumModelLoader.loadVanillaBlockModel(parentModelName.trim(), IndependentAssetLoader.loadAsset(Identifier.of(parentModelName.trim())));
                 } catch (IOException ignore) {}
             }
-            if (parentModel == null) throw new IllegalStateException("Could not find the parent model \"" + parentModelName + "\" for model \"" + name + "\"");
+            if (parentModel == null) throw new ModelException(name, "Could not find the parent model \"" + parentModelName + "\"");
             foundParentModel = parentModel;
         }
 
         JsonValue textureValues = object.get("textures");
         if (textureValues != null) {
             if (!textureValues.isObject())
-                throw new IllegalArgumentException(
-                        "Expected json object expected for the texture dict in model \"" + name + "\", got type \"" + textureValues.getType() + "\""
+                throw new ModelException(name,
+                        "Expected json object for texture dict, got type \"" + textureValues.getType() + "\" instead"
                 );
 
             JsonObject textures = textureValues.asObject();
@@ -123,8 +124,8 @@ public class BerylliumModelLoader {
                 JsonValue textureValue = texture.getValue();
 
                 if (!textureValue.isObject())
-                    throw new IllegalArgumentException(
-                            "Expected json object for texture \"" + texture.getName() + "\", got type \"" + textureValue.getType() + "\" in model \"" + name + "\""
+                    throw new ModelException(name,
+                            "Expected json object for texture \"" + texture.getName() + "\", got type \"" + textureValue.getType() + "\" instead"
                     );
 
                 JsonObject textureObject = textureValue.asObject();
@@ -176,25 +177,23 @@ public class BerylliumModelLoader {
         JsonValue cuboidsValue = object.get("cuboids");
         if (cuboidsValue != null) {
             if (!cuboidsValue.isArray())
-                throw new IllegalArgumentException("Expected json array the cuboids list in model \"" + name + "\", not type \"" + cuboidsValue.getType() + "\"");
+                throw new ModelException(name, "Expected cuboids to be a json array, got type \"" + cuboidsValue.getType() + "\" instead");
 
             PartGroup rootGroup = model.getOrCreateGroup("root");
 
             JsonArray cuboids = cuboidsValue.asArray();
             cuboids.forEach(cuboid -> {
-                if (!cuboid.isObject()) throw new IllegalArgumentException("Expected cuboid to be a json object, got type \"" + cuboid.getType() + "\"");
+                if (!cuboid.isObject()) throw new ModelException(name, "Expected cuboid to be a json object, got type \"" + cuboid.getType() + "\" instead");
                 JsonObject cuboidObject = cuboid.asObject();
 
                 JsonValue localBoundsValue = cuboidObject.get("localBounds");
                 if (localBoundsValue == null || !localBoundsValue.isArray())
-                    throw new IllegalArgumentException(
-                            "Expected local bounds to be a json array not " + (localBoundsValue == null ?
-                                    "null" :
-                                    " type \"" + localBoundsValue.getType() + "\""
-                            ) + " in model \"" + name + "\""
+                    throw new ModelException(name,
+                            "Expected local bounds to be a json array, got " + (localBoundsValue == null ? "null" : "type \"" + localBoundsValue.getType() + "\""
+                            ) + "instead"
                     );
                 JsonArray localBounds = localBoundsValue.asArray();
-                if (localBounds.size() != 6) throw new IllegalArgumentException("Expected local bounds to be six numbers in length in model \"" + name + "\"");
+                if (localBounds.size() != 6) throw new ModelException(name, "Expected local bounds to be six numbers in length");
                 Part part = rootGroup.newPart(
                         localBounds.get(0).asFloat(),
                         localBounds.get(1).asFloat(),
@@ -206,8 +205,8 @@ public class BerylliumModelLoader {
                 part.setScale(cuboidObject.getFloat("inflate", 0));
                 JsonValue faceValues = cuboidObject.get("faces");
                 if (faceValues == null) return;
-                if (!faceValues.isObject()) throw new IllegalArgumentException(
-                        "Expected faces on cuboids to be a json object, not type \"" + faceValues.getType() + "\" in model \"" + name + "\""
+                if (!faceValues.isObject()) throw new ModelException(name,
+                        "Expected faces on cuboids to be a json object, got type \"" + faceValues.getType() + "\" instead"
                 );
                 JsonObject facesObject = faceValues.asObject();
                 PartFace[] faces = part.getFaces();
@@ -220,11 +219,11 @@ public class BerylliumModelLoader {
                         case "localPosY" -> Direction.POS_Y;
                         case "localNegZ" -> Direction.NEG_Z;
                         case "localPosZ" -> Direction.POS_Z;
-                        default -> throw new IllegalArgumentException("Unexpected face direction \"" + member.getName() + "\" in model \"" + name + "\"");
+                        default -> throw new ModelException(name, "Unexpected face direction \"" + member.getName() + "\"");
                     };
 
                     if (!member.getValue().isObject())
-                        throw new IllegalArgumentException("Expected face \"" + direction + "\" to be a json object, not type \"" + member.getValue().getType() + "\" in model \"" + name + "\"");
+                        throw new ModelException(name, "Expected face \"" + direction + "\" to be a json object, got type \"" + member.getValue().getType() + "\" instead");
 
                     JsonObject faceObject = member.getValue().asObject();
 
@@ -235,12 +234,12 @@ public class BerylliumModelLoader {
                     face.setUVRotation(faceObject.getInt("uvRotation", 0));
 
                     JsonValue uvValues = faceObject.get("uv");
-                    if (uvValues == null || !uvValues.isArray()) throw new IllegalArgumentException(
-                            "Expected uvs in face \"" + direction + "\" to be a json array, not " + (uvValues == null ? "\"null\"" : ("type \"" + uvValues.getType() + "\"")) + " in model \"" + name + "\""
+                    if (uvValues == null || !uvValues.isArray()) throw new ModelException(name,
+                            "Expected uvs in face \"" + direction + "\" to be a json array, got " + (uvValues == null ? "\"null\"" : ("type \"" + uvValues.getType() + "\" instead"))
                     );
                     JsonArray uvsArray = uvValues.asArray();
-                    if (uvsArray.size() != 4) throw new IllegalArgumentException(
-                            "Expected uv array in face \""  + direction + "\" to be four numbers in length in model \"" + name + "\""
+                    if (uvsArray.size() != 4) throw new ModelException(name,
+                            "Expected uv array in face \""  + direction + "\" to be four numbers in length"
                     );
 
                     int[] uvs = face.getUV();
@@ -303,7 +302,7 @@ public class BerylliumModelLoader {
 
         String modelName = newModel.getName();
         if (modelMap.containsKey(modelName)) {
-            if (!overwrite) throw new IllegalArgumentException("Tried to re-register a model that was already loaded!");
+            if (!overwrite) throw new ModelException(newModel, "Tried to re-register a model that was already loaded!");
 
             BerylliumModel model = modelMap.get(modelName);
             loadedModels.remove(model);
