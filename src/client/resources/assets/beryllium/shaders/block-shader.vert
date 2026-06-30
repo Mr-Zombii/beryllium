@@ -19,7 +19,7 @@ int UV_ROTATION = int(a_packedB.y >> 20u) & 0x3;
 int AO_LEVEL = int(a_packedB.y >> 18u) & 0x3;
 
 int BLOCK_LIGHT_LEVELS_PACKED = int(a_packedB.y >> 2u) & 0xFFFF;
-int VERTEX_TINT_PACKED = int(((a_packedB.y & 0x3u) << 14u) | ((a_packedB.x >> 18u) & 0x3FFFu));
+uint VERTEX_TINT_PACKED = uint(((a_packedB.y & 0x3u) << 14u) | ((a_packedB.x >> 18u) & 0x3FFFu));
 
 int FACE_UV_IDX = int((a_packedB.x >> 2u) & 0xFFFFu);
 int ALBEDO_UV_IDX = int(a_packedC.y >> 16u) & 0xFFFF;
