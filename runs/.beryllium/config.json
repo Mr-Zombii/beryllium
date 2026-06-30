@@ -3,5 +3,5 @@
   "enableEmissiveAtlas": true,
   "enableNormalAtlas": false,
   "enableMaterialAtlas": false,
-  "enableBerylliumRendering": false
+  "enableBerylliumRendering": true
 }
