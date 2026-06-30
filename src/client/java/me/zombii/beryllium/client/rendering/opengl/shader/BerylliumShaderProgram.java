@@ -37,7 +37,7 @@ public class BerylliumShaderProgram {
         this.fragmentShader = fragmentShader;
     }
 
-    private int programID;
+    private int programID = -1;
     private int vertexShaderID;
     private int fragmentShaderID;
 
