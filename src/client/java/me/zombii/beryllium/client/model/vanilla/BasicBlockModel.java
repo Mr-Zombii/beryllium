@@ -162,6 +162,13 @@ public class BasicBlockModel extends BlockModel {
                 this.boundingBox.ext(box);
             }
         }
+
+        if (this.boundingBox.max.epsilonEquals(this.boundingBox.min)) {
+            this.boundingBox.min.set(0.0F, 0.0F, 0.0F);
+            this.boundingBox.max.set(1.0F, 1.0F, 1.0F);
+        }
+
+        this.boundingBox.update();
     }
 
     public static BasicBlockModel fromJson(String name, float[] rotation, String json, boolean override) {
