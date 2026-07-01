@@ -1,7 +1,15 @@
 {
-  "parent-id": "beryllium:parentModel",
-  "id": "beryllium:model",
+  "id": "beryllium:parentModel",
   "textures": {
+    "root": {
+      "texture": "beryllium:/textures/blocks/test.png",
+      "emissive": "beryllium:/textures/blocks/test.png",
+      "ao-map": "beryllium:/textures/blocks/test.png",
+      "normal-map": "beryllium:/textures/blocks/test.png",
+      "roughness-map": "beryllium:/textures/blocks/test.png",
+      "metalness-map": "beryllium:/textures/blocks/test.png",
+      "depth-map": "beryllium:/textures/blocks/test.png"
+    },
     "texture-1": {
       "texture": "beryllium:/textures/blocks/test-1.png",
       "emissive": "beryllium:/textures/blocks/test-1.png",
@@ -9,14 +17,13 @@
       "normal-map": "beryllium:/textures/blocks/test-1.png"
     },
     "texture-2": "beryllium:/textures/blocks/test.png",
-    "texture-3": "beryllium:/textures/blocks/test.png"
+    "texture-3": "beryllium:/textures/blocks/testdiosafjiojfio.png"
   },
   "attributes": {
     "isTransparent": true
   },
   "groups": {
     "root": {
-      "parentName": "root",
       "rotation": [0, 0, 0],
       "pivot": [0, 0, 0],
       "parts": [

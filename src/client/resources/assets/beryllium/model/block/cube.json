@@ -1,0 +1,42 @@
+{
+  "id": "beryllium:cube",
+  "textures": {
+    "all": "beryllium:textures/missing/missing-texture.png"
+  },
+  "groups": {
+    "root": {
+      "parts": [
+        {
+          "pos": [0, 0, 0],
+          "size": [16, 16, 16],
+          "faces": {
+            "NegX": {
+              "uv": [ 0, 0, 16, 16 ],
+              "texture": "all"
+            },
+            "PosX": {
+              "uv": [ 0, 0, 16, 16 ],
+              "texture": "all"
+            },
+            "NegY": {
+              "uv": [ 0, 0, 16, 16 ],
+              "texture": "all"
+            },
+            "PosY": {
+              "uv": [ 0, 0, 16, 16 ],
+              "texture": "all"
+            },
+            "NegZ": {
+              "uv": [ 0, 0, 16, 16 ],
+              "texture": "all"
+            },
+            "PosZ": {
+              "uv": [ 0, 0, 16, 16 ],
+              "texture": "all"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

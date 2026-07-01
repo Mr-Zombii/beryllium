@@ -2,6 +2,15 @@
   "parent-id": "beryllium:parentModel",
   "id": "beryllium:model",
   "textures": {
+    "root": {
+      "texture": "beryllium:/textures/blocks/test.png",
+      "emissive": "beryllium:/textures/blocks/test.png",
+      "ao-map": "beryllium:/textures/blocks/test.png",
+      "normal-map": "beryllium:/textures/blocks/test.png",
+      "roughness-map": "beryllium:/textures/blocks/test.png",
+      "metalness-map": "beryllium:/textures/blocks/test.png",
+      "depth-map": "beryllium:/textures/blocks/test.png"
+    },
     "texture-1": {
       "texture": "beryllium:/textures/blocks/test-1.png",
       "emissive": "beryllium:/textures/blocks/test-1.png",
@@ -16,6 +25,28 @@
   },
   "groups": {
     "root": {
+      "rotation": [1, 1, 1],
+      "pivot": [0, 0, 0],
+      "parts": [
+        {
+          "pos": [0, 0, 0],
+          "size": [0, 0, 0],
+          "pivot": [0, 0, 0],
+          "rotation": [0, 0, 0],
+          "faces": {
+            "NegX": {
+              "uv": [ 0, 0, 16, 16 ],
+              "texture": "texture-1",
+              "uvRotation": 90,
+              "tintIndex": 10,
+              "ambientOcclusion": true,
+              "cullFace": false
+            }
+          }
+        }
+      ]
+    },
+    "test": {
       "parentName": "root",
       "rotation": [0, 0, 0],
       "pivot": [0, 0, 0],

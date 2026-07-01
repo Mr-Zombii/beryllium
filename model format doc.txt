@@ -1,0 +1,3 @@
+child models inherit textures and group from parents.
+
+so if the parent has the group example and the child does not it will take the parents group but if the child does have it the child one will be used

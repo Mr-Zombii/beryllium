@@ -12,7 +12,7 @@ public class PartFace implements HJsonSerializable {
     private final int[] uv = new int[]{0, 0, 16, 16};
     private boolean useAO = true;
     private final int direction;
-    private boolean isCulled;
+    private boolean isCulled = true;
     private int uvRotation;
     private int tintIndex = -1;
     private String textureID;

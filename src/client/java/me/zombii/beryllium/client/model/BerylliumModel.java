@@ -139,6 +139,9 @@ public class BerylliumModel implements Iterable<PartGroup>, HJsonSerializable {
     public JsonValue toHJson() {
         JsonObject obj = new JsonObject();
         JsonObject textures = new JsonObject();
+
+        obj.set("id", this.id.toString());
+
         this.textureMap.forEach((name, texture) -> {
             textures.set(name, texture.toHJson());
         });
@@ -149,8 +152,6 @@ public class BerylliumModel implements Iterable<PartGroup>, HJsonSerializable {
             groups.set(group.getName(), group.toHJson());
         }
         obj.add("groups", groups);
-
-        obj.set("id", this.id.toString());
         obj.set("renderLayer", this.renderLayerId.toString());
 
         return obj;
