@@ -43,6 +43,7 @@ public class BasicBlockModel extends BlockModel {
     public BasicBlockModel(String name, float[] rotation, BoundingBox[] boundingBoxes, CollisionTriangle[] tris) {
         System.out.println("Models made" + ++modelsMade + " " + name + " " + Arrays.toString(rotation) + " " + Arrays.toString(boundingBoxes));
         this.boxes = boundingBoxes;
+        this.calculateBoundingBox();
         this.rotation = rotation;
         this.tris = tris;
         this.empty = false;
@@ -148,6 +149,19 @@ public class BasicBlockModel extends BlockModel {
                 IndependentAssetLoader.loadAsset(Identifier.of("base:models/blocks/cube.json")).getString(),
                 false
         );
+    }
+
+    // This is needed as the game first checks against the master bounding box
+    // before doing any collision with the block
+    private void calculateBoundingBox(){
+        for (BoundingBox box : boxes){
+            if (this.boundingBox.max.epsilonEquals(this.boundingBox.min)){
+                this.boundingBox.set(box);
+            }
+            else {
+                this.boundingBox.ext(box);
+            }
+        }
     }
 
     public static BasicBlockModel fromJson(String name, float[] rotation, String json, boolean override) {
