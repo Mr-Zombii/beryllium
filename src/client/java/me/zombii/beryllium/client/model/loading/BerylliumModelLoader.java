@@ -1,6 +1,8 @@
 package me.zombii.beryllium.client.model.loading;
 
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.math.Plane;
+import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Json;
 import dev.puzzleshq.puzzleloader.cosmic.game.util.IndependentAssetLoader;
@@ -244,6 +246,7 @@ public class BerylliumModelLoader {
                             "Expected uv array in face \""  + direction + "\" to be four numbers in length"
                     );
 
+                    // TODO: make UVs dependent on texture size, at least for vanilla models, for parity with vanilla behaviour
                     int[] uvs = face.getUV();
                     uvs[0] = uvsArray.get(0).asInt();
                     uvs[1] = uvsArray.get(1).asInt();
@@ -282,6 +285,102 @@ public class BerylliumModelLoader {
             model.setTransparent(object.getBoolean("isTransparent", false));
         } else if (foundParentModel != null) {
             model.setTransparent(foundParentModel.isTransparent());
+        }
+
+        JsonValue planesValue = object.get("planes");
+        if (planesValue != null){
+            if (!planesValue.isArray())
+                throw new ModelException(name, "Expected planes to be a json array, got type \"" + planesValue.getType() + "\" instead");
+
+            PartGroup rootGroup = model.getOrCreateGroup("root");
+            JsonArray planes = planesValue.asArray();
+            planes.forEach(plane -> {
+                if (!plane.isObject())
+                    throw new ModelException(name, "Expected plane to be a json object, got type \"" + plane.getType() + "\" instead");
+                JsonObject planeObject = plane.asObject();
+
+                JsonValue verticesValue = planeObject.get("vertices");
+                if (verticesValue == null || !verticesValue.isArray())
+                    throw new ModelException(name,
+                            "Expected vertices to be a json array, got " + (verticesValue == null ? "null" : "type \"" + verticesValue.getType() + "\""
+                            ) + "instead"
+                    );
+
+                JsonArray vertices = verticesValue.asArray();
+                if (vertices.size() != 12)
+                    throw new ModelException(name, "Expected vertices to be twelve numbers in length");
+
+
+                Vector3 v1 = new Vector3(vertices.get(0).asFloat(), vertices.get(1).asFloat(), vertices.get(2).asFloat());
+                Vector3 v2 = new Vector3(vertices.get(3).asFloat(), vertices.get(4).asFloat(), vertices.get(5).asFloat());
+                Vector3 v3 = new Vector3(vertices.get(6).asFloat(), vertices.get(7).asFloat(), vertices.get(8).asFloat());
+                Vector3 v4 = new Vector3(vertices.get(9).asFloat(), vertices.get(10).asFloat(), vertices.get(11).asFloat());
+
+                Plane checkPlane = new Plane(v1, v2, v4);
+                if (checkPlane.distance(v3) > 0.01)
+                    throw new ModelException(name, "Plane vertices aren't on a single plane");
+
+                float length = v1.dst(v2);
+                float width = v1.dst(v4);
+                Vector3 center = v1.cpy().add(v3).scl(0.5f);
+
+                Quaternion rotQuaternion = new Quaternion();
+                Vector3 xAxis = v2.cpy().sub(v1).nor();
+                Vector3 zAxis = v4.cpy().sub(v1).nor();
+                Vector3 yAxis = checkPlane.getNormal();
+                rotQuaternion.setFromAxes(xAxis.x, xAxis.y, xAxis.z, yAxis.x, yAxis.y, yAxis.z, zAxis.x, zAxis.y, zAxis.z);
+
+                Part part = rootGroup.newPart(
+                        center.x,
+                        center.y,
+                        center.z,
+                        length,
+                        0,
+                        width
+                ).setPivot(length / 2.0f, width / 2.0f, 0).setRotation(
+                        rotQuaternion.getYaw(),
+                        rotQuaternion.getPitch(),
+                        rotQuaternion.getRoll()
+                );
+
+                PartFace[] faces = part.getFaces();
+                Arrays.fill(faces, null);
+
+                JsonValue uvValues = planeObject.get("uv");
+                if (uvValues == null || !uvValues.isArray()) throw new ModelException(name,
+                        "Expected plane uvs to be a json array, got " + (uvValues == null ? "\"null\"" : ("type \"" + uvValues.getType() + "\" instead"))
+                );
+                JsonArray uvsArray = uvValues.asArray();
+                if (uvsArray.size() != 8) throw new ModelException(name,
+                        "Expected plane uv to be eight numbers in length"
+                );
+
+                PartFace topFace = faces[Direction.POS_Y.ordinal()] = new PartFace(Direction.POS_Y);
+                topFace.setCulled(planeObject.getBoolean("cullFace", false));
+                topFace.setAO(false);
+                topFace.setTextureID(planeObject.getString("texture", null));
+                topFace.setUVRotation(planeObject.getInt("uvRotation", 0));
+
+                PartFace bottomFace = faces[Direction.NEG_Y.ordinal()] = new PartFace(Direction.NEG_Y);
+                bottomFace.setCulled(planeObject.getBoolean("cullFace", false));
+                bottomFace.setAO(false);
+                bottomFace.setTextureID(planeObject.getString("texture", null));
+                bottomFace.setUVRotation(360 - planeObject.getInt("uvRotation", 0));
+
+                // TODO: make UVs dependent on texture size, at least for vanilla models, for parity with vanilla behaviour
+                // multiplication by four here is temporary just for debugging purposes
+                int[] topUvs = topFace.getUV();
+                topUvs[0] = (int) (uvsArray.get(0).asFloat() * 4);
+                topUvs[1] = (int) (uvsArray.get(1).asFloat() * 4);
+                topUvs[2] = (int) (uvsArray.get(4).asFloat() * 4);
+                topUvs[3] = (int) (uvsArray.get(5).asFloat() * 4);
+
+                int[] bottomUvs = bottomFace.getUV();
+                bottomUvs[0] = (int) (uvsArray.get(2).asFloat() * 4);
+                bottomUvs[1] = (int) (uvsArray.get(3).asFloat() * 4);
+                bottomUvs[2] = (int) (uvsArray.get(6).asFloat() * 4);
+                bottomUvs[3] = (int) (uvsArray.get(7).asFloat() * 4);
+            });
         }
 
         if (debugMode) LOGGER.log(Level.INFO, "Loading Vanilla Block Model \"{}\"", name);
