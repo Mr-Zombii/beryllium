@@ -1,0 +1,10 @@
+{
+    "stringId": "beryllium:debug",
+    "blockStates":
+    {
+        "default": 
+        {
+            "modelName": "beryllium:cube"
+        }
+    }
+}

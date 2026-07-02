@@ -11,6 +11,7 @@ public class BerylliumConfig {
     public static BerylliumConfig INSTANCE = getOrLoad();
 
     public boolean debugMode = true;
+    public boolean enableDebugBlock = true;
     public boolean enableEmissiveAtlas = false;
     public boolean enableNormalAtlas = false;
     public boolean enableMaterialAtlas = false;

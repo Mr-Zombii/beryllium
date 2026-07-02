@@ -4,6 +4,7 @@ import com.badlogic.gdx.utils.JsonWriter;
 import dev.puzzleshq.puzzleloader.cosmic.game.blockloader.generation.model.BlockModelGenerator;
 import dev.puzzleshq.puzzleloader.cosmic.game.blockloader.loading.ISidedModelLoader;
 import dev.puzzleshq.puzzleloader.cosmic.game.util.IndependentAssetLoader;
+import dev.puzzleshq.puzzleloader.loader.util.RawAssetLoader;
 import dev.puzzleshq.puzzleloader.loader.util.ReflectionUtil;
 import finalforeach.cosmicreach.rendering.blockmodels.BlockModel;
 import finalforeach.cosmicreach.rendering.blockmodels.BlockModelJson;
@@ -91,6 +92,16 @@ public class NewClientModelLoader implements ISidedModelLoader {
     public BlockModel loadModel(String modelName, float[] rotation, boolean override) {
         if (!override && CACHE.containsKey(modelName)) return CACHE.get(modelName);
         if (override) BerylliumModelLoader.unregister(modelName);
+
+        if (!modelName.contains(".json")) {
+            BerylliumModelLoader.addToLoadingList(modelName);
+
+            //TODO make this not just a cube ( help needed)
+            RawAssetLoader.RawFileHandle fileHandle = IndependentAssetLoader.loadAsset(Identifier.of("base:models/blocks/cube.json"));
+            BlockModel model = fromString("beryllium:cube", new float[]{0.0F, 0.0F, 0.0F}, fileHandle.getString(), override);
+            CACHE.put(modelName, model);
+            return model;
+        }
 
         String json = IndependentAssetLoader.loadAsset(Identifier.of(modelName)).getString();
 

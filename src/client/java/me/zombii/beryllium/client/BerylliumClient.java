@@ -7,12 +7,15 @@ import dev.puzzleshq.puzzleloader.cosmic.game.util.IndependentAssetLoader;
 import dev.puzzleshq.puzzleloader.loader.launch.Piece;
 import dev.puzzleshq.puzzleloader.loader.mod.entrypoint.client.ClientModInit;
 import dev.puzzleshq.puzzleloader.loader.mod.entrypoint.client.ClientPostModInit;
+import finalforeach.cosmicreach.blocks.Block;
 import finalforeach.cosmicreach.singletons.GameSingletons;
 import finalforeach.cosmicreach.util.Identifier;
+import finalforeach.cosmicreach.util.assets.GameAssetLoader;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import me.zombii.beryllium.client.events.EventCollectModels;
 import me.zombii.beryllium.client.events.EventCollectRenderLayers;
+import me.zombii.beryllium.client.events.EventDebugBlockLoadingQueue;
 import me.zombii.beryllium.client.model.BerylliumModel;
 import me.zombii.beryllium.client.model.baking.ModelBakingThread;
 import me.zombii.beryllium.client.model.loading.NewBlockModelInstantiator;
@@ -70,6 +73,15 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
             });
 
             Gdx.app.postRunnable(RenderLayers::collectAndCompile);
+        }
+    }
+
+    @SubscribeEvent
+    public void onEvent(EventDebugBlockLoadingQueue event) {
+        if (BerylliumConfig.INSTANCE.enableDebugBlock) {
+            event.registerToQueue(() -> {
+                Block.loadBlock(GameAssetLoader.loadAsset(Identifier.of(BerylliumCommon.NAMESPACE, "blocks/debug.json")));
+            });
         }
     }
 

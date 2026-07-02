@@ -4,7 +4,6 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Plane;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.Json;
 import dev.puzzleshq.puzzleloader.cosmic.game.util.IndependentAssetLoader;
 import dev.puzzleshq.puzzleloader.loader.util.RawAssetLoader;
 import finalforeach.cosmicreach.util.Identifier;
@@ -25,6 +24,7 @@ import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -38,6 +38,7 @@ public class BerylliumModelLoader {
     private static final Object2ObjectMap<String, BerylliumModel> modelMap = new Object2ObjectArrayMap<>();
 
     private static final Object2ObjectMap<String, String> modelIdToPath = new Object2ObjectArrayMap<>();
+    public static final List<String> blockIdsToLoad = new ArrayList<>();
 
     public static BerylliumModel getModel(String name) {
         return modelMap.get(name);
@@ -414,13 +415,12 @@ public class BerylliumModelLoader {
         return register(model);
     }
 
-    //TODO make event for this
-    public static void registerBerylliumBlockModelID(String filePathId, String json) {
+    public static @Nullable String registerBerylliumBlockModelID(String filePathId, String json) {
         JsonValue value = JsonValue.readHjson(json);
         if (!value.isObject()) throw new ModelException(filePathId, "Expected a json object as input, got type \"" + value.getType() + "\" instead");
         JsonObject object = value.asObject();
 
-        if (object.get("id") == null) return;
+        if (object.get("id") == null) return null;
         if (!object.get("id").isString()) throw new InvalidJsonTypeException(filePathId, "id", "string", object.get("id").getType().name());
         String id = object.get("id").asString();
 
@@ -429,7 +429,12 @@ public class BerylliumModelLoader {
         if (!modelIdToPath.containsKey(id)){
             modelIdToPath.put(id, filePathId);
         }
+        return id;
+    }
 
+    public static void addToLoadingList(String modelID) {
+        if (BerylliumConfig.INSTANCE.debugMode) LOGGER.log(Level.INFO, "Added Block Model ID to loading list \"{}\"", modelID);
+        blockIdsToLoad.add(modelID);
     }
 
     public static BerylliumModel loadBerylliumBlockModel(String modelID, RawAssetLoader.RawFileHandle handle) {
@@ -448,7 +453,7 @@ public class BerylliumModelLoader {
         if (object.get("id") == null) throw new MissingJsonFieldException(filePathId, "string", "id");
         if (!object.get("id").isString()) throw new InvalidJsonTypeException(filePathId, "id", "string", object.get("id").getType().name());
         String id = object.get("id").asString();
-        //TODO make better
+        //TODO make better ( what the fuck did i mean???? )
         if (!modelIdToPath.containsKey(id)) throw new ModelException(filePathId, "Tried to load model before its ID '" + id + "' was registered");
 
         if (modelMap.containsKey(id)) {
