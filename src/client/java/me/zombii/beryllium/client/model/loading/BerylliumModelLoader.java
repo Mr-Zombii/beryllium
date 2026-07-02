@@ -323,24 +323,52 @@ public class BerylliumModelLoader {
                 float length = v1.dst(v2);
                 float width = v1.dst(v4);
                 Vector3 center = v1.cpy().add(v3).scl(0.5f);
+                Vector3 partPos = center.cpy();
+                partPos.x -= length / 2;
+                partPos.y -= width / 2;
 
-                Quaternion rotQuaternion = new Quaternion();
                 Vector3 xAxis = v2.cpy().sub(v1).nor();
                 Vector3 zAxis = v4.cpy().sub(v1).nor();
-                Vector3 yAxis = checkPlane.getNormal();
+                Vector3 yAxis = xAxis.cpy().crs(zAxis).scl(-1);
+                System.out.println("X axis: " + xAxis + ", Y axis: " + yAxis + ", Z axis:" + zAxis);
+
+                Quaternion rotQuaternion = new Quaternion();
                 rotQuaternion.setFromAxes(xAxis.x, xAxis.y, xAxis.z, yAxis.x, yAxis.y, yAxis.z, zAxis.x, zAxis.y, zAxis.z);
+                Vector3 eulerAngles = new Vector3();
+                eulerAngles.z = rotQuaternion.getAngleAround(Vector3.Z);
+                rotQuaternion.mul(new Quaternion(Vector3.Z, -eulerAngles.z));
+                eulerAngles.y = rotQuaternion.getAngleAround(Vector3.Y);
+                rotQuaternion.mul(new Quaternion(Vector3.Y, -eulerAngles.y));
+                eulerAngles.x = rotQuaternion.getAngleAround(Vector3.X);
+                System.out.println("Euler angles: " + eulerAngles);
+
+                eulerAngles.x %= 360;
+                eulerAngles.y %= 360;
+                eulerAngles.z %= 360;
+                if (eulerAngles.x > 180){
+                    eulerAngles.x %= 180;
+                    eulerAngles.x -= 90;
+                }
+                if (eulerAngles.y > 180){
+                    eulerAngles.y %= 180;
+                    eulerAngles.y -= 90;
+                }
+                if (eulerAngles.z > 180){
+                    eulerAngles.z %= 180;
+                    eulerAngles.z -= 90;
+                }
+                eulerAngles.scl(-1);
+                System.out.println("Corrected Euler angles: " + eulerAngles);
 
                 Part part = rootGroup.newPart(
-                        center.x,
-                        center.y,
-                        center.z,
+                        partPos.x,
+                        partPos.y,
+                        partPos.z,
                         length,
-                        0,
-                        width
-                ).setPivot(length / 2.0f, width / 2.0f, 0).setRotation(
-                        rotQuaternion.getYaw(),
-                        rotQuaternion.getPitch(),
-                        rotQuaternion.getRoll()
+                        width,
+                        0
+                ).setPivot(center).setRotation(
+                        eulerAngles
                 );
 
                 PartFace[] faces = part.getFaces();
@@ -355,31 +383,30 @@ public class BerylliumModelLoader {
                         "Expected plane uv to be eight numbers in length"
                 );
 
-                PartFace topFace = faces[Direction.POS_Y.ordinal()] = new PartFace(Direction.POS_Y);
+                PartFace topFace = faces[Direction.POS_Z.ordinal()] = new PartFace(Direction.POS_Z);
                 topFace.setCulled(planeObject.getBoolean("cullFace", false));
                 topFace.setAO(false);
                 topFace.setTextureID(planeObject.getString("texture", null));
                 topFace.setUVRotation(planeObject.getInt("uvRotation", 0));
 
-                PartFace bottomFace = faces[Direction.NEG_Y.ordinal()] = new PartFace(Direction.NEG_Y);
+                PartFace bottomFace = faces[Direction.NEG_Z.ordinal()] = new PartFace(Direction.NEG_Z);
                 bottomFace.setCulled(planeObject.getBoolean("cullFace", false));
                 bottomFace.setAO(false);
                 bottomFace.setTextureID(planeObject.getString("texture", null));
                 bottomFace.setUVRotation(360 - planeObject.getInt("uvRotation", 0));
 
                 // TODO: make UVs dependent on texture size, at least for vanilla models, for parity with vanilla behaviour
-                // multiplication by four here is temporary just for debugging purposes
                 int[] topUvs = topFace.getUV();
-                topUvs[0] = (int) (uvsArray.get(0).asFloat() * 4);
-                topUvs[1] = (int) (uvsArray.get(1).asFloat() * 4);
-                topUvs[2] = (int) (uvsArray.get(4).asFloat() * 4);
-                topUvs[3] = (int) (uvsArray.get(5).asFloat() * 4);
+                topUvs[0] = uvsArray.get(0).asInt();
+                topUvs[1] = uvsArray.get(1).asInt();
+                topUvs[2] = uvsArray.get(4).asInt();
+                topUvs[3] = uvsArray.get(5).asInt();
 
                 int[] bottomUvs = bottomFace.getUV();
-                bottomUvs[0] = (int) (uvsArray.get(2).asFloat() * 4);
-                bottomUvs[1] = (int) (uvsArray.get(3).asFloat() * 4);
-                bottomUvs[2] = (int) (uvsArray.get(6).asFloat() * 4);
-                bottomUvs[3] = (int) (uvsArray.get(7).asFloat() * 4);
+                bottomUvs[0] = uvsArray.get(2).asInt();
+                bottomUvs[1] = uvsArray.get(3).asInt();
+                bottomUvs[2] = uvsArray.get(6).asInt();
+                bottomUvs[3] = uvsArray.get(7).asInt();
             });
         }
 
