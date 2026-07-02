@@ -19,7 +19,7 @@ public class NewBlockModelInstantiator implements IBlockModelInstantiator {
 
     @Override
     public void createGeneratedModelInstance(BlockState blockState, BlockModel originalModel, String parentModelName, String genModelName, float[] rotation) {
-        String modelName = NewClientModelLoader.CACHE.entrySet().stream().filter((e) -> e.getValue() == originalModel).findFirst().get().getKey();
+        String modelName = NewClientModelLoader.CACHE.entrySet().stream().filter((e) -> e.getKey().equals(blockState.modelName)).findFirst().get().getKey();
 
         BerylliumModel baseModel = BerylliumModelLoader.getModel(modelName);
         BerylliumModel parentModel = BerylliumModelLoader.loadVanillaBlockModel(parentModelName);
@@ -59,7 +59,8 @@ public class NewBlockModelInstantiator implements IBlockModelInstantiator {
         BlockModel genModel = ISidedModelLoader.getInstance().loadModel(genModelName, modelJson, rotation);
         genModel.cullsSelf = originalModel.cullsSelf;
         genModel.isTransparent = originalModel.isTransparent;
-        BerylliumModelLoader.register(model, true);
+        BerylliumModelLoader.unregister(genModelName);
+        BerylliumModelLoader.register(model);
 
         blockState.setBlockModel(genModelName);
     }

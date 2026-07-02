@@ -44,10 +44,11 @@ public class NewClientModelLoader implements ISidedModelLoader {
 
     @Override
     public void loadModel(BlockModelGenerator modelGenerator, boolean coverAllRotations, boolean override) {
-        if (!override && CACHE.containsKey(modelGenerator.getName())) return;
-        if (override) BerylliumModelLoader.unregister(modelGenerator.getName());
-
         String modelName = modelGenerator.getName();
+
+        if (!override && CACHE.containsKey(modelName)) return;
+        if (override) BerylliumModelLoader.unregister(modelName);
+
         String modelJson = modelGenerator.toJson().toString();
         BerylliumModelLoader.loadVanillaBlockModel(modelName, modelJson);
 
@@ -74,10 +75,11 @@ public class NewClientModelLoader implements ISidedModelLoader {
 
     @Override
     public BlockModel loadModel(BlockModelGenerator modelGenerator, float[] rotation, boolean override) {
-        if (!override && CACHE.containsKey(modelGenerator.getName())) return CACHE.get(modelGenerator.getName());
-        if (override) BerylliumModelLoader.unregister(modelGenerator.getName());
-
         String modelName = modelGenerator.getName();
+
+        if (!override && CACHE.containsKey(modelName)) return CACHE.get(modelName);
+        if (override) BerylliumModelLoader.unregister(modelName);
+
         String modelJson = modelGenerator.toJson().toString();
         BerylliumModelLoader.loadVanillaBlockModel(modelName, modelJson);
         BlockModel model = fromString(modelName, rotation, modelJson, override);
