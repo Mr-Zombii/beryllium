@@ -626,7 +626,8 @@ public class BerylliumModelLoader {
 
             model.setTransparent(getJsonBoolean(filePathId, attributes, "isTransparent", false));
 
-            model.setRenderLayer(Identifier.of(getJsonString(filePathId, attributes, "renderLayerId", null)));
+            String renderLayerId = getJsonString(filePathId, attributes, "renderLayerId", null);
+            model.setRenderLayer(renderLayerId != null ? Identifier.of(renderLayerId) : null);
         }
 
         if (debugMode) LOGGER.log(Level.INFO, "Loading Beryllium Block Model \"{}\"", filePathId);
