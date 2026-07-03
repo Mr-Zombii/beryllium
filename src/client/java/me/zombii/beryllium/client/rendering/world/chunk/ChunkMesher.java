@@ -74,6 +74,12 @@ public class ChunkMesher {
                     BerylliumModel model = BerylliumModelLoader.getModel(self.modelName);
                     if (!model.getRenderLayer().getId().equals(layer.getId())) continue;
 
+                    rotateMasks(
+                            self.rotation[0],
+                            self.rotation[1],
+                            self.rotation[2]
+                    );
+
                     int visibleFaces = getVisibleFaces(self, model, x, y, z);
                     getSkyLight(TMP_SKY_LIGHT, x, y, z);
                     getBlockLight(TMP_BLOCK_LIGHT, x, y, z);
@@ -130,6 +136,20 @@ public class ChunkMesher {
 
     private static final int[] rotatedMasks = new int[6];
 
+    private static final int[] sides = {
+            -1,  0,  0,
+             1,  0,  0,
+             0, -1,  0,
+             0,  1,  0,
+             0,  0, -1,
+             0,  0,  1,
+    };
+    private static final int[] sideIndices = {
+            0, 1, 2, 3, 4, 5
+    };
+
+    private static final int[] rotatedIndices = new int[6];
+
     private static int getVisibleFaces(BlockState self, BerylliumModel model, int x, int y, int z) {
         float xAxisRot = self.rotation[0]; // Affects Y and Z faces
         float yAxisRot = self.rotation[1]; // Affects X and Z faces
@@ -139,8 +159,6 @@ public class ChunkMesher {
         boolean doCullXFaces = (zAxisRot % 90 == 0) && (yAxisRot % 90 == 0);
         boolean doCullYFaces = (zAxisRot % 90 == 0) && (xAxisRot % 90 == 0);
         boolean doCullZFaces = (yAxisRot % 90 == 0) && (xAxisRot % 90 == 0);
-
-        rotateMasks(xAxisRot, yAxisRot, zAxisRot);
 
         int visibilityMask = BakedFace.NO_CULL_FACES;
 
@@ -166,10 +184,19 @@ public class ChunkMesher {
         int yRotCount = (int) Math.floor(yAxisRot / 90); // change X and Z
         int xRotCount = (int) Math.floor(xAxisRot / 90); // change Y and Z
 
+        int zInvRotCount = (int) Math.floor((360 - zAxisRot) / 90); // change X and Y
+        int yInvRotCount = (int) Math.floor((360 - yAxisRot) / 90); // change X and Z
+        int xInvRotCount = (int) Math.floor((360 - xAxisRot) / 90); // change Y and Z
+
+        System.arraycopy(sideIndices, 0, rotatedIndices, 0, 6);
+        rotate(rotatedIndices, 2, zInvRotCount);
+        rotate(rotatedIndices, 1, yInvRotCount);
+        rotate(rotatedIndices, 0, xInvRotCount);
+
         System.arraycopy(cullingMasks, 0, rotatedMasks, 0, 6);
-        rotate(2, zRotCount);
-        rotate(1, yRotCount);
-        rotate(0, xRotCount);
+        rotate(rotatedMasks, 2, zRotCount);
+        rotate(rotatedMasks, 1, yRotCount);
+        rotate(rotatedMasks, 0, xRotCount);
     }
 
     private static final int DIR_NEG_X = 0;
@@ -179,91 +206,91 @@ public class ChunkMesher {
     private static final int DIR_NEG_Z = 4;
     private static final int DIR_POS_Z = 5;
 
-    private static void rotate(int axis, int count) {
+    private static void rotate(int[] array, int axis, int count) {
         switch (axis) {
             // Z-AXIS
             case 2 -> {
-                int ny = rotatedMasks[DIR_NEG_Y];
-                int py = rotatedMasks[DIR_POS_Y];
-                int nx = rotatedMasks[DIR_NEG_X];
-                int px = rotatedMasks[DIR_POS_X];
+                int ny = array[DIR_NEG_Y];
+                int py = array[DIR_POS_Y];
+                int nx = array[DIR_NEG_X];
+                int px = array[DIR_POS_X];
 
                 switch (count) {
                     case 1 -> {
-                        rotatedMasks[DIR_POS_Y] = nx;
-                        rotatedMasks[DIR_NEG_Y] = px;
-                        rotatedMasks[DIR_POS_X] = py;
-                        rotatedMasks[DIR_NEG_X] = ny;
+                        array[DIR_POS_Y] = nx;
+                        array[DIR_NEG_Y] = px;
+                        array[DIR_POS_X] = py;
+                        array[DIR_NEG_X] = ny;
                     }
                     case 2 -> {
-                        rotatedMasks[DIR_POS_Y] = ny;
-                        rotatedMasks[DIR_NEG_Y] = py;
-                        rotatedMasks[DIR_POS_X] = nx;
-                        rotatedMasks[DIR_NEG_X] = px;
+                        array[DIR_POS_Y] = ny;
+                        array[DIR_NEG_Y] = py;
+                        array[DIR_POS_X] = nx;
+                        array[DIR_NEG_X] = px;
                     }
                     case 3 -> {
-                        rotatedMasks[DIR_POS_Y] = px;
-                        rotatedMasks[DIR_NEG_Y] = nx;
-                        rotatedMasks[DIR_POS_X] = ny;
-                        rotatedMasks[DIR_NEG_X] = py;
+                        array[DIR_POS_Y] = px;
+                        array[DIR_NEG_Y] = nx;
+                        array[DIR_POS_X] = ny;
+                        array[DIR_NEG_X] = py;
                     }
                     default -> {}
                 }
             }
             // Y-AXIS
             case 1 -> {
-                int nx = rotatedMasks[DIR_NEG_X];
-                int px = rotatedMasks[DIR_POS_X];
-                int nz = rotatedMasks[DIR_NEG_Z];
-                int pz = rotatedMasks[DIR_POS_Z];
+                int nx = array[DIR_NEG_X];
+                int px = array[DIR_POS_X];
+                int nz = array[DIR_NEG_Z];
+                int pz = array[DIR_POS_Z];
 
                 switch (count) {
                     case 1 -> {
-                        rotatedMasks[DIR_POS_X] = nz;
-                        rotatedMasks[DIR_NEG_X] = pz;
-                        rotatedMasks[DIR_POS_Z] = px;
-                        rotatedMasks[DIR_NEG_Z] = nx;
+                        array[DIR_POS_X] = nz;
+                        array[DIR_NEG_X] = pz;
+                        array[DIR_POS_Z] = px;
+                        array[DIR_NEG_Z] = nx;
                     }
                     case 2 -> {
-                        rotatedMasks[DIR_POS_X] = nx;
-                        rotatedMasks[DIR_NEG_X] = px;
-                        rotatedMasks[DIR_POS_Z] = nz;
-                        rotatedMasks[DIR_NEG_Z] = pz;
+                        array[DIR_POS_X] = nx;
+                        array[DIR_NEG_X] = px;
+                        array[DIR_POS_Z] = nz;
+                        array[DIR_NEG_Z] = pz;
                     }
                     case 3 -> {
-                        rotatedMasks[DIR_POS_X] = pz;
-                        rotatedMasks[DIR_NEG_X] = nz;
-                        rotatedMasks[DIR_POS_Z] = nx;
-                        rotatedMasks[DIR_NEG_Z] = px;
+                        array[DIR_POS_X] = pz;
+                        array[DIR_NEG_X] = nz;
+                        array[DIR_POS_Z] = nx;
+                        array[DIR_NEG_Z] = px;
                     }
                     default -> {}
                 }
             }
             // X-AXIS
             case 0 -> {
-                int ny = rotatedMasks[DIR_NEG_Y];
-                int py = rotatedMasks[DIR_POS_Y];
-                int nz = rotatedMasks[DIR_NEG_Z];
-                int pz = rotatedMasks[DIR_POS_Z];
+                int ny = array[DIR_NEG_Y];
+                int py = array[DIR_POS_Y];
+                int nz = array[DIR_NEG_Z];
+                int pz = array[DIR_POS_Z];
 
                 switch (count) {
                     case 1 -> {
-                        rotatedMasks[DIR_POS_Y] = nz;
-                        rotatedMasks[DIR_NEG_Y] = pz;
-                        rotatedMasks[DIR_POS_Z] = py;
-                        rotatedMasks[DIR_NEG_Z] = ny;
+                        array[DIR_POS_Y] = nz;
+                        array[DIR_NEG_Y] = pz;
+                        array[DIR_POS_Z] = py;
+                        array[DIR_NEG_Z] = ny;
                     }
                     case 2 -> {
-                        rotatedMasks[DIR_POS_Y] = ny;
-                        rotatedMasks[DIR_NEG_Y] = py;
-                        rotatedMasks[DIR_POS_Z] = nz;
-                        rotatedMasks[DIR_NEG_Z] = pz;
+                        array[DIR_POS_Y] = ny;
+                        array[DIR_NEG_Y] = py;
+                        array[DIR_POS_Z] = nz;
+                        array[DIR_NEG_Z] = pz;
                     }
                     case 3 -> {
-                        rotatedMasks[DIR_POS_Y] = pz;
-                        rotatedMasks[DIR_NEG_Y] = nz;
-                        rotatedMasks[DIR_POS_Z] = ny;
-                        rotatedMasks[DIR_NEG_Z] = py;
+                        array[DIR_POS_Y] = pz;
+                        array[DIR_NEG_Y] = nz;
+                        array[DIR_POS_Z] = ny;
+                        array[DIR_NEG_Z] = py;
                     }
                     default -> {}
                 }
@@ -409,12 +436,22 @@ public class ChunkMesher {
     ) {
         Arrays.fill(skyLight, (short) 0);
 
-        skyLight[0] = crossChunkAccessor.getSkyLight(tmp.set(-1,  0,  0), x, y, z);
-        skyLight[1] = crossChunkAccessor.getSkyLight(tmp.set( 1,  0,  0), x, y, z);
-        skyLight[2] = crossChunkAccessor.getSkyLight(tmp.set( 0, -1,  0), x, y, z);
-        skyLight[3] = crossChunkAccessor.getSkyLight(tmp.set( 0,  1,  0), x, y, z);
-        skyLight[4] = crossChunkAccessor.getSkyLight(tmp.set( 0,  0, -1), x, y, z);
-        skyLight[5] = crossChunkAccessor.getSkyLight(tmp.set( 0,  0,  1), x, y, z);
+        skyLight[0] = crossChunkAccessor.getSkyLight(setSideVector(tmp, 0), x, y, z);
+        skyLight[1] = crossChunkAccessor.getSkyLight(setSideVector(tmp, 1), x, y, z);
+        skyLight[2] = crossChunkAccessor.getSkyLight(setSideVector(tmp, 2), x, y, z);
+        skyLight[3] = crossChunkAccessor.getSkyLight(setSideVector(tmp, 3), x, y, z);
+        skyLight[4] = crossChunkAccessor.getSkyLight(setSideVector(tmp, 4), x, y, z);
+        skyLight[5] = crossChunkAccessor.getSkyLight(setSideVector(tmp, 5), x, y, z);
+    }
+
+    private static Vector3 setSideVector(Vector3 tmp, int i) {
+        i = rotatedIndices[i];
+
+        tmp.x = sides[(i * 3)];
+        tmp.y = sides[(i * 3) + 1];
+        tmp.z = sides[(i * 3) + 2];
+
+        return tmp;
     }
 
     private static void getBlockLight(
@@ -423,12 +460,12 @@ public class ChunkMesher {
     ) {
         Arrays.fill(blockLight, (short) 0);
 
-        blockLight[0] = crossChunkAccessor.getBlockLight(tmp.set(-1,  0,  0), x, y, z);
-        blockLight[1] = crossChunkAccessor.getBlockLight(tmp.set( 1,  0,  0), x, y, z);
-        blockLight[2] = crossChunkAccessor.getBlockLight(tmp.set( 0, -1,  0), x, y, z);
-        blockLight[3] = crossChunkAccessor.getBlockLight(tmp.set( 0,  1,  0), x, y, z);
-        blockLight[4] = crossChunkAccessor.getBlockLight(tmp.set( 0,  0, -1), x, y, z);
-        blockLight[5] = crossChunkAccessor.getBlockLight(tmp.set( 0,  0,  1), x, y, z);
+        blockLight[0] = crossChunkAccessor.getBlockLight(setSideVector(tmp, 0), x, y, z);
+        blockLight[1] = crossChunkAccessor.getBlockLight(setSideVector(tmp, 1), x, y, z);
+        blockLight[2] = crossChunkAccessor.getBlockLight(setSideVector(tmp, 2), x, y, z);
+        blockLight[3] = crossChunkAccessor.getBlockLight(setSideVector(tmp, 3), x, y, z);
+        blockLight[4] = crossChunkAccessor.getBlockLight(setSideVector(tmp, 4), x, y, z);
+        blockLight[5] = crossChunkAccessor.getBlockLight(setSideVector(tmp, 5), x, y, z);
     }
 
     private static boolean isOccluded(int d, int od, BlockState self, BerylliumModel selfModel, BlockState state) {

@@ -47,7 +47,6 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
     public static final Identifier DEFAULT_TEXTURE_DEPTH_MAP_PATH = Identifier.of(BerylliumCommon.NAMESPACE, "textures/default/default-texture-depth-map.png");
     public static final Identifier DEFAULT_TEXTURE_ROUGHNESS_MAP_PATH = Identifier.of(BerylliumCommon.NAMESPACE, "textures/default/default-texture-roughness-map.png");
     public static final Identifier DEFAULT_TEXTURE_METALNESS_MAP_PATH = Identifier.of(BerylliumCommon.NAMESPACE, "textures/default/default-texture-metalness-map.png");
-    public static final ObjectList<BerylliumModel> INTERCEPTED_MODELS = new ObjectArrayList<>();
 
     public BerylliumClient() {
         GameRegistries.COSMIC_EVENT_BUS.register(this);
@@ -99,9 +98,6 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
 //            }
 //        });
 
-        for (BerylliumModel interceptedModel : INTERCEPTED_MODELS) {
-            event.registerForBaking(interceptedModel);
-        }
     }
 
     @SubscribeEvent

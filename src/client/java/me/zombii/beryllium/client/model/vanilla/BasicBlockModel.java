@@ -242,74 +242,88 @@ public class BasicBlockModel extends BlockModel {
             min.set(Math.min(minX, maxX), Math.min(minY, maxY), Math.min(minZ, maxZ));
             max.set(Math.max(minX, maxX), Math.max(minY, maxY), Math.max(minZ, maxZ));
 
+            min.sub(.5f, .5f, .5f);
+            max.sub(.5f, .5f, .5f);
+
+            min.rotate(Vector3.Z, rotation[2]);
+            min.rotate(Vector3.Y, 360-rotation[1]);
+            min.rotate(Vector3.X, 360-rotation[0]);
+
+            max.rotate(Vector3.Z, rotation[2]);
+            max.rotate(Vector3.Y, 360-rotation[1]);
+            max.rotate(Vector3.X, 360-rotation[0]);
+
+            min.add(.5f, .5f, .5f);
+            max.add(.5f, .5f, .5f);
+
             BoundingBox box = new BoundingBox(min, max);
             boundingBoxes[bbIdx++] = box;
 
             CollisionTriangle triMinXA = tris[triIdx++] = new CollisionTriangle();
             CollisionTriangle triMinXB = tris[triIdx++] = new CollisionTriangle();
 
-            triMinXA.p0.set(box.min.x, box.max.y, box.min.z);
-            triMinXA.p1.set(box.min.x, box.min.y, box.min.z);
-            triMinXA.p2.set(box.min.x, box.min.y, box.max.z);
+            triMinXA.p0.set(min.x, max.y, min.z);
+            triMinXA.p1.set(min.x, min.y, min.z);
+            triMinXA.p2.set(min.x, min.y, max.z);
 
-            triMinXB.p0.set(box.min.x, box.max.y, box.min.z);
-            triMinXB.p1.set(box.min.x, box.max.y, box.max.z);
-            triMinXB.p2.set(box.min.x, box.min.y, box.max.z);
+            triMinXB.p0.set(min.x, max.y, min.z);
+            triMinXB.p1.set(min.x, max.y, max.z);
+            triMinXB.p2.set(min.x, min.y, max.z);
 
             CollisionTriangle triMaxXA = tris[triIdx++] = new CollisionTriangle();
             CollisionTriangle triMaxXB = tris[triIdx++] = new CollisionTriangle();
 
-            triMaxXA.p0.set(box.max.x, box.max.y, box.min.z);
-            triMaxXA.p1.set(box.max.x, box.min.y, box.min.z);
-            triMaxXA.p2.set(box.max.x, box.min.y, box.max.z);
+            triMaxXA.p0.set(max.x, max.y, min.z);
+            triMaxXA.p1.set(max.x, min.y, min.z);
+            triMaxXA.p2.set(max.x, min.y, max.z);
 
-            triMaxXB.p0.set(box.max.x, box.max.y, box.min.z);
-            triMaxXB.p1.set(box.max.x, box.max.y, box.max.z);
-            triMaxXB.p2.set(box.max.x, box.min.y, box.max.z);
+            triMaxXB.p0.set(max.x, max.y, min.z);
+            triMaxXB.p1.set(max.x, max.y, max.z);
+            triMaxXB.p2.set(max.x, min.y, max.z);
 
             CollisionTriangle triMinZA = tris[triIdx++] = new CollisionTriangle();
             CollisionTriangle triMinZB = tris[triIdx++] = new CollisionTriangle();
 
-            triMinZA.p0.set(box.max.x, box.min.y, box.min.z);
-            triMinZA.p1.set(box.min.x, box.min.y, box.min.z);
-            triMinZA.p2.set(box.min.x, box.max.y, box.min.z);
+            triMinZA.p0.set(max.x, min.y, min.z);
+            triMinZA.p1.set(min.x, min.y, min.z);
+            triMinZA.p2.set(min.x, max.y, min.z);
 
-            triMinZB.p0.set(box.max.x, box.min.y, box.min.z);
-            triMinZB.p1.set(box.max.x, box.max.y, box.min.z);
-            triMinZB.p2.set(box.min.x, box.max.y, box.min.z);
+            triMinZB.p0.set(max.x, min.y, min.z);
+            triMinZB.p1.set(max.x, max.y, min.z);
+            triMinZB.p2.set(min.x, max.y, min.z);
 
             CollisionTriangle triMaxZA = tris[triIdx++] = new CollisionTriangle();
             CollisionTriangle triMaxZB = tris[triIdx++] = new CollisionTriangle();
 
-            triMaxZA.p0.set(box.max.x, box.min.y, box.max.z);
-            triMaxZA.p1.set(box.min.x, box.min.y, box.max.z);
-            triMaxZA.p2.set(box.min.x, box.max.y, box.max.z);
+            triMaxZA.p0.set(max.x, min.y, max.z);
+            triMaxZA.p1.set(min.x, min.y, max.z);
+            triMaxZA.p2.set(min.x, max.y, max.z);
 
-            triMaxZB.p0.set(box.max.x, box.min.y, box.max.z);
-            triMaxZB.p1.set(box.max.x, box.max.y, box.max.z);
-            triMaxZB.p2.set(box.min.x, box.max.y, box.max.z);
+            triMaxZB.p0.set(max.x, min.y, max.z);
+            triMaxZB.p1.set(max.x, max.y, max.z);
+            triMaxZB.p2.set(min.x, max.y, max.z);
 
             CollisionTriangle triMinYA = tris[triIdx++] = new CollisionTriangle();
             CollisionTriangle triMinYB = tris[triIdx++] = new CollisionTriangle();
 
-            triMinYA.p0.set(box.max.x, box.min.y, box.min.z);
-            triMinYA.p1.set(box.min.x, box.min.y, box.min.z);
-            triMinYA.p2.set(box.min.x, box.min.y, box.max.z);
+            triMinYA.p0.set(max.x, min.y, min.z);
+            triMinYA.p1.set(min.x, min.y, min.z);
+            triMinYA.p2.set(min.x, min.y, max.z);
 
-            triMinYB.p0.set(box.max.x, box.min.y, box.min.z);
-            triMinYB.p1.set(box.max.x, box.min.y, box.max.z);
-            triMinYB.p2.set(box.min.x, box.min.y, box.max.z);
+            triMinYB.p0.set(max.x, min.y, min.z);
+            triMinYB.p1.set(max.x, min.y, max.z);
+            triMinYB.p2.set(min.x, min.y, max.z);
 
             CollisionTriangle triMaxYA = tris[triIdx++] = new CollisionTriangle();
             CollisionTriangle triMaxYB = tris[triIdx++] = new CollisionTriangle();
 
-            triMaxYA.p0.set(box.max.x, box.max.y, box.min.z);
-            triMaxYA.p1.set(box.min.x, box.max.y, box.min.z);
-            triMaxYA.p2.set(box.min.x, box.max.y, box.max.z);
+            triMaxYA.p0.set(max.x, max.y, min.z);
+            triMaxYA.p1.set(min.x, max.y, min.z);
+            triMaxYA.p2.set(min.x, max.y, max.z);
 
-            triMaxYB.p0.set(box.max.x, box.max.y, box.min.z);
-            triMaxYB.p1.set(box.max.x, box.max.y, box.max.z);
-            triMaxYB.p2.set(box.min.x, box.max.y, box.max.z);
+            triMaxYB.p0.set(max.x, max.y, min.z);
+            triMaxYB.p1.set(max.x, max.y, max.z);
+            triMaxYB.p2.set(min.x, max.y, max.z);
         }
 
         BasicBlockModel model = new BasicBlockModel(name, rotation, boundingBoxes, tris);

@@ -26,14 +26,22 @@ public class BerylliumModel implements Iterable<PartGroup>, HJsonSerializable {
     private final ObjectList<PartGroup> groups = new ObjectArrayList<>();
     private final Object2ObjectMap<String, PartGroup> groupMap = new Object2ObjectArrayMap<>();
 
+    private final String parent;
     private final String id;
     private Identifier renderLayerId;
     private final AtomicBoolean isTransparent = new AtomicBoolean(false);
+
+    public BerylliumModel(String parent, String id) {
+        this.parent = parent;
+        this.id = id;
+        setRenderLayer(null);
+    }
 
     public BerylliumModel(
             String id
     ) {
         this.id = id;
+        this.parent = null;
         setRenderLayer(null);
     }
 
@@ -119,6 +127,10 @@ public class BerylliumModel implements Iterable<PartGroup>, HJsonSerializable {
 
     public String getName() {
         return id;
+    }
+
+    public String getParentName() {
+        return parent;
     }
 
     @Override
