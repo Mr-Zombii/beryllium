@@ -3,9 +3,6 @@
   "textures": {
     "all": "beryllium:textures/missing/missing-texture.png"
   },
-  "attributes": {
-    "isTransparent": true
-  },
   "groups": {
     "root": {
       "parts": [
