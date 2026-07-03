@@ -21,7 +21,8 @@
     "texture-3": "beryllium:/textures/blocks/test.png"
   },
   "attributes": {
-    "isTransparent": true
+    "isTransparent": true,
+    "renderLayerId": "beryllium:opaque-block-render-layer"
   },
   "groups": {
     "root": {
