@@ -26,9 +26,9 @@ public abstract class BlockTessallator {
             return BLOCK_TESSALLATOR_REGISTRY.get(Identifier.of(block.getSaveKey()));
         }
         if (block.rotation[0] == 0 && block.rotation[1] == 0 && block.rotation[2] == 0) {
-            return DefaultRotatedBlockTessallator.INSTANCE;
+            return DefaultBlockTessallator.INSTANCE;
         }
-        return DefaultBlockTessallator.INSTANCE;
+        return DefaultRotatedBlockTessallator.INSTANCE;
     }
 
     abstract public void consume(

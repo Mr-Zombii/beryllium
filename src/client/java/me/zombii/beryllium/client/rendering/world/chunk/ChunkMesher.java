@@ -92,8 +92,9 @@ public class ChunkMesher {
                     getSkyLight(TMP_SKY_LIGHT, x, y, z);
                     getBlockLight(TMP_BLOCK_LIGHT, x, y, z);
 
+                    byte[] aoValues = Tessallator.EMPTY_AO;
                     if (bakedModel.doesCulling()) visibleFaces = getVisibleFaces(self, model, x, y, z);
-                    if (bakedModel.usesAO()) getAmbientOcclusion(TMP_AO_VALUES, x, y, z);
+                    if (bakedModel.usesAO()) getAmbientOcclusion(aoValues=TMP_AO_VALUES, x, y, z);
 
                     TintProvider.TintFunction tintFunction = berylliumState.getTintFunction();
 
@@ -106,7 +107,7 @@ public class ChunkMesher {
                             crossChunkAccessor,
                             chunk, self, x, y, z,
                             bakedModel, TMP_SKY_LIGHT, TMP_BLOCK_LIGHT,
-                            TMP_AO_VALUES, visibleFaces, tintFunction
+                            aoValues, visibleFaces, tintFunction
                     );
                 }
             }
