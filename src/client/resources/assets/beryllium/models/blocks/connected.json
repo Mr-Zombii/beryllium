@@ -1,0 +1,29 @@
+{
+  "id": "beryllium:models/blocks/connected",
+  "textures": {
+    "0-open-faces": "beryllium:textures/connected/test/connected-0.png",
+    "1-open-faces": "beryllium:textures/connected/test/connected-1.png",
+    "2-open-faces": "beryllium:textures/connected/test/connected-2.png",
+    "2b-open-faces": "beryllium:textures/connected/test/connected-2b.png",
+    "3-open-faces": "beryllium:textures/connected/test/connected-3.png",
+    "4-open-faces": "beryllium:textures/connected/test/connected-4.png"
+  },
+  "groups": {
+    "root": {
+      "parts": [
+        {
+          "pos": [0, 0, 0],
+          "size": [16, 16, 16],
+          "faces": {
+            "NegX": { "uv": [ 0, 0, 16, 16 ],  "texture": "4-open-faces" },
+            "PosX": { "uv": [ 0, 0, 16, 16 ],  "texture": "4-open-faces" },
+            "NegY": { "uv": [ 0, 0, 16, 16 ],  "texture": "4-open-faces" },
+            "PosY": { "uv": [ 0, 0, 16, 16 ],  "texture": "4-open-faces" },
+            "NegZ": { "uv": [ 0, 0, 16, 16 ],  "texture": "4-open-faces" },
+            "PosZ": { "uv": [ 0, 0, 16, 16 ],  "texture": "4-open-faces" }
+          }
+        }
+      ]
+    }
+  }
+}

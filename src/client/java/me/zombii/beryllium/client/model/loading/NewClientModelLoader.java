@@ -1,20 +1,15 @@
 package me.zombii.beryllium.client.model.loading;
 
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonWriter;
 import dev.puzzleshq.puzzleloader.cosmic.game.blockloader.generation.model.BlockModelGenerator;
 import dev.puzzleshq.puzzleloader.cosmic.game.blockloader.loading.ISidedModelLoader;
 import dev.puzzleshq.puzzleloader.cosmic.game.util.IndependentAssetLoader;
 import dev.puzzleshq.puzzleloader.loader.util.RawAssetLoader;
-import dev.puzzleshq.puzzleloader.loader.util.ReflectionUtil;
 import finalforeach.cosmicreach.rendering.blockmodels.BlockModel;
-import finalforeach.cosmicreach.rendering.blockmodels.BlockModelJson;
 import finalforeach.cosmicreach.util.Identifier;
-import finalforeach.cosmicreach.util.assets.GameAssetLoader;
 import me.zombii.beryllium.client.model.vanilla.BasicBlockModel;
 import me.zombii.beryllium.common.BerylliumCommon;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -111,7 +106,7 @@ public class NewClientModelLoader implements ISidedModelLoader {
 //            BerylliumModelLoader.addToLoadingList(modelName);
             String filePath = modelName + ".json";
             RawAssetLoader.RawFileHandle modelFileHandle = IndependentAssetLoader.loadAsset(Identifier.of(filePath));
-            BerylliumModelLoader.loadBerylliumBlockModel(filePath, modelFileHandle);
+            BerylliumModelLoader.loadBerylliumModel(filePath, modelFileHandle);
 
             //TODO make this not just a cube ( help needed)
             RawAssetLoader.RawFileHandle fileHandle = IndependentAssetLoader.loadAsset(Identifier.of("base:models/blocks/cube.json"));

@@ -17,6 +17,7 @@ import me.zombii.beryllium.client.rendering.opengl.shader.BerylliumShaderProgram
 import me.zombii.beryllium.client.rendering.tessellation.DefaultBerylliumMesh;
 import me.zombii.beryllium.client.rendering.tessellation.BerylliumMeshUniformMaterial;
 import me.zombii.beryllium.client.rendering.tessellation.Tessallator;
+import me.zombii.beryllium.client.rendering.tessellation.TintProvider;
 import me.zombii.beryllium.client.rendering.util.NullCRShader;
 import me.zombii.beryllium.client.rendering.util.NullMesh;
 import me.zombii.beryllium.common.BerylliumConfig;
@@ -61,7 +62,8 @@ public class MixinItemBlockModel {
                 beryllium$tess,
                 Tessallator.EMPTY_SKY_LIGHT, Tessallator.EMPTY_SHORTS,
                 Tessallator.EMPTY_AO, BakedFace.ALL_FACES_SHOWING,
-                (d) -> (short) -1, 0, 0, 0
+                TintProvider.DEFAULT_TINT_FUNCTION,
+                null, blockState, 0, 0, 0
         );
 
         beryllium$mesh.resize(beryllium$tess.getQuadsWritten());

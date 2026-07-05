@@ -32,7 +32,7 @@ public class MixinBlockLoader {
 
                 for (String id : BerylliumModelLoader.blockIdsToLoad) {
                     Pair<String, String> pair = models.get(id);
-                    BerylliumModelLoader.loadBerylliumBlockModel(pair.left(), pair.right());
+                    BerylliumModelLoader.loadBerylliumModel(pair.left(), pair.right());
                 }
             });
 

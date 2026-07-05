@@ -2,9 +2,10 @@ package me.zombii.beryllium.client.rendering.world.chunk;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import finalforeach.cosmicreach.blocks.BlockPosition;
 import finalforeach.cosmicreach.blocks.BlockState;
 import finalforeach.cosmicreach.world.Chunk;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import me.zombii.beryllium.client.model.BerylliumModel;
 import me.zombii.beryllium.client.model.baking.BakedBerylliumModel;
 import me.zombii.beryllium.client.model.baking.ModelBaker;
@@ -13,10 +14,13 @@ import me.zombii.beryllium.client.model.loading.BerylliumModelLoader;
 import me.zombii.beryllium.client.rendering.layers.RenderLayer;
 import me.zombii.beryllium.client.rendering.layers.RenderLayers;
 import me.zombii.beryllium.client.rendering.tessellation.Tessallator;
+import me.zombii.beryllium.client.rendering.tessellation.minitess.BlockTessallator;
 import me.zombii.beryllium.client.rendering.tessellation.TintProvider;
+import me.zombii.beryllium.client.rendering.tessellation.minitess.DefaultBlockTessallator;
+import me.zombii.beryllium.client.rendering.tessellation.minitess.DefaultRotatedBlockTessallator;
+import me.zombii.beryllium.client.rendering.util.IBerylliumBlockState;
 
 import java.util.Arrays;
-import java.util.function.Function;
 
 public class ChunkMesher {
 
@@ -26,6 +30,7 @@ public class ChunkMesher {
     private static boolean initialized = false;
     private static final CrossChunkAccessor crossChunkAccessor = new CrossChunkAccessor();
     private static Matrix4 transform;
+    private static final Matrix4 tmpMatrix = new Matrix4();
 
     public static void init() {
         if (initialized) return;
@@ -71,8 +76,11 @@ public class ChunkMesher {
                     if (self == null) continue;
                     if (self.hasEmptyModel()) continue;
 
-                    BerylliumModel model = BerylliumModelLoader.getModel(self.modelName);
+                    IBerylliumBlockState berylliumState = (IBerylliumBlockState) self;
+                    BerylliumModel model = berylliumState.getModel();
                     if (!model.getRenderLayer().getId().equals(layer.getId())) continue;
+
+                    boolean hasRotation = self.rotation[0] != 0 || self.rotation[1] != 0 || self.rotation[2] != 0;
 
                     rotateMasks(
                             self.rotation[0],
@@ -80,38 +88,27 @@ public class ChunkMesher {
                             self.rotation[2]
                     );
 
-                    int visibleFaces = getVisibleFaces(self, model, x, y, z);
+                    BakedBerylliumModel bakedModel = berylliumState.getBakedModel();
+                    int visibleFaces = BakedFace.ALL_FACES_SHOWING;
+
                     getSkyLight(TMP_SKY_LIGHT, x, y, z);
                     getBlockLight(TMP_BLOCK_LIGHT, x, y, z);
-                    getAmbientOcclusion(TMP_AO_VALUES, x, y, z);
 
-                    final int xFinal = x;
-                    final int yFinal = y;
-                    final int zFinal = z;
-                    TintProvider.TintFunction tintFunction = TintProvider.getForState(self.getBlock());
-                    Function<Integer, Short> tintGetter = (idx) ->
-                            tintFunction.getTint(
-                                    self,
-                                    new BlockPosition(
-                                            chunk,
-                                            xFinal, yFinal, zFinal
-                                    ),
-                            idx);
+                    if (bakedModel.doesCulling()) visibleFaces = getVisibleFaces(self, model, x, y, z);
+                    if (bakedModel.usesAO()) getAmbientOcclusion(TMP_AO_VALUES, x, y, z);
 
-                    BakedBerylliumModel bakedModel = ModelBaker.get(model);
+                    TintProvider.TintFunction tintFunction = berylliumState.getTintFunction();
 
                     transform.idt();
-                    transform.translate(.5f + x, .5f + y, .5f + z);
-                    transform.rotate(Vector3.Z, self.rotation[2]);
-                    transform.rotate(Vector3.Y, 360-self.rotation[1]);
-                    transform.rotate(Vector3.X, 360-self.rotation[0]);
-                    transform.translate(-.5f - x, -.5f - y, -.5f - z);
+                    tmpMatrix.idt();
 
-                    bakedModel.addVertices(
-                            globalTessallator,
-                            TMP_SKY_LIGHT, TMP_BLOCK_LIGHT, TMP_AO_VALUES,
-                            visibleFaces, tintGetter,
-                            x, y, z
+                    BlockTessallator blockTessallator = berylliumState.getTessallator();
+                    blockTessallator.consume(
+                            globalTessallator, tmpMatrix,
+                            crossChunkAccessor,
+                            chunk, self, x, y, z,
+                            bakedModel, TMP_SKY_LIGHT, TMP_BLOCK_LIGHT,
+                            TMP_AO_VALUES, visibleFaces, tintFunction
                     );
                 }
             }

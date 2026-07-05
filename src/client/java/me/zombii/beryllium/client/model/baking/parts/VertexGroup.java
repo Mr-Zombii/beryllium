@@ -1,10 +1,13 @@
 package me.zombii.beryllium.client.model.baking.parts;
 
 import com.badlogic.gdx.math.Vector3;
+import finalforeach.cosmicreach.blocks.BlockState;
+import finalforeach.cosmicreach.world.Chunk;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import me.zombii.beryllium.client.model.baking.BakedBerylliumModel;
 import me.zombii.beryllium.client.rendering.tessellation.Tessallator;
+import me.zombii.beryllium.client.rendering.tessellation.TintProvider;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
@@ -134,14 +137,14 @@ public class VertexGroup {
         this.enabled.set(enabled);
     }
 
-
     public void addFaces(
             Tessallator tessallator,
             short[] skyLightLevels,
             short[] blockLightLevels,
             byte[] aoLevels,
             int faceMask,
-            Function<Integer, Short> tintGetter,
+            TintProvider.TintFunction tintFunction, Chunk chunk,
+            BlockState state,
             int x, int y, int z
     ) {
         for (int d = 0; d < BakedFace.MASKS.length; d++) {
@@ -151,7 +154,7 @@ public class VertexGroup {
                         skyLightLevels,
                         blockLightLevels,
                         aoLevels,
-                        tintGetter,
+                        tintFunction, chunk, state,
                         d, x, y, z
                 );
             }
@@ -163,7 +166,8 @@ public class VertexGroup {
             short[] skyLightLevels,
             short[] blockLightLevels,
             byte[] aoLevels,
-            Function<Integer, Short> tintGetter,
+            TintProvider.TintFunction tintFunction, Chunk chunk,
+            BlockState state,
             int direction, int x, int y, int z
     ) {
         ObjectList<BakedFace> faces = getFacesByDirection(direction == 6 ? -1 : direction);
@@ -175,7 +179,7 @@ public class VertexGroup {
                     skyLightLevels[directionOrdinal],
                     blockLightLevels[directionOrdinal],
                     aoLevels,
-                    tintGetter.apply(face.tintIndex()),
+                    tintFunction.getTint(chunk, state, x, y, z, face.tintIndex()),
                     directionOrdinal * 4, x, y, z
             );
         }

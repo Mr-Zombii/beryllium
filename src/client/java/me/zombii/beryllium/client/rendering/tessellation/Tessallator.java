@@ -58,24 +58,32 @@ public class Tessallator {
             int aoIndex,
             int x, int y, int z
     ) {
+        addQuad(face, face.textureID(), face.uvRotation(), skyLightLevel, blockLightLevel, aoLevels, faceTint, aoIndex, x, y, z);
+    }
+
+    public void addQuad(
+            BakedFace face,
+            String textureID,
+            int uvRotation,
+            short skyLightLevel,
+            short blockLightLevel,
+            byte[] aoLevels,
+            short faceTint,
+            int aoIndex,
+            int x, int y, int z
+    ) {
         BerylliumModel model = face.model().getModel();
 
-        TextureEntry entry = model.getTexture(face.textureID());
+        TextureEntry entry = model.getTexture(textureID);
 
         GLAtlas.SubTexture albedoSubTex = BerylliumAtlases.ALBEDO_ATLAS.get(entry.getAlbedoTexturePath().toString());
         short albedoIdx = (short) albedoSubTex.getTBOIndex();
-        short albedoFrameCount = (short) albedoSubTex.getFrameCount();
-        short albedoFrameDuration = Float.floatToFloat16(albedoSubTex.getFrameDuration());
 
         short emissiveIdx = 0;
-        short emissiveFrameCount = 1;
-        short emissiveFrameDuration = 0;
         if (BerylliumConfig.INSTANCE.enableEmissiveAtlas) {
             GLAtlas.SubTexture emissiveSubTex = BerylliumAtlases.EMISSIVE_ATLAS.get(entry.getEmissiveTexturePath().toString());
 
             emissiveIdx = (short) emissiveSubTex.getTBOIndex();
-            emissiveFrameCount = (short) emissiveSubTex.getFrameCount();
-            emissiveFrameDuration = Float.floatToFloat16(emissiveSubTex.getFrameDuration());
         }
         short normalIdx = 0;
         short materialIdx = 0;
@@ -90,7 +98,7 @@ public class Tessallator {
                 verts[9] + x, verts[10] + y, verts[11] + z,
                 skyLightLevel, blockLightLevel, newAoLevels,
                 faceTint, aoIndex,
-                face.uvRotation(),
+                uvRotation,
                 (short) face.faceUvIndex(),
                 albedoIdx,
                 emissiveIdx,

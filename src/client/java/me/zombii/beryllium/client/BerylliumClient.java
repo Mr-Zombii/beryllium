@@ -13,15 +13,19 @@ import finalforeach.cosmicreach.util.Identifier;
 import finalforeach.cosmicreach.util.assets.GameAssetLoader;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import me.zombii.beryllium.client.events.EventBakingFinished;
 import me.zombii.beryllium.client.events.EventCollectModels;
 import me.zombii.beryllium.client.events.EventCollectRenderLayers;
 import me.zombii.beryllium.client.events.EventDebugBlockLoadingQueue;
 import me.zombii.beryllium.client.model.BerylliumModel;
+import me.zombii.beryllium.client.model.baking.ModelBaker;
 import me.zombii.beryllium.client.model.baking.ModelBakingThread;
+import me.zombii.beryllium.client.model.loading.BerylliumModelLoader;
 import me.zombii.beryllium.client.model.loading.NewBlockModelInstantiator;
 import me.zombii.beryllium.client.model.loading.NewClientModelLoader;
 import me.zombii.beryllium.client.rendering.layers.RenderLayer;
 import me.zombii.beryllium.client.rendering.layers.RenderLayers;
+import me.zombii.beryllium.client.rendering.tessellation.minitess.SimpleConnectedBlockTessallator;
 import me.zombii.beryllium.client.rendering.world.POCMeshingThread;
 import me.zombii.beryllium.client.rendering.world.POCZoneRenderer;
 import me.zombii.beryllium.common.BerylliumCommon;
@@ -85,10 +89,24 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
     }
 
     @SubscribeEvent
+    public void onEvent(EventBakingFinished event) {
+        SimpleConnectedBlockTessallator.registerState(
+                Block.getById("base:cheese").getDefaultBlockState(),
+                ModelBaker.get("beryllium:models/blocks/connected")
+        );
+    }
+
+    @SubscribeEvent
     public void onEvent(EventCollectModels event) {
-        for (URL source : Piece.classLoader.getURLs()) {
-            System.out.println("Found: " + source.getFile());
-        }
+        ISidedModelLoader.getInstance().loadModel(
+                "beryllium:models/blocks/connected"
+        );
+
+        event.registerForBaking(BerylliumModelLoader.getModel("beryllium:models/blocks/connected"));
+
+//        for (URL source : Piece.classLoader.getURLs()) {
+//            System.out.println("Found: " + source.getFile());
+//        }
 
 //        GameAssetLoader.forEachAsset("models/blocks", ".json", (p, f) -> {
 //            try {

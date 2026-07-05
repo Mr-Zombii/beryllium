@@ -1,12 +1,17 @@
 package me.zombii.beryllium.client.model.baking;
 
+import finalforeach.cosmicreach.blocks.BlockState;
+import finalforeach.cosmicreach.world.Chunk;
+import finalforeach.cosmicreach.world.Zone;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
 import me.zombii.beryllium.client.model.BerylliumModel;
+import me.zombii.beryllium.client.model.baking.parts.BakedFace;
 import me.zombii.beryllium.client.model.baking.parts.VertexGroup;
 import me.zombii.beryllium.client.rendering.tessellation.Tessallator;
+import me.zombii.beryllium.client.rendering.tessellation.TintProvider;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Iterator;
@@ -34,6 +39,77 @@ public class BakedBerylliumModel implements Iterable<VertexGroup> {
         this.groupMap = groupMap;
     }
 
+    private boolean tintingChecked = true;
+    private boolean usesTinting = false;
+
+    public boolean usesTinting() {
+        if (tintingChecked) return usesTinting;
+        tintingChecked = true;
+        usesTinting = false;
+        for (VertexGroup vertexGroup : this) {
+            for (int i = -1; i < 6; i++) {
+                for (BakedFace bakedFace : vertexGroup.getFacesByDirection(i)) {
+                    if (bakedFace.tintIndex() != -1) {
+                        return usesTinting = true;
+                    }
+                }
+
+            }
+        }
+        return false;
+    }
+
+    private boolean aoChecked = true;
+    private boolean doesAO = false;
+
+    public boolean usesAO() {
+        if (aoChecked) return doesAO;
+        aoChecked = true;
+        doesAO = false;
+        for (VertexGroup vertexGroup : this) {
+            for (int i = -1; i < 6; i++) {
+                for (BakedFace bakedFace : vertexGroup.getFacesByDirection(i)) {
+                    if (bakedFace.doAO()) {
+                        return doesAO = true;
+                    }
+                }
+
+            }
+        }
+        return false;
+    }
+
+    private boolean cullingChecked = true;
+    private boolean doesCulling = true;
+
+    public boolean doesCulling() {
+        if (cullingChecked) return doesCulling;
+        cullingChecked = true;
+        doesCulling = true;
+
+        for (VertexGroup vertexGroup : this) {
+            for (int i = 0; i < 6; i++) {
+                if (!vertexGroup.getFacesByDirection(i).isEmpty())
+                    return doesCulling = true;
+            }
+        }
+        return false;
+    }
+
+    private boolean cullingAllChecked = true;
+    private boolean doesAllCulling = true;
+
+    public boolean doesAllCulling() {
+        if (cullingAllChecked) return doesAllCulling;
+        cullingAllChecked = true;
+        doesAllCulling = true;
+
+        for (VertexGroup vertexGroup : this) {
+            doesAllCulling = vertexGroup.getFacesByDirection(-1).isEmpty();
+        }
+        return false;
+    }
+
     public BerylliumModel getModel() {
         return model;
     }
@@ -58,7 +134,8 @@ public class BakedBerylliumModel implements Iterable<VertexGroup> {
             short[] blockLightLevels,
             byte[] aoLevels,
             int faceMask,
-            Function<Integer, Short> tintGetter,
+            TintProvider.TintFunction tintFunction,
+            Chunk chunk, BlockState state,
             int x, int y, int z
     ) {
         for (VertexGroup group : groupList) {
@@ -68,7 +145,7 @@ public class BakedBerylliumModel implements Iterable<VertexGroup> {
                     blockLightLevels,
                     aoLevels,
                     faceMask,
-                    tintGetter,
+                    tintFunction, chunk, state,
                     x, y, z
             );
         }

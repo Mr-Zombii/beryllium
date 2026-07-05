@@ -13,6 +13,7 @@ import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.objects.*;
 import me.zombii.beryllium.client.BerylliumAtlases;
+import me.zombii.beryllium.client.events.EventBakingFinished;
 import me.zombii.beryllium.client.events.EventCollectModels;
 import me.zombii.beryllium.client.exceptions.ModelException;
 import me.zombii.beryllium.client.model.BerylliumModel;
@@ -237,6 +238,8 @@ public class ModelBaker {
                     BerylliumAtlases.PerFaceUVBuffer
             );
             isFinished.set(true);
+
+            GameRegistries.COSMIC_EVENT_BUS.post(EventBakingFinished.INSTANCE);
         });
     }
 

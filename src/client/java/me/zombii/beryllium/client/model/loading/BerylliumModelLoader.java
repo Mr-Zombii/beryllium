@@ -437,13 +437,13 @@ public class BerylliumModelLoader {
         blockIdsToLoad.add(modelID);
     }
 
-    public static BerylliumModel loadBerylliumBlockModel(String modelID, RawAssetLoader.RawFileHandle handle) {
+    public static BerylliumModel loadBerylliumModel(String modelID, RawAssetLoader.RawFileHandle handle) {
         String json = handle.getString();
-        return loadBerylliumBlockModel(modelID, json);
+        return loadBerylliumModel(modelID, json);
     }
 
 
-    public static BerylliumModel loadBerylliumBlockModel(String filePathId, String json) {
+    public static BerylliumModel loadBerylliumModel(String filePathId, String json) {
         boolean debugMode = BerylliumConfig.INSTANCE.debugMode;
 
         JsonValue value = JsonValue.readHjson(json);
@@ -468,7 +468,7 @@ public class BerylliumModelLoader {
 
             parentModel = BerylliumModelLoader.getModel(parentId);
             if (parentModel == null) {
-                parentModel = BerylliumModelLoader.loadBerylliumBlockModel(
+                parentModel = BerylliumModelLoader.loadBerylliumModel(
                         modelIdToPath.get(parentId), IndependentAssetLoader.loadAsset(Identifier.of(modelIdToPath.get(parentId)))
                 );
             }

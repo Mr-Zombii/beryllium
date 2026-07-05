@@ -3,16 +3,16 @@ package me.zombii.beryllium.client.rendering.tessellation;
 import dev.puzzleshq.puzzleloader.cosmic.core.registries.GenericRegistry;
 import dev.puzzleshq.puzzleloader.cosmic.core.registries.IRegistry;
 import finalforeach.cosmicreach.blocks.Block;
-import finalforeach.cosmicreach.blocks.BlockPosition;
 import finalforeach.cosmicreach.blocks.BlockState;
 import finalforeach.cosmicreach.util.Identifier;
+import finalforeach.cosmicreach.world.Chunk;
 import me.zombii.beryllium.common.BerylliumCommon;
 
 public class TintProvider {
 
     public static final IRegistry<TintFunction> TINT_FUNCTION_REGISTRY = new GenericRegistry<>(Identifier.of(BerylliumCommon.NAMESPACE, "tint_functions"));
 
-    public static final TintFunction DEFAULT_TINT_FUNCTION = (s, p, idx) -> (short) -1;
+    public static final TintFunction DEFAULT_TINT_FUNCTION = (s, p, x, y, z, idx) -> (short) -1;
 
     public static short argb8888ToRgb565(int argb) {
         int r = (argb >> 16) & 0xFF;
@@ -28,7 +28,7 @@ public class TintProvider {
         TINT_FUNCTION_REGISTRY.store(Identifier.of(block.getStringId()), function);
     }
 
-    public static TintFunction getForState(Block block) {
+    public static TintFunction getForBlock(Block block) {
         if (TINT_FUNCTION_REGISTRY.contains(Identifier.of(block.getStringId()))) {
             return TINT_FUNCTION_REGISTRY.get(Identifier.of(block.getStringId()));
         }
@@ -36,7 +36,7 @@ public class TintProvider {
     }
 
     public interface TintFunction {
-        short getTint(BlockState state, BlockPosition pos, int tintIdx);
+        short getTint(Chunk chunk, BlockState state, int localX, int localY, int localZ, int tintIdx);
     }
 
 }
