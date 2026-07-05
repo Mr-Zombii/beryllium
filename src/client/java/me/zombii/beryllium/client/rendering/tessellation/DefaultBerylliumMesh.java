@@ -14,7 +14,7 @@ import org.lwjgl.system.MemoryUtil;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class BerylliumMesh {
+public class DefaultBerylliumMesh {
     protected static final long startTime = System.currentTimeMillis();
 
     int vao = -1;
@@ -29,9 +29,7 @@ public class BerylliumMesh {
     int usage;
     int budget;
 
-    private BerylliumConfig cachedConfig;
-
-    public BerylliumMesh(
+    public DefaultBerylliumMesh(
             int quadBudget,
             boolean isStatic
     ) {
@@ -41,7 +39,6 @@ public class BerylliumMesh {
         vertexBufferPtr = MemoryUtil.memAddress(vertexBuffer);
         indexBufferPtr = MemoryUtil.memAddress(indexBuffer);
         this.usage = isStatic ? GL15.GL_STATIC_DRAW : GL15.GL_DYNAMIC_DRAW;
-        this.cachedConfig = BerylliumConfig.INSTANCE;
     }
 
     private volatile long dumpVertSize = 0;

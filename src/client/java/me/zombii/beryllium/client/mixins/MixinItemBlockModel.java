@@ -14,7 +14,7 @@ import me.zombii.beryllium.client.model.baking.ModelBaker;
 import me.zombii.beryllium.client.model.baking.parts.BakedFace;
 import me.zombii.beryllium.client.rendering.layers.RenderLayer;
 import me.zombii.beryllium.client.rendering.opengl.shader.BerylliumShaderProgram;
-import me.zombii.beryllium.client.rendering.tessellation.BerylliumMesh;
+import me.zombii.beryllium.client.rendering.tessellation.DefaultBerylliumMesh;
 import me.zombii.beryllium.client.rendering.tessellation.BerylliumMeshUniformMaterial;
 import me.zombii.beryllium.client.rendering.tessellation.Tessallator;
 import me.zombii.beryllium.client.rendering.util.NullCRShader;
@@ -37,7 +37,7 @@ public class MixinItemBlockModel {
     GameShader shader;
 
     @Unique
-    private BerylliumMesh beryllium$mesh;
+    private DefaultBerylliumMesh beryllium$mesh;
 
     @Unique
     private RenderLayer beryllium$renderLayer;
@@ -56,7 +56,7 @@ public class MixinItemBlockModel {
         BakedBerylliumModel model = ModelBaker.get(blockState.modelName);
         beryllium$renderLayer = model.getModel().getRenderLayer();
 
-        beryllium$mesh = new BerylliumMesh(6, true);
+        beryllium$mesh = new DefaultBerylliumMesh(6, true);
         model.addVertices(
                 beryllium$tess,
                 Tessallator.EMPTY_SKY_LIGHT, Tessallator.EMPTY_SHORTS,
