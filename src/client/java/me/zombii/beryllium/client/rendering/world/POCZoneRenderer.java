@@ -18,11 +18,11 @@ import me.zombii.beryllium.client.rendering.world.chunk.ChunkMesher;
 import me.zombii.beryllium.client.rendering.world.chunk.LayeredChunkMesh;
 import org.lwjgl.opengl.GL11;
 
-public class BerylliumZoneRenderer implements IZoneRenderer {
+public class POCZoneRenderer implements IZoneRenderer {
 
     private final ObjectSet<Chunk> chunks = ObjectSets.synchronize(new ObjectOpenHashSet<>());
 
-    public BerylliumZoneRenderer() {
+    public POCZoneRenderer() {
         ChunkMesher.init();
     }
 
@@ -125,7 +125,7 @@ public class BerylliumZoneRenderer implements IZoneRenderer {
 
     @Override
     public void unload() {
-        BerylliumMeshingThread.clear();
+        POCMeshingThread.clear();
     }
 
     @Override
@@ -143,12 +143,12 @@ public class BerylliumZoneRenderer implements IZoneRenderer {
     @Override
     public void onChunkFlaggedForRemeshing(Chunk chunk) {
         chunks.add(chunk);
-        BerylliumMeshingThread.queueChunk(chunk);
+        POCMeshingThread.queueChunk(chunk);
     }
     @Override
     public void addChunk(Chunk chunk) {
         chunks.add(chunk);
-        BerylliumMeshingThread.queueChunk(chunk);
+        POCMeshingThread.queueChunk(chunk);
     }
     @Override
     public void onChunkMeshed(Chunk chunk) {

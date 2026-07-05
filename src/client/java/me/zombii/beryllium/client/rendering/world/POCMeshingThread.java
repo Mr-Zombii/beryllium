@@ -3,7 +3,6 @@ package me.zombii.beryllium.client.rendering.world;
 import finalforeach.cosmicreach.world.Chunk;
 import me.zombii.beryllium.client.rendering.world.chunk.ChunkMesher;
 import me.zombii.beryllium.client.rendering.world.chunk.LayeredChunkMesh;
-import me.zombii.beryllium.client.rendering.world.threading.NewMeshGroup;
 
 import java.util.Queue;
 import java.util.Set;
@@ -11,9 +10,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class BerylliumMeshingThread implements Runnable {
+public class POCMeshingThread implements Runnable {
 
-    public static final Thread THREAD = new Thread(new BerylliumMeshingThread());
+    public static final Thread THREAD = new Thread(new POCMeshingThread());
 
     static {
         THREAD.setDaemon(true);
@@ -25,7 +24,7 @@ public class BerylliumMeshingThread implements Runnable {
     private static final Set<Chunk> workingList = new CopyOnWriteArraySet<>();
 
     public static void setRunning(boolean running) {
-        BerylliumMeshingThread.running.set(running);
+        POCMeshingThread.running.set(running);
     }
 
     public static void clear() {
@@ -35,7 +34,7 @@ public class BerylliumMeshingThread implements Runnable {
 
     public static boolean queueChunk(Chunk chunk) {
         if (chunk.getMeshGroup() == null) {
-            chunk.initMeshGroup(NewMeshGroup::new);
+            chunk.initMeshGroup(BerylliumMeshGroup::new);
         }
 
         if (((LayeredChunkMesh)chunk.getMeshGroup().getAllMeshData()).isScheduledForDisposal()) return false;

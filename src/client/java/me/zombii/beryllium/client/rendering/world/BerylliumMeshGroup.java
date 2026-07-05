@@ -1,4 +1,4 @@
-package me.zombii.beryllium.client.rendering.world.threading;
+package me.zombii.beryllium.client.rendering.world;
 
 import com.badlogic.gdx.Gdx;
 import finalforeach.cosmicreach.rendering.IChunkMeshGroup;
@@ -8,13 +8,13 @@ import me.zombii.beryllium.client.rendering.world.chunk.LayeredChunkMesh;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class NewMeshGroup implements IChunkMeshGroup<LayeredChunkMesh> {
+public class BerylliumMeshGroup implements IChunkMeshGroup<LayeredChunkMesh> {
 
     private final LayeredChunkMesh mesh;
     private final AtomicBoolean flaggedForRemesh = new AtomicBoolean(false);
     private final AtomicBoolean isFlagImmediate = new AtomicBoolean(false);
 
-    public NewMeshGroup() {
+    public BerylliumMeshGroup() {
         this.mesh = new LayeredChunkMesh();
     }
 
