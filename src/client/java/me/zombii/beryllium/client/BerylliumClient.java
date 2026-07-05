@@ -22,8 +22,8 @@ import me.zombii.beryllium.client.model.loading.NewBlockModelInstantiator;
 import me.zombii.beryllium.client.model.loading.NewClientModelLoader;
 import me.zombii.beryllium.client.rendering.layers.RenderLayer;
 import me.zombii.beryllium.client.rendering.layers.RenderLayers;
-import me.zombii.beryllium.client.rendering.world.BerylliumMeshingThread;
-import me.zombii.beryllium.client.rendering.world.BerylliumZoneRenderer;
+import me.zombii.beryllium.client.rendering.world.POCMeshingThread;
+import me.zombii.beryllium.client.rendering.world.POCZoneRenderer;
 import me.zombii.beryllium.common.BerylliumCommon;
 import me.zombii.beryllium.common.BerylliumConfig;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -119,8 +119,8 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
     @Override
     public void onClientPostInit() {
         if (BerylliumConfig.INSTANCE.enableBerylliumRendering) {
-            BerylliumMeshingThread.THREAD.start();
-            GameSingletons.zoneRenderer = new BerylliumZoneRenderer();
+            POCMeshingThread.THREAD.start();
+            GameSingletons.zoneRenderer = new POCZoneRenderer();
 //            GameSingletons.zoneRenderer = new NewZoneRenderer();
 //            GameSingletons.meshGenThread = new MeshGenThread();
             GameSingletons.blockModelInstantiator = new NewBlockModelInstantiator();
