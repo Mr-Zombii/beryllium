@@ -1,5 +1,6 @@
 package me.zombii.beryllium.client.model.loading;
 
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonWriter;
 import dev.puzzleshq.puzzleloader.cosmic.game.blockloader.generation.model.BlockModelGenerator;
 import dev.puzzleshq.puzzleloader.cosmic.game.blockloader.loading.ISidedModelLoader;
@@ -9,6 +10,7 @@ import dev.puzzleshq.puzzleloader.loader.util.ReflectionUtil;
 import finalforeach.cosmicreach.rendering.blockmodels.BlockModel;
 import finalforeach.cosmicreach.rendering.blockmodels.BlockModelJson;
 import finalforeach.cosmicreach.util.Identifier;
+import finalforeach.cosmicreach.util.assets.GameAssetLoader;
 import me.zombii.beryllium.client.model.vanilla.BasicBlockModel;
 import me.zombii.beryllium.common.BerylliumCommon;
 
@@ -94,7 +96,22 @@ public class NewClientModelLoader implements ISidedModelLoader {
         if (override) BerylliumModelLoader.unregister(modelName);
 
         if (!modelName.contains(".json")) {
-            BerylliumModelLoader.addToLoadingList(modelName);
+            // It doesn't seem to actually be possible to iterate
+            // through java mod assets. So we either have to
+            // ask mod devs to manually load their beryllium block
+            // models beforehand, or use actual file paths instead of just
+            // ids for this, like is done in base game.
+            //
+            // For now, I'm just changing it to a file path.
+            // I'm gonna leave most of the code responsible for this,
+            // just in case you want to change it back.
+            // - Nik
+
+
+//            BerylliumModelLoader.addToLoadingList(modelName);
+            String filePath = modelName + ".json";
+            RawAssetLoader.RawFileHandle modelFileHandle = IndependentAssetLoader.loadAsset(Identifier.of(filePath));
+            BerylliumModelLoader.loadBerylliumBlockModel(filePath, modelFileHandle);
 
             //TODO make this not just a cube ( help needed)
             RawAssetLoader.RawFileHandle fileHandle = IndependentAssetLoader.loadAsset(Identifier.of("base:models/blocks/cube.json"));
