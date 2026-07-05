@@ -92,8 +92,8 @@ public class Tessallator {
                 faceTint, aoIndex,
                 face.uvRotation(),
                 (short) face.faceUvIndex(),
-                albedoIdx, albedoFrameCount, albedoFrameDuration,
-                emissiveIdx, emissiveFrameCount, emissiveFrameDuration,
+                albedoIdx,
+                emissiveIdx,
                 normalIdx,
                 materialIdx
         );
@@ -125,8 +125,8 @@ public class Tessallator {
                 faceTint, aoIndex,
                 uvRotation,
                 faceUVIdx,
-                albedoIdx, (short) 1, (short) 0, // Doesn't seem like this is used, so just dummy values here for now
-                emissiveIdx, (short) 1, (short) 0,
+                albedoIdx,
+                emissiveIdx,
                 normalIdx,
                 materialIdx
         );
@@ -143,8 +143,8 @@ public class Tessallator {
             int aoIndex,
             int uvRotation,
             short faceUVIdx,
-            short albedoIdx, short albedoFrameCount, short albedoFrameDuration,
-            short emissiveIdx, short emissiveFrameCount, short emissiveFrameDuration,
+            short albedoIdx,
+            short emissiveIdx,
             short normalIdx,
             short materialIdx
     ) {
@@ -201,37 +201,37 @@ public class Tessallator {
 
         if (flipQuad) {
             addVertex(c01x, c01y, c01z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c01ao, faceTint, faceUVIdx,
-                    albedoIdx, albedoFrameCount, albedoFrameDuration,
-                    emissiveIdx, emissiveFrameCount, emissiveFrameDuration,
+                    albedoIdx,
+                    emissiveIdx,
                     normalIdx, materialIdx, 1);
             addVertex(c11x, c11y, c11z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c11ao, faceTint, faceUVIdx,
-                    albedoIdx, albedoFrameCount, albedoFrameDuration,
-                    emissiveIdx, emissiveFrameCount, emissiveFrameDuration,
+                    albedoIdx,
+                    emissiveIdx,
                     normalIdx, materialIdx, 3);
             addVertex(c00x, c00y, c00z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c00ao, faceTint, faceUVIdx,
-                    albedoIdx, albedoFrameCount, albedoFrameDuration,
-                    emissiveIdx, emissiveFrameCount, emissiveFrameDuration,
+                    albedoIdx,
+                    emissiveIdx,
                     normalIdx, materialIdx, 0);
             addVertex(c10x, c10y, c10z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c10ao, faceTint, faceUVIdx,
-                    albedoIdx, albedoFrameCount, albedoFrameDuration,
-                    emissiveIdx, emissiveFrameCount, emissiveFrameDuration,
+                    albedoIdx,
+                    emissiveIdx,
                     normalIdx, materialIdx, 2);
         } else {
             addVertex(c00x, c00y, c00z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c00ao, faceTint, faceUVIdx,
-                    albedoIdx, albedoFrameCount, albedoFrameDuration,
-                    emissiveIdx, emissiveFrameCount, emissiveFrameDuration,
+                    albedoIdx,
+                    emissiveIdx,
                     normalIdx, materialIdx, 0);
             addVertex(c01x, c01y, c01z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c01ao, faceTint, faceUVIdx,
-                    albedoIdx, albedoFrameCount, albedoFrameDuration,
-                    emissiveIdx, emissiveFrameCount, emissiveFrameDuration,
+                    albedoIdx,
+                    emissiveIdx,
                     normalIdx, materialIdx, 1);
             addVertex(c10x, c10y, c10z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c10ao, faceTint, faceUVIdx,
-                    albedoIdx, albedoFrameCount, albedoFrameDuration,
-                    emissiveIdx, emissiveFrameCount, emissiveFrameDuration,
+                    albedoIdx,
+                    emissiveIdx,
                     normalIdx, materialIdx, 2);
             addVertex(c11x, c11y, c11z, nX, nY, nZ, skyLightLevel, blockLightLevel, uvRot, c11ao, faceTint, faceUVIdx,
-                    albedoIdx, albedoFrameCount, albedoFrameDuration,
-                    emissiveIdx, emissiveFrameCount, emissiveFrameDuration,
+                    albedoIdx,
+                    emissiveIdx,
                     normalIdx, materialIdx, 3);
         }
         for (int index : BaseQuad.INDICES) {
@@ -247,8 +247,8 @@ public class Tessallator {
             short skyLightLevel, short blockLightLevel,
             byte uvRotation, byte aoLevel,
             short vertexTint, short faceUVIdx,
-            short albedoIdx, short albedoFrameCount, short albedoFrameDuration,
-            short emissiveIdx, short emissiveFrameCount, short emissiveFrameDuration,
+            short albedoIdx,
+            short emissiveIdx,
             short normalIdx, short materialIdx,
             int cornerID
     ) {
