@@ -47,16 +47,16 @@ public class SimpleConnectedBlockTessallator extends BlockTessallator {
             0, -1,  0,
 
             // Y_FACES
-            -1,  0,  0,
-             0,  0,  1,
              1,  0,  0,
              0,  0, -1,
+            -1,  0,  0,
+             0,  0,  1,
 
             // Z_FACES
-             0,  1, 0,
              1,  0, 0,
-             0, -1, 0,
+             0,  1, 0,
             -1,  0, 0,
+             0, -1, 0,
     };
 
     private static Vector3 getOffs(Vector3 tmp, int axis, int idx) {
@@ -82,20 +82,29 @@ public class SimpleConnectedBlockTessallator extends BlockTessallator {
     public boolean checkState(
             CrossChunkAccessor accessor, BlockState state,
             int x, int y, int z,
-            int axis, int idx
+            int axis, int idx,
+            boolean flipX, boolean flipY, boolean flipZ
     ) {
-        BlockState nState = accessor.getBlockState(getOffs(tmpOffs, axis, idx), x, y, z);
+        getOffs(tmpOffs, axis, idx);
+        if (flipX) tmpOffs.x = -tmpOffs.x;
+        if (flipY) tmpOffs.y = -tmpOffs.y;
+        if (flipZ) tmpOffs.z = -tmpOffs.z;
+        BlockState nState = accessor.getBlockState(tmpOffs, x, y, z);
         return nState != null && nState.equals(state);
     }
 
     private String tmpTex = "0-open-faces";
     private int tmpRot = 0;
 
-    private void checkAxis(CrossChunkAccessor accessor, BlockState state, int axis, int x, int y, int z) {
-        boolean s01 = checkState(accessor, state, x, y, z, axis, 0);
-        boolean s10 = checkState(accessor, state, x, y, z, axis, 1);
-        boolean s02 = checkState(accessor, state, x, y, z, axis, 2);
-        boolean s20 = checkState(accessor, state, x, y, z, axis, 3);
+    private void checkAxis(
+            CrossChunkAccessor accessor, BlockState state,
+           int axis, int x, int y, int z,
+            boolean flipX, boolean flipY, boolean flipZ
+    ) {
+        boolean s01 = checkState(accessor, state, x, y, z, axis, 0, flipX, flipY, flipZ);
+        boolean s10 = checkState(accessor, state, x, y, z, axis, 1, flipX, flipY, flipZ);
+        boolean s02 = checkState(accessor, state, x, y, z, axis, 2, flipX, flipY, flipZ);
+        boolean s20 = checkState(accessor, state, x, y, z, axis, 3, flipX, flipY, flipZ);
 
         int count = ((s01 ? 1 : 0) + (s10 ? 1 : 0) + (s02 ? 1 : 0) + (s20 ? 1 : 0));
 
@@ -167,39 +176,42 @@ public class SimpleConnectedBlockTessallator extends BlockTessallator {
         BakedFace POS_Z_FACE = group.getFacesByDirection(5).getFirst();
 
         if (NEG_X || NEG_Y) {
-            checkAxis(accessor, state, 0, x, y, z);
             if (NEG_X) {
+                checkAxis(accessor, state, 0, x, y, z, false, false, true);
                 short tint = tintFunction.getTint(chunk, state, x, y, z, NEG_X_FACE.tintIndex());
                 tessallator.addQuad(NEG_X_FACE, tmpTex, tmpRot, skylight[0], blocklight[0], aoValues, tint, 0, x, y, z);
             }
 
             if (POS_X) {
+                checkAxis(accessor, state, 0, x, y, z, false, false, false);
                 short tint = tintFunction.getTint(chunk, state, x, y, z, POS_X_FACE.tintIndex());
                 tessallator.addQuad(POS_X_FACE, tmpTex, tmpRot, skylight[1], blocklight[1], aoValues, tint, 1, x, y, z);
             }
         }
 
         if (NEG_Y || POS_Y) {
-            checkAxis(accessor, state, 1, x, y, z);
             if (NEG_Y) {
+                checkAxis(accessor, state, 1, x, y, z, false, false, true);
                 short tint = tintFunction.getTint(chunk, state, x, y, z, NEG_Y_FACE.tintIndex());
                 tessallator.addQuad(NEG_Y_FACE, tmpTex, tmpRot, skylight[2], blocklight[2], aoValues, tint, 2, x, y, z);
             }
 
             if (POS_Y) {
+                checkAxis(accessor, state, 1, x, y, z, false, false, false);
                 short tint = tintFunction.getTint(chunk, state, x, y, z, POS_Y_FACE.tintIndex());
                 tessallator.addQuad(POS_Y_FACE, tmpTex, tmpRot, skylight[3], blocklight[3], aoValues, tint, 3, x, y, z);
             }
         }
 
         if (NEG_Z || POS_Z) {
-            checkAxis(accessor, state, 2, x, y, z);
             if (NEG_Z) {
+                checkAxis(accessor, state, 2, x, y, z, true, false, false);
                 short tint = tintFunction.getTint(chunk, state, x, y, z, NEG_Z_FACE.tintIndex());
                 tessallator.addQuad(NEG_Z_FACE, tmpTex, tmpRot, skylight[4], blocklight[4], aoValues, tint, 4, x, y, z);
             }
 
             if (POS_Z) {
+                checkAxis(accessor, state, 2, x, y, z, false, false, false);
                 short tint = tintFunction.getTint(chunk, state, x, y, z, POS_Z_FACE.tintIndex());
                 tessallator.addQuad(POS_Z_FACE, tmpTex, tmpRot, skylight[5], blocklight[5], aoValues, tint, 5, x, y, z);
             }
