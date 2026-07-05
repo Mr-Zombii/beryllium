@@ -16,16 +16,6 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 
 public class Tessallator {
-    /*
-    *   float 32
-    *   x, y, z
-    *
-    *   float 32
-    *   nX, nY, nZ
-    *
-    *   2bit AOIdx, RGB444 short coloredLightData
-    *   short uvBufferIdx
-    */
 
     ByteBuffer vertices;
     ByteBuffer indices;
