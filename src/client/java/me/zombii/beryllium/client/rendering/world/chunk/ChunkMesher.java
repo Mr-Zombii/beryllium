@@ -80,8 +80,6 @@ public class ChunkMesher {
                     BerylliumModel model = berylliumState.getModel();
                     if (!model.getRenderLayer().getId().equals(layer.getId())) continue;
 
-                    boolean hasRotation = self.rotation[0] != 0 || self.rotation[1] != 0 || self.rotation[2] != 0;
-
                     rotateMasks(
                             self.rotation[0],
                             self.rotation[1],
