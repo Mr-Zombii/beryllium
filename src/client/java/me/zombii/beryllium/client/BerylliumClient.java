@@ -41,7 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-public class BerylliumClient implements ClientPreModInit, ClientModInit, ClientPostModInit {
+public class BerylliumClient implements ClientModInit, ClientPostModInit {
 
     public static final int ATLAS_SIZE = 1024;
 
@@ -62,6 +62,17 @@ public class BerylliumClient implements ClientPreModInit, ClientModInit, ClientP
     @Override
     public void onClientInit() {
         if (BerylliumConfig.INSTANCE.enableBerylliumRendering) {
+//            String[] strings = new String[1];
+//            strings[0] = "assets/beryllium/models/blocks/cube.json";
+//            System.out.println("testeee");
+//
+//            GameAssetLoaderUtils.addAssetList(strings);
+            System.out.println("GameAssetLoaderUtils.defaultAssetList");
+
+            System.out.println(GameAssetLoaderUtils.defaultAssetList);
+            GameAssetLoaderUtils.addAssetList(Gdx.files.internal( BerylliumCommon.NAMESPACE + "-assets.txt").readString().split("\n"));
+            System.out.println(GameAssetLoaderUtils.defaultAssetList);
+
             ISidedModelLoader.CONTEXTUAL_INSTANCE.set(new NewClientModelLoader());
 
             BerylliumAtlases.initAtlases();
@@ -82,20 +93,11 @@ public class BerylliumClient implements ClientPreModInit, ClientModInit, ClientP
         }
     }
 
-    @Override
-    public void onClientPreInit() {
-//        String[] strings = new String[1];
-//        strings[0] = "assets/beryllium/models/blocks/cube.json";
-//
-//        GameAssetLoaderUtils.addAssetList(strings);
-
-        GameAssetLoaderUtils.addAssetList(Gdx.files.internal("assets.txt").readString().split("\n"));
-    }
-
     @SubscribeEvent
     public void onEvent(EventDebugBlockLoadingQueue event) {
         if (BerylliumConfig.INSTANCE.enableDebugBlock) {
             event.registerToQueue(() -> {
+                System.out.println("test");
                 Block.loadBlock(GameAssetLoader.loadAsset(Identifier.of(BerylliumCommon.NAMESPACE, "blocks/debug.json")));
             });
         }

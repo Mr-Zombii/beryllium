@@ -29,11 +29,13 @@ public class MixinBlockLoader {
                     System.out.println(p);
                     String id = BerylliumModelLoader.registerBerylliumBlockModelID(p, f.readString());
                     if (id != null) {
+                        System.out.println(id);
                         models.put(id, Pair.of(p, f.readString()));
                     }
                 });
 
                 for (String id : BerylliumModelLoader.blockIdsToLoad) {
+                    System.out.println(id);
                     Pair<String, String> pair = models.get(id);
                     BerylliumModelLoader.loadBerylliumModel(pair.left(), pair.right());
                 }

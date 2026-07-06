@@ -102,7 +102,7 @@ public class NewClientModelLoader implements ISidedModelLoader {
             // just in case you want to change it back.
             // - Nik
 
-//
+            System.out.println("Model name : " + modelName);
             BerylliumModelLoader.addToLoadingList(modelName);
 //            String filePath = modelName + ".json";
 //            RawAssetLoader.RawFileHandle modelFileHandle = IndependentAssetLoader.loadAsset(Identifier.of(filePath));

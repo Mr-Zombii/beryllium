@@ -55,7 +55,7 @@ processClientResources {
     def resourcesFolder = new File("${sourceSets.client.output.resourcesDir}/")
     def modelsFolder = new File("${sourceSets.client.output.resourcesDir}/assets/$p_id/models/")
     // projectFolder/assets/assets.txt
-    def assetsFile = new File("${sourceSets.client.output.resourcesDir}", "assets.txt")
+    def assetsFile = new File("${sourceSets.client.output.resourcesDir}/", "$p_id-assets.txt")
     // delete that file in case we've already created it
     assetsFile.delete()
 
