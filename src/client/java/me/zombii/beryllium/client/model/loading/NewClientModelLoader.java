@@ -102,11 +102,11 @@ public class NewClientModelLoader implements ISidedModelLoader {
             // just in case you want to change it back.
             // - Nik
 
-
-//            BerylliumModelLoader.addToLoadingList(modelName);
-            String filePath = modelName + ".json";
-            RawAssetLoader.RawFileHandle modelFileHandle = IndependentAssetLoader.loadAsset(Identifier.of(filePath));
-            BerylliumModelLoader.loadBerylliumModel(filePath, modelFileHandle);
+//
+            BerylliumModelLoader.addToLoadingList(modelName);
+//            String filePath = modelName + ".json";
+//            RawAssetLoader.RawFileHandle modelFileHandle = IndependentAssetLoader.loadAsset(Identifier.of(filePath));
+//            BerylliumModelLoader.loadBerylliumModel(filePath, modelFileHandle);
 
             //TODO make this not just a cube ( help needed)
             RawAssetLoader.RawFileHandle fileHandle = IndependentAssetLoader.loadAsset(Identifier.of("base:models/blocks/cube.json"));

@@ -17,6 +17,8 @@
   },
 
   "entrypoints": {
+
+    "client-preinit": "${p_group}.client.BerylliumClient",
     "client-init": "${p_group}.client.BerylliumClient",
     "client-postInit": "${p_group}.client.BerylliumClient",
     "init": "${p_group}.common.BerylliumCommon"

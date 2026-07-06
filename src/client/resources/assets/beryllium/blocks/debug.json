@@ -4,7 +4,7 @@
     {
         "default": 
         {
-            "modelName": "beryllium:models/blocks/cube"
+            "modelName": "beryllium:cube"
         }
     }
 }

@@ -50,6 +50,23 @@ processCommonResources {
     }
 }
 
+processClientResources {
+    // projectFolder/assets
+    def resourcesFolder = new File("${sourceSets.client.output.resourcesDir}/")
+    def modelsFolder = new File("${sourceSets.client.output.resourcesDir}/assets/$p_id/models/")
+    // projectFolder/assets/assets.txt
+    def assetsFile = new File("${sourceSets.client.output.resourcesDir}", "assets.txt")
+    // delete that file in case we've already created it
+    assetsFile.delete()
+
+    // iterate through all files inside that folder
+    // convert it to a relative path
+    // and append it to the file assets.txt
+    fileTree(modelsFolder).collect { resourcesFolder.relativePath(it) }.each {
+        assetsFile.append(it + "\n")
+    }
+}
+
 tasks.register("runWithRenderDoc") {
     group = "beryllium"
     description = "Launches runModdedClient wrapped in RenderDoc"

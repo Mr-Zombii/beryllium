@@ -454,7 +454,7 @@ public class BerylliumModelLoader {
         if (!object.get("id").isString()) throw new InvalidJsonTypeException(filePathId, "id", "string", object.get("id").getType().name());
         String id = object.get("id").asString();
         //TODO make better ( what the fuck did i mean???? )
-//        if (!modelIdToPath.containsKey(id)) throw new ModelException(filePathId, "Tried to load model before its ID '" + id + "' was registered");
+        if (!modelIdToPath.containsKey(id)) throw new ModelException(filePathId, "Tried to load model before its ID '" + id + "' was registered");
 
         if (modelMap.containsKey(id)) {
             return modelMap.get(id);

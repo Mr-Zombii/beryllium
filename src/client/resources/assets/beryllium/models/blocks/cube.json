@@ -1,5 +1,5 @@
 {
-  "id": "beryllium:models/blocks/cube",
+  "id": "beryllium:cube",
   "textures": {
     "all": "beryllium:textures/missing/missing-texture.png"
   },

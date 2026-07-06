@@ -5,7 +5,7 @@ import com.badlogic.gdx.utils.Queue;
 import net.neoforged.bus.api.Event;
 
 public class EventDebugBlockLoadingQueue extends Event {
-    private final Queue<Runnable> loadingQueue;
+    public final Queue<Runnable> loadingQueue;
 
     public EventDebugBlockLoadingQueue(Queue<Runnable> loadingQueue) {
         this.loadingQueue = loadingQueue;

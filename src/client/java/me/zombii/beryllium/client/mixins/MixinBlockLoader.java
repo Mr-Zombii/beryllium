@@ -2,6 +2,7 @@ package me.zombii.beryllium.client.mixins;
 
 import com.badlogic.gdx.utils.Queue;
 import dev.puzzleshq.puzzleloader.cosmic.game.blockloader.loading.BlockLoader;
+import finalforeach.cosmicreach.singletons.GameSingletons;
 import finalforeach.cosmicreach.util.assets.GameAssetLoader;
 import it.unimi.dsi.fastutil.Pair;
 import me.zombii.beryllium.client.model.baking.ModelBaker;
@@ -24,6 +25,8 @@ public class MixinBlockLoader {
             queue.addLast(() -> {
                 Map<String, Pair<String, String>> models = new HashMap<>();
                 GameAssetLoader.forEachAsset("models", ".json", (p, f) -> {
+                    System.out.println("jfodsaf");
+                    System.out.println(p);
                     String id = BerylliumModelLoader.registerBerylliumBlockModelID(p, f.readString());
                     if (id != null) {
                         models.put(id, Pair.of(p, f.readString()));
@@ -39,6 +42,8 @@ public class MixinBlockLoader {
 
             queue.addLast(ModelBaker::collectAndBake);
         }
+        System.out.println(GameSingletons.loadingQueue.isEmpty());
+        System.out.println(GameSingletons.loadingQueue.toString());
     }
 
 }

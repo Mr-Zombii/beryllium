@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static finalforeach.cosmicreach.singletons.GameSingletons.loadingQueue;
 
+
 @Mixin(GameSingletons.class)
 public class MixinGameSingletons {
 

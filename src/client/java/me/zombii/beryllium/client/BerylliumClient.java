@@ -7,10 +7,13 @@ import dev.puzzleshq.puzzleloader.cosmic.game.util.IndependentAssetLoader;
 import dev.puzzleshq.puzzleloader.loader.launch.Piece;
 import dev.puzzleshq.puzzleloader.loader.mod.entrypoint.client.ClientModInit;
 import dev.puzzleshq.puzzleloader.loader.mod.entrypoint.client.ClientPostModInit;
+import dev.puzzleshq.puzzleloader.loader.mod.entrypoint.client.ClientPreModInit;
 import finalforeach.cosmicreach.blocks.Block;
+import finalforeach.cosmicreach.gameevents.GameEvents;
 import finalforeach.cosmicreach.singletons.GameSingletons;
 import finalforeach.cosmicreach.util.Identifier;
 import finalforeach.cosmicreach.util.assets.GameAssetLoader;
+import finalforeach.cosmicreach.util.assets.GameAssetLoaderUtils;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import me.zombii.beryllium.client.events.EventBakingFinished;
@@ -38,7 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-public class BerylliumClient implements ClientModInit, ClientPostModInit {
+public class BerylliumClient implements ClientPreModInit, ClientModInit, ClientPostModInit {
 
     public static final int ATLAS_SIZE = 1024;
 
@@ -77,6 +80,16 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
 
             Gdx.app.postRunnable(RenderLayers::collectAndCompile);
         }
+    }
+
+    @Override
+    public void onClientPreInit() {
+//        String[] strings = new String[1];
+//        strings[0] = "assets/beryllium/models/blocks/cube.json";
+//
+//        GameAssetLoaderUtils.addAssetList(strings);
+
+        GameAssetLoaderUtils.addAssetList(Gdx.files.internal("assets.txt").readString().split("\n"));
     }
 
     @SubscribeEvent
