@@ -37,9 +37,6 @@ public class BerylliumModelLoader {
     private static final ObjectList<BerylliumModel> loadedModels = new ObjectArrayList<>();
     private static final Object2ObjectMap<String, BerylliumModel> modelMap = new Object2ObjectArrayMap<>();
 
-    private static final Object2ObjectMap<String, String> modelIdToPath = new Object2ObjectArrayMap<>();
-    public static final List<String> blockIdsToLoad = new ArrayList<>();
-
     public static BerylliumModel getModel(String name) {
         return modelMap.get(name);
     }
@@ -415,31 +412,9 @@ public class BerylliumModelLoader {
         return register(model);
     }
 
-    public static @Nullable String registerBerylliumBlockModelID(String filePathId, String json) {
-        JsonValue value = JsonValue.readHjson(json);
-        if (!value.isObject()) throw new ModelException(filePathId, "Expected a json object as input, got type \"" + value.getType() + "\" instead");
-        JsonObject object = value.asObject();
-
-        if (object.get("id") == null) return null;
-        if (!object.get("id").isString()) throw new InvalidJsonTypeException(filePathId, "id", "string", object.get("id").getType().name());
-        String id = object.get("id").asString();
-
-        if (BerylliumConfig.INSTANCE.debugMode) LOGGER.log(Level.INFO, "Registered Block Model ID \"{}\"", id);
-
-        if (!modelIdToPath.containsKey(id)){
-            modelIdToPath.put(id, filePathId);
-        }
-        return id;
-    }
-
-    public static void addToLoadingList(String modelID) {
-        if (BerylliumConfig.INSTANCE.debugMode) LOGGER.log(Level.INFO, "Added Block Model ID to loading list \"{}\"", modelID);
-        blockIdsToLoad.add(modelID);
-    }
-
-    public static BerylliumModel loadBerylliumModel(String modelID, RawAssetLoader.RawFileHandle handle) {
+    public static BerylliumModel loadBerylliumModel(String filePathId, RawAssetLoader.RawFileHandle handle) {
         String json = handle.getString();
-        return loadBerylliumModel(modelID, json);
+        return loadBerylliumModel(filePathId, json);
     }
 
 
@@ -453,8 +428,6 @@ public class BerylliumModelLoader {
         if (object.get("id") == null) throw new MissingJsonFieldException(filePathId, "string", "id");
         if (!object.get("id").isString()) throw new InvalidJsonTypeException(filePathId, "id", "string", object.get("id").getType().name());
         String id = object.get("id").asString();
-        //TODO make better ( what the fuck did i mean???? )
-//        if (!modelIdToPath.containsKey(id)) throw new ModelException(filePathId, "Tried to load model before its ID '" + id + "' was registered");
 
         if (modelMap.containsKey(id)) {
             return modelMap.get(id);
@@ -464,12 +437,12 @@ public class BerylliumModelLoader {
         if (object.get("parent-id") != null) {
             if (!object.get("parent-id").isString()) throw new InvalidJsonTypeException(filePathId, "parent-id", "string", object.get("parent-id").getType().name());
             String parentId = object.get("parent-id").asString();
-            if (!modelIdToPath.containsKey(parentId)) throw new ModelException(filePathId, "Tried to load model before its parent model ID '" + parentId + "' was registered");
+            String parentPath = parentId + ".json";
 
             parentModel = BerylliumModelLoader.getModel(parentId);
             if (parentModel == null) {
                 parentModel = BerylliumModelLoader.loadBerylliumModel(
-                        modelIdToPath.get(parentId), IndependentAssetLoader.loadAsset(Identifier.of(modelIdToPath.get(parentId)))
+                        parentId, IndependentAssetLoader.loadAsset(Identifier.of(parentPath))
                 );
             }
             if (parentModel == null) throw new ModelException(filePathId, "Could not find the parent model \"" + parentId + "\"");
@@ -479,107 +452,123 @@ public class BerylliumModelLoader {
 
         loadTextures(filePathId, object, model, parentModel);
 
-        if (object.get("groups") == null) throw new MissingJsonObjectException(filePathId, "groups");
-        if (!object.get("groups").isObject()) throw new InvalidJsonTypeException(filePathId, "groups", "Object", object.get("groups").getType().name());
-        JsonObject groups = object.get("groups").asObject();
+        if (object.get("groups") != null) {
+            if (!object.get("groups").isObject())
+                throw new InvalidJsonTypeException(filePathId, "groups", "Object", object.get("groups").getType().name());
+            JsonObject groups = object.get("groups").asObject();
 
-        for (JsonObject.Member group : groups) {
-            PartGroup partGroup = model.getOrCreateGroup(group.getName());
-            JsonValue groupValue = group.getValue();
-            if (!groupValue.isObject()) throw new InvalidJsonTypeException(filePathId, group.getName(), "Object", groupValue.getType().name());
-            JsonObject groupObject = groupValue.asObject();
+            for (JsonObject.Member group : groups) {
+                PartGroup partGroup = model.getOrCreateGroup(group.getName());
+                JsonValue groupValue = group.getValue();
+                if (!groupValue.isObject())
+                    throw new InvalidJsonTypeException(filePathId, group.getName(), "Object", groupValue.getType().name());
+                JsonObject groupObject = groupValue.asObject();
 
-            JsonValue parentNameValue = groupObject.get("parentName");
-            if (parentNameValue != null) {
-                if (!parentNameValue.isString()) throw new InvalidJsonTypeException(filePathId, "parentName", "string", parentNameValue.getType().name());
-                partGroup.setParentName(parentNameValue.asString());
-            }
-
-            partGroup.setRotation(getJsonVector3(filePathId, groupObject, "rotation", Vector3.Zero));
-            partGroup.setPivot(getJsonVector3(filePathId, groupObject, "pivot", Vector3.Zero));
-
-            JsonValue parts = groupObject.get("parts");
-            if (!parts.isArray()) throw new InvalidJsonTypeException(filePathId, "parts", "Array", parts.getType().name());
-            JsonArray array = parts.asArray();
-
-            for (JsonValue jsonValue : array.values()) {
-                if (!jsonValue.isObject()) throw new InvalidJsonArrayTypeException(filePathId, "parts", "Object", jsonValue.getType().name());
-                JsonObject partObject = jsonValue.asObject();
-
-                Vector3 pos = getJsonVector3(filePathId, partObject, "pos", null);
-                if (pos == null) throw new MissingJsonFieldException(filePathId, "array", "pos");
-
-                Vector3 size = getJsonVector3(filePathId, partObject, "size", null);
-                if (size == null) throw new MissingJsonFieldException(filePathId, "array", "size");
-
-                Part part = partGroup.newPart(pos, size);
-
-                part.setPivot(getJsonVector3(filePathId, partObject, "pivot", Vector3.Zero));
-                part.setRotation(getJsonVector3(filePathId, partObject, "rotation", Vector3.Zero));
-
-                if (partObject.get("faces") == null) throw new MissingJsonObjectException(filePathId, "faces");
-                if (!partObject.get("faces").isObject()) throw new InvalidJsonTypeException(filePathId, "faces", "Object", partObject.get("faces").getType().name());
-                JsonObject faces = partObject.get("faces").asObject();
-
-                PartFace[] partFaces = part.getFaces();
-                Arrays.fill(partFaces, null);
-
-                for (JsonObject.Member member : faces) {
-                    JsonValue faceValue = member.getValue();
-                    if (!faceValue.isObject()) throw new InvalidJsonTypeException(filePathId, group.getName(), "Object", faceValue.getType().name());
-                    JsonObject faceObject = faceValue.asObject();
-
-                    Direction direction = switch (member.getName()) {
-                        case "NegX" -> Direction.NEG_X;
-                        case "PosX" -> Direction.POS_X;
-                        case "NegY" -> Direction.NEG_Y;
-                        case "PosY" -> Direction.POS_Y;
-                        case "NegZ" -> Direction.NEG_Z;
-                        case "PosZ" -> Direction.POS_Z;
-                        default -> throw new ModelException(filePathId, "Unexpected face direction \"" + member.getName() + "\"");
-                    };
-
-                    PartFace partFace = partFaces[direction.ordinal()] = new PartFace(direction);
-
-                    String texture = getJsonString(filePathId, faceObject, "texture", null);
-                    if (texture == null) throw new MissingJsonFieldException(filePathId, "string", "texture");
-                    partFace.setTextureID(texture);
-
-                    int uvRotation = faceObject.getInt("uvRotation", 0);
-                    partFace.setUVRotation(uvRotation);
-
-                    partFace.setTintIndex(getJsonInt(filePathId, faceObject, "tintIndex", partFace.getTintIndex()));
-
-                    partFace.setAO(getJsonBoolean(filePathId, faceObject, "ambientOcclusion", partFace.usesAO()));
-
-                    partFace.setCulled(getJsonBoolean(filePathId, faceObject, "cullFace", partFace.isCulled()));
-
-                    JsonValue uvValue = faceObject.get("uv");
-                    if (uvValue == null) throw new MissingJsonFieldException(filePathId, "array", "uv");;
-
-                    if (!uvValue.isArray()) throw new InvalidJsonTypeException(filePathId, "uv", "Array", uvValue.getType().name());
-                    JsonArray uvArray = uvValue.asArray();
-
-                    if (uvArray.size() != 4) throw new InvalidJsonArraySizeException(filePathId, "uv", 4, uvArray.size());
-
-                    JsonValue one = uvArray.get(0);
-                    if (!one.isNumber()) throw new InvalidJsonArrayTypeException(filePathId, "uv", "number", one.getType().name());
-                    JsonValue two = uvArray.get(1);
-                    if (!two.isNumber()) throw new InvalidJsonArrayTypeException(filePathId, "uv", "number", two.getType().name());
-                    JsonValue three = uvArray.get(2);
-                    if (!three.isNumber()) throw new InvalidJsonArrayTypeException(filePathId, "uv", "number", three.getType().name());
-                    JsonValue four = uvArray.get(2);
-                    if (!four.isNumber()) throw new InvalidJsonArrayTypeException(filePathId, "uv", "number", four.getType().name());
-
-                    int[] uvs = partFace.getUV();
-                    uvs[0] = one.asInt();
-                    uvs[1] = two.asInt();
-                    uvs[2] = three.asInt();
-                    uvs[3] = four.asInt();
-
+                JsonValue parentNameValue = groupObject.get("parentName");
+                if (parentNameValue != null) {
+                    if (!parentNameValue.isString())
+                        throw new InvalidJsonTypeException(filePathId, "parentName", "string", parentNameValue.getType().name());
+                    partGroup.setParentName(parentNameValue.asString());
                 }
-            }
 
+                partGroup.setRotation(getJsonVector3(filePathId, groupObject, "rotation", Vector3.Zero));
+                partGroup.setPivot(getJsonVector3(filePathId, groupObject, "pivot", Vector3.Zero));
+
+                JsonValue parts = groupObject.get("parts");
+                if (!parts.isArray())
+                    throw new InvalidJsonTypeException(filePathId, "parts", "Array", parts.getType().name());
+                JsonArray array = parts.asArray();
+
+                for (JsonValue jsonValue : array.values()) {
+                    if (!jsonValue.isObject())
+                        throw new InvalidJsonArrayTypeException(filePathId, "parts", "Object", jsonValue.getType().name());
+                    JsonObject partObject = jsonValue.asObject();
+
+                    Vector3 pos = getJsonVector3(filePathId, partObject, "pos", null);
+                    if (pos == null) throw new MissingJsonFieldException(filePathId, "array", "pos");
+
+                    Vector3 size = getJsonVector3(filePathId, partObject, "size", null);
+                    if (size == null) throw new MissingJsonFieldException(filePathId, "array", "size");
+
+                    Part part = partGroup.newPart(pos, size);
+
+                    part.setPivot(getJsonVector3(filePathId, partObject, "pivot", Vector3.Zero));
+                    part.setRotation(getJsonVector3(filePathId, partObject, "rotation", Vector3.Zero));
+
+                    if (partObject.get("faces") == null) throw new MissingJsonObjectException(filePathId, "faces");
+                    if (!partObject.get("faces").isObject())
+                        throw new InvalidJsonTypeException(filePathId, "faces", "Object", partObject.get("faces").getType().name());
+                    JsonObject faces = partObject.get("faces").asObject();
+
+                    PartFace[] partFaces = part.getFaces();
+                    Arrays.fill(partFaces, null);
+
+                    for (JsonObject.Member member : faces) {
+                        JsonValue faceValue = member.getValue();
+                        if (!faceValue.isObject())
+                            throw new InvalidJsonTypeException(filePathId, group.getName(), "Object", faceValue.getType().name());
+                        JsonObject faceObject = faceValue.asObject();
+
+                        Direction direction = switch (member.getName()) {
+                            case "NegX" -> Direction.NEG_X;
+                            case "PosX" -> Direction.POS_X;
+                            case "NegY" -> Direction.NEG_Y;
+                            case "PosY" -> Direction.POS_Y;
+                            case "NegZ" -> Direction.NEG_Z;
+                            case "PosZ" -> Direction.POS_Z;
+                            default ->
+                                    throw new ModelException(filePathId, "Unexpected face direction \"" + member.getName() + "\"");
+                        };
+
+                        PartFace partFace = partFaces[direction.ordinal()] = new PartFace(direction);
+
+                        String texture = getJsonString(filePathId, faceObject, "texture", null);
+                        if (texture == null) throw new MissingJsonFieldException(filePathId, "string", "texture");
+                        partFace.setTextureID(texture);
+
+                        int uvRotation = faceObject.getInt("uvRotation", 0);
+                        partFace.setUVRotation(uvRotation);
+
+                        partFace.setTintIndex(getJsonInt(filePathId, faceObject, "tintIndex", partFace.getTintIndex()));
+
+                        partFace.setAO(getJsonBoolean(filePathId, faceObject, "ambientOcclusion", partFace.usesAO()));
+
+                        partFace.setCulled(getJsonBoolean(filePathId, faceObject, "cullFace", partFace.isCulled()));
+
+                        JsonValue uvValue = faceObject.get("uv");
+                        if (uvValue == null) throw new MissingJsonFieldException(filePathId, "array", "uv");
+                        ;
+
+                        if (!uvValue.isArray())
+                            throw new InvalidJsonTypeException(filePathId, "uv", "Array", uvValue.getType().name());
+                        JsonArray uvArray = uvValue.asArray();
+
+                        if (uvArray.size() != 4)
+                            throw new InvalidJsonArraySizeException(filePathId, "uv", 4, uvArray.size());
+
+                        JsonValue one = uvArray.get(0);
+                        if (!one.isNumber())
+                            throw new InvalidJsonArrayTypeException(filePathId, "uv", "number", one.getType().name());
+                        JsonValue two = uvArray.get(1);
+                        if (!two.isNumber())
+                            throw new InvalidJsonArrayTypeException(filePathId, "uv", "number", two.getType().name());
+                        JsonValue three = uvArray.get(2);
+                        if (!three.isNumber())
+                            throw new InvalidJsonArrayTypeException(filePathId, "uv", "number", three.getType().name());
+                        JsonValue four = uvArray.get(2);
+                        if (!four.isNumber())
+                            throw new InvalidJsonArrayTypeException(filePathId, "uv", "number", four.getType().name());
+
+                        int[] uvs = partFace.getUV();
+                        uvs[0] = one.asInt();
+                        uvs[1] = two.asInt();
+                        uvs[2] = three.asInt();
+                        uvs[3] = four.asInt();
+
+                    }
+                }
+
+            }
         }
 
         if (parentModel != null) {

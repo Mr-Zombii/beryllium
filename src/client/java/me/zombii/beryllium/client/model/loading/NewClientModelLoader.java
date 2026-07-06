@@ -91,19 +91,7 @@ public class NewClientModelLoader implements ISidedModelLoader {
         if (override) BerylliumModelLoader.unregister(modelName);
 
         if (!modelName.contains(".json")) {
-            // It doesn't seem to actually be possible to iterate
-            // through java mod assets. So we either have to
-            // ask mod devs to manually load their beryllium block
-            // models beforehand, or use actual file paths instead of just
-            // ids for this, like is done in base game.
-            //
-            // For now, I'm just changing it to a file path.
-            // I'm gonna leave most of the code responsible for this,
-            // just in case you want to change it back.
-            // - Nik
 
-
-//            BerylliumModelLoader.addToLoadingList(modelName);
             String filePath = modelName + ".json";
             RawAssetLoader.RawFileHandle modelFileHandle = IndependentAssetLoader.loadAsset(Identifier.of(filePath));
             BerylliumModelLoader.loadBerylliumModel(filePath, modelFileHandle);

@@ -1,0 +1,7 @@
+{
+  "parent-id": "beryllium:models/blocks/cube",
+  "id": "beryllium:models/blocks/cube2",
+  "textures": {
+    "all": "beryllium:textures/connected/test/connected-0.png"
+  }
+}

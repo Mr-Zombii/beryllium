@@ -1,6 +1,6 @@
 {
-  "parent-id": "beryllium:parentModel",
-  "id": "beryllium:model",
+  "parent-id": "beryllium:models/blocks/parentModel",
+  "id": "beryllium:models/blocks/model",
   "textures": {
     "root": {
       "texture": "beryllium:/textures/blocks/test.png",

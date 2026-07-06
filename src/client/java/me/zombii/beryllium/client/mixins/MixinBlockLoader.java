@@ -21,22 +21,6 @@ public class MixinBlockLoader {
     @Inject(method = "injectIntoQueue", at = @At("TAIL"))
     private static void inject(Queue<Runnable> queue, CallbackInfo ci) {
         if (BerylliumConfig.INSTANCE.enableBerylliumRendering) {
-            queue.addLast(() -> {
-                Map<String, Pair<String, String>> models = new HashMap<>();
-                GameAssetLoader.forEachAsset("models", ".json", (p, f) -> {
-                    String id = BerylliumModelLoader.registerBerylliumBlockModelID(p, f.readString());
-                    if (id != null) {
-                        models.put(id, Pair.of(p, f.readString()));
-                    }
-                });
-
-                for (String id : BerylliumModelLoader.blockIdsToLoad) {
-                    Pair<String, String> pair = models.get(id);
-                    BerylliumModelLoader.loadBerylliumModel(pair.left(), pair.right());
-                }
-            });
-
-
             queue.addLast(ModelBaker::collectAndBake);
         }
     }
