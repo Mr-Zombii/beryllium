@@ -8,6 +8,7 @@ import dev.puzzleshq.puzzleloader.loader.util.RawAssetLoader;
 import finalforeach.cosmicreach.rendering.blockmodels.BlockModel;
 import finalforeach.cosmicreach.util.Identifier;
 import me.zombii.beryllium.client.model.vanilla.BasicBlockModel;
+import me.zombii.beryllium.client.model.vanilla.BerylliumBlockModel;
 import me.zombii.beryllium.common.BerylliumCommon;
 
 import java.util.Map;
@@ -97,8 +98,9 @@ public class NewClientModelLoader implements ISidedModelLoader {
             BerylliumModelLoader.loadBerylliumModel(filePath, modelFileHandle);
 
             //TODO make this not just a cube ( help needed)
-            RawAssetLoader.RawFileHandle fileHandle = IndependentAssetLoader.loadAsset(Identifier.of("base:models/blocks/cube.json"));
-            BlockModel model = fromString("beryllium:cube", new float[]{0.0F, 0.0F, 0.0F}, fileHandle.getString(), override);
+//            RawAssetLoader.RawFileHandle fileHandle = IndependentAssetLoader.loadAsset(Identifier.of("base:models/blocks/cube.json"));
+//            BlockModel model = fromString("beryllium:cube", new float[]{0.0F, 0.0F, 0.0F}, fileHandle.getString(), override);
+            BlockModel model = fromString(modelName, new float[]{0.0F, 0.0F, 0.0F}, modelFileHandle.getString(), override);
             CACHE.put(modelName, model);
             return model;
         }
@@ -124,6 +126,9 @@ public class NewClientModelLoader implements ISidedModelLoader {
     }
 
     private static BlockModel fromString(String modelName, float[] rotation, String modelJson, boolean override) {
+        if (!modelName.endsWith(".json")){
+            return BerylliumBlockModel.fromJson(modelName, rotation, modelJson, override);
+        }
 //        try {
 //            return (BlockModel) ReflectionUtil.getMethod(DummyBlockModel.class, "getInstanceFromJsonStr", new Class[]{String.class, String.class, float[].class})
 //                    .invoke(null, modelName, modelJson, DEFAULT_ROTATION);

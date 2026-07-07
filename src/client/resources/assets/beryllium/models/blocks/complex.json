@@ -1,0 +1,85 @@
+{
+  "id": "beryllium:models/blocks/complex",
+  "textures": {
+    "all": "beryllium:textures/missing/missing-texture.png"
+  },
+  "groups": {
+    "root": {
+      "parts": [
+        {
+          "pos": [8, 8, 8],
+          "pivot": [8, 8, 8],
+          "rotation": [45, 0, 0],
+          "size": [8, 8, 8],
+          "faces": {
+            "NegX": {
+              "uv": [ 0, 0, 16, 16 ],
+              "texture": "all",
+              "cullFace": false
+            },
+            "PosX": {
+              "uv": [ 0, 0, 16, 16 ],
+              "texture": "all",
+              "cullFace": false
+            },
+            "NegY": {
+              "uv": [ 0, 0, 16, 16 ],
+              "texture": "all",
+              "cullFace": false
+            },
+            "PosY": {
+              "uv": [ 0, 0, 16, 16 ],
+              "texture": "all",
+              "cullFace": false
+            },
+            "NegZ": {
+              "uv": [ 0, 0, 16, 16 ],
+              "texture": "all",
+              "cullFace": false
+            },
+            "PosZ": {
+              "uv": [ 0, 0, 16, 16 ],
+              "texture": "all",
+              "cullFace": false
+            }
+          }
+        },
+        {
+          "pos": [8, 0, 0],
+          "size": [8, 8, 8],
+          "faces": {
+            "NegX": {
+              "uv": [ 0, 0, 16, 16 ],
+              "texture": "all",
+              "cullFace": false
+            },
+            "PosX": {
+              "uv": [ 0, 0, 16, 16 ],
+              "texture": "all",
+              "cullFace": false
+            },
+            "NegY": {
+              "uv": [ 0, 0, 16, 16 ],
+              "texture": "all"
+            },
+            "PosY": {
+              "uv": [ 0, 0, 16, 16 ],
+              "texture": "all",
+              "cullFace": false
+            },
+            "NegZ": {
+              "uv": [ 0, 0, 16, 16 ],
+              "texture": "all",
+              "cullFace": false
+            },
+            "PosZ": {
+              "uv": [ 0, 0, 16, 16 ],
+              "texture": "all",
+              "cullFace": false
+            }
+          }
+        }
+      ]
+    }
+  }
+}
