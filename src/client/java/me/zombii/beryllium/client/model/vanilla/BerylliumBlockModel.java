@@ -279,8 +279,8 @@ public class BerylliumBlockModel extends BlockModel {
                     continue;
                 }
                 if (!checkOBB.intersects(box)) continue;
-                if (box.getHeight() < (sixteenth * 2 - 0.001f) || box.getWidth() < (sixteenth * 2 - 0.001f) || box.getDepth() < (sixteenth * 2 - 0.001f)){
-                    boundingBoxes.add(box); // Cap the box size at 1/16th
+                if (box.getHeight() < (sixteenth * 4 - 0.001f) || box.getWidth() < (sixteenth * 4 - 0.001f) || box.getDepth() < (sixteenth * 4 - 0.001f)){
+                    boundingBoxes.add(box); // Cap the box size at 1/8th
                     continue;
                 }
                 // The box gets split into 8, which go back into the queue
