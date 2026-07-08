@@ -51,6 +51,7 @@
       "parentName": "root",
       "rotation": [0, 0, 0],
       "pivot": [0, 0, 0],
+      "canCollide": false,
       "parts": [
         {
           "pos": [0, 0, 0],

@@ -92,14 +92,10 @@ public class NewClientModelLoader implements ISidedModelLoader {
         if (override) BerylliumModelLoader.unregister(modelName);
 
         if (!modelName.contains(".json")) {
-
             String filePath = modelName + ".json";
             RawAssetLoader.RawFileHandle modelFileHandle = IndependentAssetLoader.loadAsset(Identifier.of(filePath));
             BerylliumModelLoader.loadBerylliumModel(filePath, modelFileHandle);
 
-            //TODO make this not just a cube ( help needed)
-//            RawAssetLoader.RawFileHandle fileHandle = IndependentAssetLoader.loadAsset(Identifier.of("base:models/blocks/cube.json"));
-//            BlockModel model = fromString("beryllium:cube", new float[]{0.0F, 0.0F, 0.0F}, fileHandle.getString(), override);
             BlockModel model = fromString(modelName, new float[]{0.0F, 0.0F, 0.0F}, modelFileHandle.getString(), override);
             CACHE.put(modelName, model);
             return model;

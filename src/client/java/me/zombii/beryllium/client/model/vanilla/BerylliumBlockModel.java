@@ -55,7 +55,7 @@ public class BerylliumBlockModel extends BlockModel {
     }
 
     public BerylliumBlockModel(String name, float[] rotation, BoundingBox[] boundingBoxes, CollisionTriangle[] tris) {
-        System.out.println("Models made" + ++modelsMade + " " + name + " " + Arrays.toString(rotation) + " " + Arrays.toString(boundingBoxes));
+        System.out.println("Models made " + ++modelsMade + " " + name + " " + Arrays.toString(rotation) + " " + Arrays.toString(boundingBoxes));
         this.boxes = boundingBoxes;
         this.calculateBoundingBox();
         this.rotation = rotation;
@@ -165,6 +165,7 @@ public class BerylliumBlockModel extends BlockModel {
                 }
 
                 JsonObject partObject = part.asObject();
+                if (!BerylliumModelLoader.getJsonBoolean(name, partObject, "canCollide", true)) continue;
                 Vector3 partPos = BerylliumModelLoader.getJsonVector3(name, partObject, "pos", null);
                 if (partPos == null) throw new MissingJsonFieldException(name, "array", "pos");
                 Vector3 partRot = BerylliumModelLoader.getJsonVector3(name, partObject, "rotation", Vector3.Zero);
@@ -177,12 +178,6 @@ public class BerylliumBlockModel extends BlockModel {
 
                 partPosMat.idt();
                 partPosMat.translate(tmpVec);
-//                tmpVec.set(partSize);
-//                tmpVec.scl(sixteenth);
-//                tmpVec.scl(0.5f);
-//                partPosMat.translate(tmpVec);
-//                partPosMat.scl(partSize);
-//                partPosMat.scl(sixteenth);
 
                 tmpVec.set(partPivot);
                 tmpVec.scl(sixteenth);
