@@ -24,7 +24,6 @@ import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -263,7 +262,8 @@ public class BerylliumModelLoader {
                         Part newPart = newGroup.newPart(part.getPos(), part.getSize())
                                 .setPivot(part.getPivot())
                                 .setRotation(part.getRotation())
-                                .setScale(part.getScale());
+                                .setScale(part.getScale())
+                                .setCanCollide(part.canCollide());
                         PartFace[] oldFaces = part.getFaces();
                         PartFace[] newFaces = newPart.getFaces();
                         for (int i = 0; i < 6; i++) {
@@ -367,7 +367,7 @@ public class BerylliumModelLoader {
                         0
                 ).setPivot(center).setRotation(
                         eulerAngles
-                );
+                ).setCanCollide(false);
 
                 PartFace[] faces = part.getFaces();
                 Arrays.fill(faces, null);
@@ -416,7 +416,6 @@ public class BerylliumModelLoader {
         String json = handle.getString();
         return loadBerylliumModel(filePathId, json);
     }
-
 
     public static BerylliumModel loadBerylliumModel(String filePathId, String json) {
         boolean debugMode = BerylliumConfig.INSTANCE.debugMode;
@@ -494,6 +493,7 @@ public class BerylliumModelLoader {
 
                     part.setPivot(getJsonVector3(filePathId, partObject, "pivot", Vector3.Zero));
                     part.setRotation(getJsonVector3(filePathId, partObject, "rotation", Vector3.Zero));
+                    part.setCanCollide(partObject.getBoolean("canCollide", true));
 
                     if (partObject.get("faces") == null) throw new MissingJsonObjectException(filePathId, "faces");
                     if (!partObject.get("faces").isObject())
@@ -588,7 +588,8 @@ public class BerylliumModelLoader {
                     Part newPart = partGroup.newPart(part.getPos(), part.getSize())
                             .setPivot(part.getPivot())
                             .setRotation(part.getRotation())
-                            .setScale(part.getScale());
+                            .setScale(part.getScale())
+                            .setCanCollide(part.canCollide());
 
                     PartFace[] oldFaces = part.getFaces();
                     PartFace[] newFaces = newPart.getFaces();

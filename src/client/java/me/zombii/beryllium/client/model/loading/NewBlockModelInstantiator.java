@@ -38,7 +38,8 @@ public class NewBlockModelInstantiator implements IBlockModelInstantiator {
                 Part newPart = newGroup.newPart(part.getPos(), part.getSize())
                         .setPivot(part.getPivot())
                         .setRotation(part.getRotation())
-                        .setScale(part.getScale());
+                        .setScale(part.getScale())
+                        .setCanCollide(part.canCollide());
                 PartFace[] oldFaces = part.getFaces();
                 PartFace[] newFaces = newPart.getFaces();
                 for (int i = 0; i < 6; i++) {

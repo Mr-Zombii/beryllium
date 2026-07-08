@@ -8,6 +8,7 @@ import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Part implements HJsonSerializable {
@@ -26,6 +27,7 @@ public class Part implements HJsonSerializable {
     private final Vector3 rotation = new Vector3();
 
     private final AtomicReference<Float> scale = new AtomicReference<>(0f);
+    private final AtomicBoolean canCollide = new AtomicBoolean(true);
 
     public PartFace[] getFaces() {
         return faces;
@@ -38,9 +40,17 @@ public class Part implements HJsonSerializable {
     public Vector3 getSize() {
         return size;
     }
+    public boolean canCollide() {
+        return canCollide.get();
+    }
 
     public float getScale() {
         return scale.get();
+    }
+
+    public Part setCanCollide(boolean value) {
+        this.canCollide.set(value);
+        return this;
     }
 
     public Part setScale(float scale) {
