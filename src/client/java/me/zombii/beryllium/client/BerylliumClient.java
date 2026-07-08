@@ -26,6 +26,8 @@ import me.zombii.beryllium.client.model.loading.NewClientModelLoader;
 import me.zombii.beryllium.client.rendering.layers.RenderLayer;
 import me.zombii.beryllium.client.rendering.layers.RenderLayers;
 import me.zombii.beryllium.client.rendering.tessellation.minitess.SimpleConnectedBlockTessallator;
+import me.zombii.beryllium.client.rendering.world.BerylliumChunkMeshingThread;
+import me.zombii.beryllium.client.rendering.world.BerylliumZoneRenderer;
 import me.zombii.beryllium.client.rendering.world.POCMeshingThread;
 import me.zombii.beryllium.client.rendering.world.POCZoneRenderer;
 import me.zombii.beryllium.common.BerylliumCommon;
@@ -139,8 +141,9 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
         if (BerylliumConfig.INSTANCE.enableBerylliumRendering) {
             POCMeshingThread.THREAD.start();
             GameSingletons.zoneRenderer = new POCZoneRenderer();
-//            GameSingletons.zoneRenderer = new NewZoneRenderer();
-//            GameSingletons.meshGenThread = new MeshGenThread();
+//            GameSingletons.meshGenThread = new BerylliumChunkMeshingThread();
+//            GameSingletons.zoneRenderer = new BerylliumZoneRenderer();
+
             GameSingletons.blockModelInstantiator = new NewBlockModelInstantiator();
         };
 //        register(Block.getById("base:grass"), (state, pos, tintIdx) -> {

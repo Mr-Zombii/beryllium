@@ -294,6 +294,21 @@ public class DefaultBerylliumMesh {
         resized = true;
     }
 
+    public void merge(DefaultBerylliumMesh mesh){
+        int vertexBufferSize = this.vertexBuffer.capacity();
+        int indexBufferSize = this.indexBuffer.capacity();
+
+        this.resize(this.getBudget() + mesh.getBudget());
+        mesh.vertexBuffer.position(0);
+        this.vertexBuffer.position(vertexBufferSize);
+        this.vertexBuffer.put(mesh.vertexBuffer);
+        mesh.indexBuffer.position(0);
+        this.indexBuffer.position(indexBufferSize);
+        while (mesh.indexBuffer.hasRemaining()){
+            this.indexBuffer.putInt(mesh.indexBuffer.getInt() + vertexBufferSize);
+        }
+    }
+
     public boolean isInitialized() {
         return initialized;
     }
@@ -310,6 +325,10 @@ public class DefaultBerylliumMesh {
 
     public boolean isEmpty() {
         return empty;
+    }
+
+    public int getBudget() {
+        return this.budget;
     }
 
     public int getVao() {
