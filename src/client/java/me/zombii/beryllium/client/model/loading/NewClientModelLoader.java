@@ -49,7 +49,7 @@ public class NewClientModelLoader implements ISidedModelLoader {
         if (override) BerylliumModelLoader.unregister(modelName);
 
         String modelJson = modelGenerator.toJson().toString();
-        BerylliumModelLoader.loadVanillaBlockModel(modelName, modelJson);
+        VanillaBlockModelLoader.loadVanillaBlockModel(modelName, modelJson);
 
         if (coverAllRotations) {
             for (int x = 0; x < 360; x += 90) {
@@ -80,7 +80,7 @@ public class NewClientModelLoader implements ISidedModelLoader {
         if (override) BerylliumModelLoader.unregister(modelName);
 
         String modelJson = modelGenerator.toJson().toString();
-        BerylliumModelLoader.loadVanillaBlockModel(modelName, modelJson);
+        VanillaBlockModelLoader.loadVanillaBlockModel(modelName, modelJson);
         BlockModel model = fromString(modelName, rotation, modelJson, override);
         CACHE.put(modelName, model);
         return model;
@@ -103,7 +103,7 @@ public class NewClientModelLoader implements ISidedModelLoader {
 
         String json = IndependentAssetLoader.loadAsset(Identifier.of(modelName)).getString();
 
-        BerylliumModelLoader.loadVanillaBlockModel(modelName, json);
+        VanillaBlockModelLoader.loadVanillaBlockModel(modelName, json);
         BlockModel model = fromString(modelName, rotation, json, override);
         CACHE.put(modelName, model);
         return model;
@@ -115,7 +115,7 @@ public class NewClientModelLoader implements ISidedModelLoader {
         if (override) BerylliumModelLoader.unregister(modelName);
 
         String json = fixGdxJson(modelJson);
-        BerylliumModelLoader.loadVanillaBlockModel(modelName, json);
+        VanillaBlockModelLoader.loadVanillaBlockModel(modelName, json);
         BlockModel model = fromString(modelName, rotation, json, override);
         CACHE.put(modelName, model);
         return model;

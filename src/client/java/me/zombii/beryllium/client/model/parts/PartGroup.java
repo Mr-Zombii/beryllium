@@ -15,9 +15,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class PartGroup implements Iterable<Part>, HJsonSerializable {
+public class PartGroup implements Iterable<CubePart>, HJsonSerializable {
 
-    private final ObjectList<Part> parts = new ObjectArrayList<>();
+    private final ObjectList<CubePart> parts = new ObjectArrayList<>();
 
     private final Vector3 pivot = new Vector3();
     private final Vector3 rotation = new Vector3();
@@ -32,36 +32,36 @@ public class PartGroup implements Iterable<Part>, HJsonSerializable {
         this.model = model;
     }
 
-    public Part newPart(float x, float y, float z, float sizeX, float sizeY, float sizeZ) {
-        Part part = new Part(model, this).setPosition(x, y, z).setSize(sizeX, sizeY, sizeZ);
+    public CubePart newPart(float x, float y, float z, float sizeX, float sizeY, float sizeZ) {
+        CubePart part = new CubePart(model, this).setPosition(x, y, z).setSize(sizeX, sizeY, sizeZ);
         parts.add(part);
         return part;
     }
 
-    public Part newPart(float x, float y, float z, Vector3 size) {
-        Part part = new Part(model, this).setPosition(x, y, z).setSize(size);
+    public CubePart newPart(float x, float y, float z, Vector3 size) {
+        CubePart part = new CubePart(model, this).setPosition(x, y, z).setSize(size);
         parts.add(part);
         return part;
     }
 
-    public Part newPart(Vector3 position, float sizeX, float sizeY, float sizeZ) {
-        Part part = new Part(model, this).setPosition(position).setSize(sizeX, sizeY, sizeZ);
+    public CubePart newPart(Vector3 position, float sizeX, float sizeY, float sizeZ) {
+        CubePart part = new CubePart(model, this).setPosition(position).setSize(sizeX, sizeY, sizeZ);
         parts.add(part);
         return part;
     }
 
-    public Part newPart(Vector3 position, Vector3 size) {
-        Part part = new Part(model, this).setPosition(position).setSize(size);
+    public CubePart newPart(Vector3 position, Vector3 size) {
+        CubePart part = new CubePart(model, this).setPosition(position).setSize(size);
         parts.add(part);
         return part;
     }
 
-    public Part removePart(Part part) {
+    public CubePart removePart(CubePart part) {
         parts.remove(part);
         return part;
     }
 
-    public List<Part> getParts() {
+    public List<CubePart> getParts() {
         return ObjectLists.unmodifiable(parts);
     }
 
@@ -91,7 +91,7 @@ public class PartGroup implements Iterable<Part>, HJsonSerializable {
         return this;
     }
 
-    public PartGroup setOrigin(float x, float y, float z) {
+    public PartGroup setPivot(float x, float y, float z) {
         this.pivot.set(x, y, z);
         return this;
     }
@@ -120,10 +120,9 @@ public class PartGroup implements Iterable<Part>, HJsonSerializable {
 
     @Override
     @NonNull
-    public Iterator<Part> iterator() {
+    public Iterator<CubePart> iterator() {
         return parts.iterator();
     }
-
 
     @Override
     public JsonValue toHJson() {
@@ -136,7 +135,7 @@ public class PartGroup implements Iterable<Part>, HJsonSerializable {
         obj.set("enabled", enabled.get());
 
         JsonArray parts = new JsonArray();
-        for (Part part : this) parts.add(part.toHJson());
+        for (CubePart part : this) parts.add(part.toHJson());
         obj.set("parts", parts);
         
         return obj;

@@ -4,9 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.Json;
 import dev.puzzleshq.puzzleloader.cosmic.game.GameRegistries;
 import dev.puzzleshq.puzzleloader.cosmic.game.util.IndependentAssetLoader;
+import dev.puzzleshq.puzzleloader.loader.util.RawAssetLoader;
 import finalforeach.cosmicreach.util.Identifier;
 import finalforeach.cosmicreach.util.assets.GameAssetLoader;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
@@ -21,7 +21,7 @@ import me.zombii.beryllium.client.model.baking.parts.BakedFace;
 import me.zombii.beryllium.client.model.baking.parts.BaseQuad;
 import me.zombii.beryllium.client.model.baking.parts.VertexGroup;
 import me.zombii.beryllium.client.model.loading.BerylliumModelLoader;
-import me.zombii.beryllium.client.model.parts.Part;
+import me.zombii.beryllium.client.model.parts.CubePart;
 import me.zombii.beryllium.client.model.parts.PartFace;
 import me.zombii.beryllium.client.model.parts.PartGroup;
 import me.zombii.beryllium.client.model.parts.TextureEntry;
@@ -308,12 +308,12 @@ public class ModelBaker {
             ByteBuffer buffer = stack.malloc(tboSize).order(ByteOrder.LITTLE_ENDIAN);
 
             for (int i = 0; i < elementCount; i++) {
-                int[] data = UV_STACK.get(i);
+                float[] data = UV_STACK.get(i);
 
-                buffer.putShort((short) data[0]);
-                buffer.putShort((short) data[1]);
-                buffer.putShort((short) data[2]);
-                buffer.putShort((short) data[3]);
+                buffer.putShort(Float.floatToFloat16(data[0]));
+                buffer.putShort(Float.floatToFloat16(data[1]));
+                buffer.putShort(Float.floatToFloat16(data[2]));
+                buffer.putShort(Float.floatToFloat16(data[3]));
             }
             buffer.flip();
 
@@ -347,7 +347,7 @@ public class ModelBaker {
             vertexGroup.setPivot(group.getPivot());
             vertexGroup.setRotation(group.getRotation());
 
-            for (Part part : group)
+            for (CubePart part : group)
                 bakePart(
                         part,
                         vertexGroup
@@ -364,7 +364,7 @@ public class ModelBaker {
     };
 
     public static void bakePart(
-            Part part,
+            CubePart part,
             VertexGroup group
     ) {
         for (PartFace face : part.getFaces()) {
@@ -376,7 +376,7 @@ public class ModelBaker {
             Vector3 pivot = part.getPivot();
             Vector3 size = part.getSize();
             Vector3 pos = part.getPos();
-            float scale = part.getScale();
+            float scale = part.getInflate();
 
             Vector3 tmp = sizeTmp.get();
             tmp.set(pivot);
@@ -486,11 +486,11 @@ public class ModelBaker {
         return Object2ObjectMaps.unmodifiable(modelMap);
     }
 
-    private static final ObjectList<int[]> UV_STACK = new ObjectArrayList<>();
+    private static final ObjectList<float[]> UV_STACK = new ObjectArrayList<>();
     private static final Int2IntMap UV_TABLE = new Int2IntArrayMap();
     private static final AtomicInteger NEXT_INDEX = new AtomicInteger(0);
 
-    public static int getOrMakePerFaceIdx(int[] uvs) {
+    public static int getOrMakePerFaceIdx(float[] uvs) {
         int hash = Objects.hash(uvs[0], uvs[1], uvs[2], uvs[3]);
         if (UV_TABLE.containsKey(hash)) {
             return UV_TABLE.get(hash);

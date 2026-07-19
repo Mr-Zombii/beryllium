@@ -9,7 +9,7 @@ import org.hjson.JsonValue;
 import java.util.Objects;
 
 public class PartFace implements HJsonSerializable {
-    private final int[] uv = new int[]{0, 0, 16, 16};
+    private final float[] uv = new float[]{0, 0, 16, 16};
     private boolean useAO = true;
     private final int direction;
     private boolean isCulled = true;
@@ -42,7 +42,7 @@ public class PartFace implements HJsonSerializable {
         this.direction = direction;
     }
 
-    public int[] getUV() {
+    public float[] getUV() {
         return uv;
     }
 

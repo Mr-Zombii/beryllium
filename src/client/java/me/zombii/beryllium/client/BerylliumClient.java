@@ -92,19 +92,19 @@ public class BerylliumClient implements ClientModInit, ClientPostModInit {
 
     @SubscribeEvent
     public void onEvent(EventBakingFinished event) {
-        SimpleConnectedBlockTessallator.registerState(
-                Block.getById("base:cheese").getDefaultBlockState(),
-                ModelBaker.get("beryllium:models/blocks/connected")
-        );
+//        SimpleConnectedBlockTessallator.registerState(
+//                Block.getById("base:cheese").getDefaultBlockState(),
+//                ModelBaker.get("beryllium:models/blocks/connected")
+//        );
     }
 
     @SubscribeEvent
     public void onEvent(EventCollectModels event) {
-        ISidedModelLoader.getInstance().loadModel(
-                "beryllium:models/blocks/connected"
-        );
+//        ISidedModelLoader.getInstance().loadModel(
+//                "beryllium:models/blocks/connected"
+//        );
 
-        event.registerForBaking(BerylliumModelLoader.getModel("beryllium:models/blocks/connected"));
+//        event.registerForBaking(BerylliumModelLoader.getModel("beryllium:models/blocks/connected"));
 
 //        for (URL source : Piece.classLoader.getURLs()) {
 //            System.out.println("Found: " + source.getFile());

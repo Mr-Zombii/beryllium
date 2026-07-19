@@ -4,7 +4,7 @@ import dev.puzzleshq.puzzleloader.cosmic.game.util.HJsonSerializable;
 import finalforeach.cosmicreach.util.Identifier;
 import it.unimi.dsi.fastutil.objects.*;
 import me.zombii.beryllium.client.BerylliumClientRegistries;
-import me.zombii.beryllium.client.model.parts.Part;
+import me.zombii.beryllium.client.model.parts.CubePart;
 import me.zombii.beryllium.client.model.parts.PartFace;
 import me.zombii.beryllium.client.model.parts.PartGroup;
 import me.zombii.beryllium.client.model.parts.TextureEntry;
@@ -171,7 +171,7 @@ public class BerylliumModel implements Iterable<PartGroup>, HJsonSerializable {
 
     public boolean canAllCullInDirection(int d) {
         for (PartGroup group : groups) {
-            for (Part part : group.getParts()) {
+            for (CubePart part : group.getParts()) {
                 PartFace face = part.getFaces()[d];
                 if (face == null) return false;
                 if (!face.isCulled()) return false;

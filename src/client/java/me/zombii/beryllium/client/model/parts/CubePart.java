@@ -11,12 +11,12 @@ import org.hjson.JsonValue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class Part implements HJsonSerializable {
+public class CubePart implements HJsonSerializable {
     private final PartFace[] faces = new PartFace[6];
     private final BerylliumModel model;
     private final PartGroup group;
 
-    protected Part(BerylliumModel model, PartGroup group) {
+    protected CubePart(BerylliumModel model, PartGroup group) {
         this.model = model;
         this.group = group;
     }
@@ -26,7 +26,7 @@ public class Part implements HJsonSerializable {
     private final Vector3 pivot = new Vector3();
     private final Vector3 rotation = new Vector3();
 
-    private final AtomicReference<Float> scale = new AtomicReference<>(0f);
+    private final AtomicReference<Float> inflate = new AtomicReference<>(0f);
     private final AtomicBoolean canCollide = new AtomicBoolean(true);
 
     public PartFace[] getFaces() {
@@ -44,17 +44,17 @@ public class Part implements HJsonSerializable {
         return canCollide.get();
     }
 
-    public float getScale() {
-        return scale.get();
+    public float getInflate() {
+        return inflate.get();
     }
 
-    public Part setCanCollide(boolean value) {
+    public CubePart setCanCollide(boolean value) {
         this.canCollide.set(value);
         return this;
     }
 
-    public Part setScale(float scale) {
-        this.scale.set(scale);
+    public CubePart setInflate(float inflate) {
+        this.inflate.set(inflate);
         return this;
     }
 
@@ -66,42 +66,42 @@ public class Part implements HJsonSerializable {
         return pivot;
     }
 
-    public Part setPivot(Vector3 pivot) {
+    public CubePart setPivot(Vector3 pivot) {
         this.pivot.set(pivot);
         return this;
     }
 
-    public Part setPivot(float x, float y, float z) {
+    public CubePart setPivot(float x, float y, float z) {
         this.pivot.set(x, y, z);
         return this;
     }
 
-    public Part setRotation(Vector3 rotation) {
+    public CubePart setRotation(Vector3 rotation) {
         this.rotation.set(rotation);
         return this;
     }
 
-    public Part setRotation(float x, float y, float z) {
+    public CubePart setRotation(float x, float y, float z) {
         this.rotation.set(x, y, z);
         return this;
     }
 
-    public Part setPosition(Vector3 pos) {
+    public CubePart setPosition(Vector3 pos) {
         this.pos.set(pos);
         return this;
     }
 
-    public Part setPosition(float x, float y, float z) {
+    public CubePart setPosition(float x, float y, float z) {
         this.pos.set(x, y, z);
         return this;
     }
 
-    public Part setSize(Vector3 size) {
+    public CubePart setSize(Vector3 size) {
         this.size.set(size);
         return this;
     }
 
-    public Part setSize(float x, float y, float z) {
+    public CubePart setSize(float x, float y, float z) {
         this.size.set(x, y, z);
         return this;
     }

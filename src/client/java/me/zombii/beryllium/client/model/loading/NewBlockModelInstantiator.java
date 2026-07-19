@@ -5,7 +5,7 @@ import finalforeach.cosmicreach.blocks.BlockState;
 import finalforeach.cosmicreach.rendering.blockmodels.BlockModel;
 import finalforeach.cosmicreach.rendering.blockmodels.IBlockModelInstantiator;
 import me.zombii.beryllium.client.model.BerylliumModel;
-import me.zombii.beryllium.client.model.parts.Part;
+import me.zombii.beryllium.client.model.parts.CubePart;
 import me.zombii.beryllium.client.model.parts.PartFace;
 import me.zombii.beryllium.client.model.parts.PartGroup;
 import me.zombii.beryllium.client.model.parts.TextureEntry;
@@ -22,7 +22,7 @@ public class NewBlockModelInstantiator implements IBlockModelInstantiator {
         String modelName = NewClientModelLoader.CACHE.entrySet().stream().filter((e) -> e.getKey().equals(blockState.modelName)).findFirst().get().getKey();
 
         BerylliumModel baseModel = BerylliumModelLoader.getModel(modelName);
-        BerylliumModel parentModel = BerylliumModelLoader.loadVanillaBlockModel(parentModelName);
+        BerylliumModel parentModel = VanillaBlockModelLoader.loadVanillaBlockModel(parentModelName);
 
         BerylliumModel model = new BerylliumModel(genModelName);
         for (TextureEntry value : baseModel.getTextureMap().values()) {
@@ -34,11 +34,11 @@ public class NewBlockModelInstantiator implements IBlockModelInstantiator {
             newGroup.setPivot(group.getPivot());
             newGroup.setRotation(group.getRotation());
             newGroup.setParentName(group.getParentName());
-            for (Part part : group) {
-                Part newPart = newGroup.newPart(part.getPos(), part.getSize())
+            for (CubePart part : group) {
+                CubePart newPart = newGroup.newPart(part.getPos(), part.getSize())
                         .setPivot(part.getPivot())
                         .setRotation(part.getRotation())
-                        .setScale(part.getScale())
+                        .setInflate(part.getInflate())
                         .setCanCollide(part.canCollide());
                 PartFace[] oldFaces = part.getFaces();
                 PartFace[] newFaces = newPart.getFaces();

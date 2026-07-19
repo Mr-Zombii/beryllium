@@ -4,20 +4,16 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import finalforeach.cosmicreach.blocks.BlockState;
 import finalforeach.cosmicreach.world.Chunk;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import me.zombii.beryllium.client.model.BerylliumModel;
 import me.zombii.beryllium.client.model.baking.BakedBerylliumModel;
-import me.zombii.beryllium.client.model.baking.ModelBaker;
 import me.zombii.beryllium.client.model.baking.parts.BakedFace;
 import me.zombii.beryllium.client.model.loading.BerylliumModelLoader;
 import me.zombii.beryllium.client.rendering.layers.RenderLayer;
 import me.zombii.beryllium.client.rendering.layers.RenderLayers;
+import me.zombii.beryllium.client.rendering.tessellation.DefaultBerylliumMesh;
 import me.zombii.beryllium.client.rendering.tessellation.Tessallator;
 import me.zombii.beryllium.client.rendering.tessellation.minitess.BlockTessallator;
 import me.zombii.beryllium.client.rendering.tessellation.TintProvider;
-import me.zombii.beryllium.client.rendering.tessellation.minitess.DefaultBlockTessallator;
-import me.zombii.beryllium.client.rendering.tessellation.minitess.DefaultRotatedBlockTessallator;
 import me.zombii.beryllium.client.rendering.util.IBerylliumBlockState;
 
 import java.util.Arrays;
@@ -58,6 +54,48 @@ public class ChunkMesher {
         }
     }
 
+    public static void meshSingleBlock(
+            Tessallator tessallator,
+            Chunk chunk,
+            BlockState self,
+            IBerylliumBlockState bSelf,
+            BerylliumModel model,
+            short[] TMP_SKY_LIGHT,
+            short[] TMP_BLOCK_LIGHT,
+            byte[] TMP_AO_VALUES,
+            int x, int y, int z
+    ) {
+        rotateMasks(
+                self.rotation[0],
+                self.rotation[1],
+                self.rotation[2]
+        );
+
+        BakedBerylliumModel bakedModel = bSelf.getBakedModel();
+        int visibleFaces = BakedFace.ALL_FACES_SHOWING;
+
+        getSkyLight(TMP_SKY_LIGHT, x, y, z);
+        getBlockLight(TMP_BLOCK_LIGHT, x, y, z);
+
+        byte[] aoValues = Tessallator.EMPTY_AO;
+        if (bakedModel.doesCulling()) visibleFaces = getVisibleFaces(self, model, x, y, z);
+        if (bakedModel.usesAO()) getAmbientOcclusion(aoValues=TMP_AO_VALUES, x, y, z);
+
+        TintProvider.TintFunction tintFunction = bSelf.getTintFunction();
+
+        transform.idt();
+        tmpMatrix.idt();
+
+        BlockTessallator blockTessallator = bSelf.getTessallator();
+        blockTessallator.consume(
+                tessallator, tmpMatrix,
+                crossChunkAccessor,
+                chunk, self, x, y, z,
+                bakedModel, TMP_SKY_LIGHT, TMP_BLOCK_LIGHT,
+                aoValues, visibleFaces, tintFunction
+        );
+    }
+
     private static void meshChunk(RenderLayer layer, Chunk chunk, ChunkMesh mesh) {
         if (mesh == null) return;
         if (mesh.isDisposed()) return;
@@ -78,36 +116,18 @@ public class ChunkMesher {
 
                     IBerylliumBlockState berylliumState = (IBerylliumBlockState) self;
                     BerylliumModel model = berylliumState.getModel();
-                    if (!model.getRenderLayer().getId().equals(layer.getId())) continue;
+                    if (!model.getRenderLayer().getId().equals(layer.getId())) return;
 
-                    rotateMasks(
-                            self.rotation[0],
-                            self.rotation[1],
-                            self.rotation[2]
-                    );
-
-                    BakedBerylliumModel bakedModel = berylliumState.getBakedModel();
-                    int visibleFaces = BakedFace.ALL_FACES_SHOWING;
-
-                    getSkyLight(TMP_SKY_LIGHT, x, y, z);
-                    getBlockLight(TMP_BLOCK_LIGHT, x, y, z);
-
-                    byte[] aoValues = Tessallator.EMPTY_AO;
-                    if (bakedModel.doesCulling()) visibleFaces = getVisibleFaces(self, model, x, y, z);
-                    if (bakedModel.usesAO()) getAmbientOcclusion(aoValues=TMP_AO_VALUES, x, y, z);
-
-                    TintProvider.TintFunction tintFunction = berylliumState.getTintFunction();
-
-                    transform.idt();
-                    tmpMatrix.idt();
-
-                    BlockTessallator blockTessallator = berylliumState.getTessallator();
-                    blockTessallator.consume(
-                            globalTessallator, tmpMatrix,
-                            crossChunkAccessor,
-                            chunk, self, x, y, z,
-                            bakedModel, TMP_SKY_LIGHT, TMP_BLOCK_LIGHT,
-                            aoValues, visibleFaces, tintFunction
+                    meshSingleBlock(
+                            globalTessallator,
+                            chunk,
+                            self,
+                            berylliumState,
+                            model,
+                            TMP_SKY_LIGHT,
+                            TMP_BLOCK_LIGHT,
+                            TMP_AO_VALUES,
+                            x, y, z
                     );
                 }
             }

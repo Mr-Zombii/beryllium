@@ -94,9 +94,9 @@ vec2 getUV(void) {
 }
 
 uvec4 FACE_UV_RANGE = texelFetch(u_faceUVBuffer, FACE_UV_IDX);
-uvec2 FACE_UV_MIN = FACE_UV_RANGE.xy;
-uvec2 FACE_UV_MAX = FACE_UV_RANGE.zw;
-uvec2 FACE_UV_SIZE = FACE_UV_RANGE.zw - FACE_UV_MIN;
+vec2 FACE_UV_MIN = unpackHalf2x16(FACE_UV_RANGE.x << 16 | FACE_UV_RANGE.y).yx;
+vec2 FACE_UV_MAX = unpackHalf2x16(FACE_UV_RANGE.z << 16 | FACE_UV_RANGE.w).yx;
+vec2 FACE_UV_SIZE = FACE_UV_MAX - FACE_UV_MIN;
 
 /*
     rotationStyle is CCW
