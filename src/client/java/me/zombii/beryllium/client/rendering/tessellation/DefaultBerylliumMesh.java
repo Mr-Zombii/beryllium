@@ -2,6 +2,7 @@ package me.zombii.beryllium.client.rendering.tessellation;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.utils.Array;
 import me.zombii.beryllium.client.BerylliumAtlases;
 import me.zombii.beryllium.client.rendering.opengl.shader.BerylliumShaderProgram;
 import me.zombii.beryllium.common.BerylliumConfig;
@@ -294,19 +295,34 @@ public class DefaultBerylliumMesh {
         resized = true;
     }
 
-    public void merge(DefaultBerylliumMesh mesh){
-        int vertexBufferSize = this.vertexBuffer.capacity();
-        int indexBufferSize = this.indexBuffer.capacity();
-
-        this.resize(this.getBudget() + mesh.getBudget());
-        mesh.vertexBuffer.position(0);
-        this.vertexBuffer.position(vertexBufferSize);
-        this.vertexBuffer.put(mesh.vertexBuffer);
-        mesh.indexBuffer.position(0);
-        this.indexBuffer.position(indexBufferSize);
-        while (mesh.indexBuffer.hasRemaining()){
-            this.indexBuffer.putInt(mesh.indexBuffer.getInt() + vertexBufferSize);
+    public void merge(Array<? extends DefaultBerylliumMesh> meshes){
+        long oldDumpVertSize = dumpVertSize;
+        long oldDumpIndSize = dumpIndSize;
+        int sumBudget = this.getBudget();
+        for (DefaultBerylliumMesh mesh : meshes){
+            sumBudget += mesh.getBudget();
+            long newVertSize = dumpVertSize + mesh.dumpVertSize;
+            long newIndSize = dumpIndSize + mesh.dumpIndSize;
+            dumpVertSize = newVertSize;
+            dumpIndSize = newIndSize;
         }
+
+        this.resize(sumBudget);
+
+        this.vertexBuffer.position((int) oldDumpVertSize);
+        this.indexBuffer.position((int) oldDumpIndSize);
+
+        long curDumpVertSize = oldDumpVertSize;
+        for (DefaultBerylliumMesh mesh : meshes){
+            this.vertexBuffer.put(mesh.vertexBuffer.slice(0, (int) mesh.dumpVertSize).order(ByteOrder.LITTLE_ENDIAN));
+            mesh.indexBuffer.position(0);
+            for (int i = 0; i < mesh.dumpIndSize; i += 4){
+                this.indexBuffer.putInt((int) (mesh.indexBuffer.getInt() + curDumpVertSize / 4));
+            }
+            curDumpVertSize += mesh.dumpVertSize;
+        }
+
+        dirty = true;
     }
 
     public boolean isInitialized() {

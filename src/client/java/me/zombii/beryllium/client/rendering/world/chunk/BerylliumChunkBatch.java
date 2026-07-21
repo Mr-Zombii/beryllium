@@ -72,7 +72,6 @@ public class BerylliumChunkBatch {
             }
 
             this.mesh.updateDirty();
-
             matrix4.idt();
             matrix4.translate(this.boundingBox.min);
             this.mesh.render(worldCamera, shader, matrix4);
@@ -83,8 +82,6 @@ public class BerylliumChunkBatch {
     }
 
     void rebuildMesh(){
-        for (ChunkMesh newMesh : this.chunkMeshesToAdd){
-            this.mesh.merge(newMesh);
-        }
+        this.mesh.merge(this.chunkMeshesToAdd);
     }
 }

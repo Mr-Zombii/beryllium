@@ -10,7 +10,6 @@ import com.badlogic.gdx.utils.*;
 import finalforeach.cosmicreach.rendering.*;
 import finalforeach.cosmicreach.singletons.GameSingletons;
 import finalforeach.cosmicreach.util.ArrayUtils;
-import finalforeach.cosmicreach.util.lang.Lang;
 import finalforeach.cosmicreach.world.Chunk;
 import finalforeach.cosmicreach.world.Region;
 import finalforeach.cosmicreach.world.RegionOctant;
@@ -63,13 +62,6 @@ public class BerylliumZoneRenderer implements IZoneRenderer {
     public void render(Zone zone, Camera worldCamera) {
         this.prepare(zone, worldCamera);
         this.renderLayerRange(zone, worldCamera, 0, RenderLayers.LAYER_ORDER.length - 1);
-        if (ChunkBatch.lastBoundShader != null) {
-            ChunkBatch.lastBoundShader.unbind();
-        }
-
-//        if (this.drawDebugLines) {
-//            this.drawDebugLines(worldCamera);
-//        }
     }
 
     @Override
@@ -88,7 +80,7 @@ public class BerylliumZoneRenderer implements IZoneRenderer {
 
     @Override
     public String getName() {
-        return Lang.get("rendererBatched");
+        return "Beryllium renderer";
     }
 
     @Override
